@@ -424,6 +424,15 @@ html{scroll-behavior:smooth}
 .ph{display:inline-block}
 html[lang="en"] .ph{display:inline}
 </style>
+<style id="phFix2">
+@media(max-width:640px){
+  html[lang="ja"] h1,html[lang="ja"] h2,html[lang="ja"] h3,
+  html[lang="ja"] .hero-lead,html[lang="ja"] .hero-quote,
+  html[lang="ja"] .sec-head p,html[lang="ja"] .svc-intro p,
+  html[lang="ja"] .cta-in p,html[lang="ja"] .s-sub,
+  html[lang="ja"] .legal-card p,html[lang="ja"] .ft-meta{word-break:auto-phrase;line-break:strict}
+}
+</style>
 </head>
 <body>
 
@@ -450,8 +459,8 @@ html[lang="en"] .ph{display:inline}
   <div class="hero-l">
     <div class="htag">Indonesia Asset Strategy</div>
     <h1><span class="ph">日本だけに、</span><br><span class="ph">資産を<span class="hi">置き続ける</span></span><br><span class="ph">時代が終わる。</span></h1>
-    <p class="hero-lead">増税・円安・国民負担の増大。<br>日本の構造変化は、もはや避けられません。</p>
-    <p class="hero-quote">利回りだけでなく、<br>「もう一つの居場所」を持つこと。</p>
+    <p class="hero-lead"><span class="ph">増税・円安・国民負担の増大。</span><br><span class="ph">日本の構造変化は、もはや避けられません。</span></p>
+    <p class="hero-quote"><span class="ph">利回りだけでなく、</span><br><span class="ph">「もう一つの居場所」を持つこと。</span></p>
     <button class="hero-btn" onclick="go('diagnostic')">資産戦略診断をはじめる <span class="arr">→</span></button>
   </div>
   
@@ -624,7 +633,7 @@ html[lang="en"] .ph{display:inline}
       <h2><span class="ph">必要なところから、</span><br><span class="ph">選べる。組み合わせられる。</span></h2>
     </div>
     <div class="svc-intro rv">
-      <p>一つだけでも、全部でも構いません。<br>あなたの資産状況とペースに合わせて、<br>Leaves Baliはどこからでも伴走します。</p>
+      <p><span class="ph">一つだけでも、全部でも構いません。</span><br><span class="ph">あなたの資産状況とペースに合わせて、</span><br><span class="ph">Leaves Baliはどこからでも伴走します。</span></p>
       <p class="svc-hint">▼ 資産診断の結果から、あなたに合ったプランが表示されます</p>
     </div>
     <div class="svc-grid">
@@ -792,7 +801,7 @@ html[lang="en"] .ph{display:inline}
   <div class="cta-ov"></div>
   <div class="sec-in cta-in rv">
     <h2>まずは、3分の診断から。</h2>
-    <p>あなたの資産にとって最適な選択肢を、<br>一緒に見つけましょう。</p>
+    <p><span class="ph">あなたの資産にとって最適な選択肢を、</span><br><span class="ph">一緒に見つけましょう。</span></p>
     <div class="cta-btn" onclick="go('diagnostic')" style="cursor:pointer;display:inline-flex">資産戦略診断をはじめる <span class="arr">→</span></div>
   </div>
 </section>
