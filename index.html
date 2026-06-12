@@ -449,10 +449,14 @@ html[lang="en"] .ph{display:inline}
 .menu-cta:hover{background:var(--rose-dk);padding-left:14px!important}
 .menu-lang{margin-top:22px;padding:12px;border:1px solid var(--green);background:transparent;color:var(--green);border-radius:999px;font-family:var(--sans);font-size:13px;font-weight:600;letter-spacing:.05em;cursor:pointer;transition:background .2s,color .2s}
 .menu-lang:hover{background:var(--green);color:#fff}
-@media(max-width:720px){
+@media(max-width:1180px){
   .menu-btn{display:flex}
   nav .nav-btn,#langBtn{display:none}
 }
+</style>
+<style id="navPcFix">
+@media(max-width:1180px){.hide-sm{display:none}}
+.hdr nav{white-space:nowrap}
 </style>
 </head>
 <body>
@@ -464,8 +468,11 @@ html[lang="en"] .ph{display:inline}
       <a class="hide-sm" onclick="go('diagnostic')">資産診断</a>
       <a class="hide-sm" onclick="go('guide')">バリ島ガイド</a>
       <a class="hide-sm" onclick="go('legal')">法とリスク</a>
-      <a class="hide-sm" onclick="go('articles')">記事</a>
       <a class="hide-sm" onclick="go('services')">サービス</a>
+      <a class="hide-sm" onclick="go('track')">実績・事例</a>
+      <a class="hide-sm" onclick="go('voice')">お客様の声</a>
+      <a class="hide-sm" onclick="go('articles')">記事</a>
+      <a class="hide-sm" onclick="go('seminar')">セミナー</a>
       <a class="hide-sm" onclick="go('team')">チーム</a>
       <a class="nav-btn" onclick="go('diagnostic')">診断をはじめる</a>
       <button id="langBtn" class="lang-btn" onclick="toggleLang()" aria-label="Switch language">EN</button>
