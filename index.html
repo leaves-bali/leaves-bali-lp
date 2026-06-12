@@ -458,6 +458,22 @@ html[lang="en"] .ph{display:inline}
 @media(max-width:1180px){.hide-sm{display:none}}
 .hdr nav{white-space:nowrap}
 </style>
+<style id="accCss">
+.acc-item .acc-head{display:flex;align-items:center;gap:14px;cursor:pointer;-webkit-user-select:none;user-select:none}
+.acc-item .acc-head h3{margin:0;flex:1}
+.acc-toggle{flex:none;width:26px;height:26px;border-radius:50%;border:1px solid var(--rule);position:relative;transition:background .25s,border-color .25s}
+.acc-item:hover .acc-toggle{border-color:var(--green)}
+.acc-toggle::before,.acc-toggle::after{content:'';position:absolute;top:50%;left:50%;background:var(--green);border-radius:2px}
+.acc-toggle::before{width:11px;height:2px;transform:translate(-50%,-50%)}
+.acc-toggle::after{width:2px;height:11px;transform:translate(-50%,-50%);transition:transform .3s}
+.acc-item.open .acc-toggle{background:var(--green-pale)}
+.acc-item.open .acc-toggle::after{transform:translate(-50%,-50%) scaleY(0)}
+.acc-body{display:grid;grid-template-rows:0fr;transition:grid-template-rows .4s cubic-bezier(.2,.75,.2,1)}
+.acc-item.open .acc-body{grid-template-rows:1fr}
+.acc-inner{overflow:hidden;min-height:0}
+.acc-body p{margin-top:14px!important}
+.acc-head:focus-visible{outline:2px solid var(--green);outline-offset:4px;border-radius:6px}
+</style>
 </head>
 <body>
 
@@ -617,10 +633,10 @@ html[lang="en"] .ph{display:inline}
   </div>
   <div style="max-width:1200px;margin:0 auto;padding:0 48px">
     <div class="why-grid">
-      <div class="w-card rv"><span class="w-num">i</span><h3>増税は、もう「将来の話」ではない</h3><p>ミニマムタックスの段階的拡大、防衛特別法人税・所得税の施行、非上場株式の相続評価見直し。2025年から2028年にかけて、経営者・資産家を対象とした増税が連続して実行されます。</p></div>
-      <div class="w-card rv d1"><span class="w-num">ii</span><h3>円資産は、座っているだけで目減りする</h3><p>構造的な貿易赤字と金利差により、円の購買力は長期的に低下傾向にあります。日本の定期預金金利が0.1〜0.2%台である一方、インドネシアでは3.5〜5.5%という水準が一般的です。</p></div>
-      <div class="w-card rv d2"><span class="w-num">iii</span><h3>「税理士に聞いても専門外」と言われる</h3><p>海外資産分散について相談できる窓口は、実はほとんどありません。銀行も税理士も「専門外」と答えるグレーゾーンに、Leaves Baliは答えを持っています。</p></div>
-      <div class="w-card rv d3"><span class="w-num">iv</span><h3>「もしもの時」に帰れる場所がある安心感</h3><p>合法的に、お金という手段で、海外に自分の居場所を確保できる時代です。資産価値が変動しても、その場所自体は消えません。利回りだけでは測れない価値です。</p></div>
+      <div class="w-card rv acc-item"><span class="w-num">i</span><div class="acc-head" onclick="accToggle(this)" role="button" tabindex="0" aria-expanded="false"><h3>増税は、もう「将来の話」ではない</h3><span class="acc-toggle" aria-hidden="true"></span></div><div class="acc-body"><div class="acc-inner"><p>ミニマムタックスの段階的拡大、防衛特別法人税・所得税の施行、非上場株式の相続評価見直し。2025年から2028年にかけて、経営者・資産家を対象とした増税が連続して実行されます。</p></div></div></div>
+      <div class="w-card rv d1 acc-item"><span class="w-num">ii</span><div class="acc-head" onclick="accToggle(this)" role="button" tabindex="0" aria-expanded="false"><h3>円資産は、座っているだけで目減りする</h3><span class="acc-toggle" aria-hidden="true"></span></div><div class="acc-body"><div class="acc-inner"><p>構造的な貿易赤字と金利差により、円の購買力は長期的に低下傾向にあります。日本の定期預金金利が0.1〜0.2%台である一方、インドネシアでは3.5〜5.5%という水準が一般的です。</p></div></div></div>
+      <div class="w-card rv d2 acc-item"><span class="w-num">iii</span><div class="acc-head" onclick="accToggle(this)" role="button" tabindex="0" aria-expanded="false"><h3>「税理士に聞いても専門外」と言われる</h3><span class="acc-toggle" aria-hidden="true"></span></div><div class="acc-body"><div class="acc-inner"><p>海外資産分散について相談できる窓口は、実はほとんどありません。銀行も税理士も「専門外」と答えるグレーゾーンに、Leaves Baliは答えを持っています。</p></div></div></div>
+      <div class="w-card rv d3 acc-item"><span class="w-num">iv</span><div class="acc-head" onclick="accToggle(this)" role="button" tabindex="0" aria-expanded="false"><h3>「もしもの時」に帰れる場所がある安心感</h3><span class="acc-toggle" aria-hidden="true"></span></div><div class="acc-body"><div class="acc-inner"><p>合法的に、お金という手段で、海外に自分の居場所を確保できる時代です。資産価値が変動しても、その場所自体は消えません。利回りだけでは測れない価値です。</p></div></div></div>
     </div>
   </div>
 </section>
@@ -651,21 +667,9 @@ html[lang="en"] .ph{display:inline}
       <p class="s-sub">海外資産には必ず法律と税務が絡みます。leaves は「隠す」ためではなく、<br>「正しく申告し、堂々と保有する」ための実務をサポートします。</p>
     </div>
     <div class="legal-grid">
-      <div class="legal-card rv d1">
-        <div class="legal-tag">CRS</div>
-        <h3>共通報告基準（CRS）とは</h3>
-        <p>海外の銀行口座などの情報は、CRSにより各国の税務当局間で自動的に交換されます。日本の居住者は、一定額以上の国外財産について「国外財産調書」「財産債務調書」の提出義務が生じる場合があります。情報を隠して申告しないことは脱税にあたり、違法です。leaves は、合法的な保有と適正な申告を前提に支援します。</p>
-      </div>
-      <div class="legal-card rv d2">
-        <div class="legal-tag">金商法</div>
-        <h3>金融商品取引法との関係</h3>
-        <p>leaves が行うのは、銀行口座開設・PMA法人設立・不動産仲介といった実務サポートと、一般的な情報提供です。特定の金融商品の勧誘や、利回りを保証する行為は行いません。お客様ご自身の判断を、正確な情報でお手伝いする立場です。</p>
-      </div>
-      <div class="legal-card rv d3">
-        <div class="legal-tag">現地法</div>
-        <h3>インドネシアの法的リスク</h3>
-        <p>外国人がインドネシアで不動産を保有するには名義の問題があり、PMA（外資企業）名義などの適法なスキームが重要です。KITAS（滞在許可）、出国税、現地の税制など、始める前に知っておくべき点を、現地の弁護士と連携して整理します。</p>
-      </div>
+      <div class="legal-card rv d1 acc-item"><div class="legal-tag">CRS</div><div class="acc-head" onclick="accToggle(this)" role="button" tabindex="0" aria-expanded="false"><h3>共通報告基準（CRS）とは</h3><span class="acc-toggle" aria-hidden="true"></span></div><div class="acc-body"><div class="acc-inner"><p>海外の銀行口座などの情報は、CRSにより各国の税務当局間で自動的に交換されます。日本の居住者は、一定額以上の国外財産について「国外財産調書」「財産債務調書」の提出義務が生じる場合があります。情報を隠して申告しないことは脱税にあたり、違法です。leaves は、合法的な保有と適正な申告を前提に支援します。</p></div></div></div>
+      <div class="legal-card rv d2 acc-item"><div class="legal-tag">金商法</div><div class="acc-head" onclick="accToggle(this)" role="button" tabindex="0" aria-expanded="false"><h3>金融商品取引法との関係</h3><span class="acc-toggle" aria-hidden="true"></span></div><div class="acc-body"><div class="acc-inner"><p>leaves が行うのは、銀行口座開設・PMA法人設立・不動産仲介といった実務サポートと、一般的な情報提供です。特定の金融商品の勧誘や、利回りを保証する行為は行いません。お客様ご自身の判断を、正確な情報でお手伝いする立場です。</p></div></div></div>
+      <div class="legal-card rv d3 acc-item"><div class="legal-tag">現地法</div><div class="acc-head" onclick="accToggle(this)" role="button" tabindex="0" aria-expanded="false"><h3>インドネシアの法的リスク</h3><span class="acc-toggle" aria-hidden="true"></span></div><div class="acc-body"><div class="acc-inner"><p>外国人がインドネシアで不動産を保有するには名義の問題があり、PMA（外資企業）名義などの適法なスキームが重要です。KITAS（滞在許可）、出国税、現地の税制など、始める前に知っておくべき点を、現地の弁護士と連携して整理します。</p></div></div></div>
     </div>
     <div class="legal-note rv">本セクションは一般的な情報提供を目的としたものであり、法務・税務・投資に関する助言ではありません。実際の手続きや申告にあたっては、必ず弁護士・税理士などの有資格専門家にご確認ください。</div>
   </div>
@@ -1021,6 +1025,8 @@ function copyFb(){
     document.querySelector('.mf-copy').textContent=(LANG==='en')?'Copied ✓':'コピーしました ✓';
   });
 }
+function accToggle(el){var it=el.closest('.acc-item');if(!it)return;var op=it.classList.toggle('open');el.setAttribute('aria-expanded',op?'true':'false');}
+document.addEventListener('keydown',function(e){if((e.key==='Enter'||e.key===' ')&&e.target&&e.target.classList&&e.target.classList.contains('acc-head')){e.preventDefault();accToggle(e.target);}});
 function toggleMenu(){var o=document.getElementById('menuOverlay'),b=document.getElementById('menuBtn');var op=o.classList.toggle('open');b.classList.toggle('open',op);o.setAttribute('aria-hidden',op?'false':'true');document.body.style.overflow=op?'hidden':'';}
 function closeMenu(){var o=document.getElementById('menuOverlay'),b=document.getElementById('menuBtn');if(o){o.classList.remove('open');o.setAttribute('aria-hidden','true');}if(b)b.classList.remove('open');document.body.style.overflow='';}
 function menuGo(id){closeMenu();setTimeout(function(){go(id);},60);}
