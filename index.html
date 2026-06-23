@@ -474,12 +474,19 @@ html[lang="en"] .ph{display:inline}
 .acc-body p{margin-top:14px!important}
 .acc-head:focus-visible{outline:2px solid var(--green);outline-offset:4px;border-radius:6px}
 </style>
+<style id="logoCss">
+.logo{display:inline-flex;align-items:center;gap:9px}
+.logo-mark{height:38px;width:auto;display:block}
+.ft-logo{display:inline-flex;align-items:center;gap:10px}
+.ft-mark{height:34px;width:auto;display:block}
+@media(max-width:560px){.logo-mark{height:32px}}
+</style>
 </head>
 <body>
 
 <header id="hdr">
   <div class="hdr">
-    <div class="logo" onclick="window.scrollTo({top:0,behavior:'smooth'})">LEAVES <em>BALI</em></div>
+    <div class="logo" onclick="window.scrollTo({top:0,behavior:'smooth'})"><img src="logo.jpg" class="logo-mark" alt="LEAVES">LEAVES <em>BALI</em></div>
     <nav>
       <a class="hide-sm" onclick="go('diagnostic')">資産診断</a>
       <a class="hide-sm" onclick="go('guide')">バリ島ガイド</a>
@@ -857,7 +864,7 @@ html[lang="en"] .ph{display:inline}
 
 <footer>
   <div class="ft">
-    <div class="ft-logo">LEAVES <em>BALI</em></div>
+    <div class="ft-logo"><img src="logo.jpg" class="ft-mark" alt="LEAVES">LEAVES <em>BALI</em></div>
     <div class="ft-meta">インドネシア（バリ）資産分散 ワンストップサポート<br>本サイトの情報は一般的な情報提供を目的としており、投資勧誘を目的としたものではありません。</div>
   </div>
 </footer>
