@@ -440,6 +440,13 @@ const STAGES=[
 ];
 const STATUS={lead:'リード',active:'進行中',completed:'成約済',churned:'失注'};
 const EVKIND={meeting:{l:'商談',c:'#AE655A'},call:{l:'電話',c:'#5C8A5A'},visit:{l:'訪問',c:'#C79A55'},deadline:{l:'期限',c:'#C0554A'},other:{l:'その他',c:'#8B7D76'}};
+// 対応状況（ボールがどちらにあるか）
+const WAIT={
+  us:{label:'要対応',short:'あなたの番',bg:'#F8E4E0',fg:'#C0554A',dot:'#C0554A'},
+  them:{label:'返信待ち',short:'先方の番',bg:'#EDE7F0',fg:'#7A6A8A',dot:'#9C86B0'},
+  none:{label:'対応不要',short:'—',bg:'var(--cream)',fg:'var(--ink-l)',dot:'#B8ADA4'}
+};
+const FOLLOWUP_DAYS=5; // 先方待ちがこの日数を超えたら「催促どき」
 const AVA=['#CC897F','#9C6B58','#C79A55','#5C8A5A','#BE6B4C','#AE655A','#C2A294'];
 
 /* ================= STORE (Supabase or local demo) ================= */
@@ -551,12 +558,12 @@ function SEED(){
   const now=new Date(); const d=(off)=>{const x=new Date(now);x.setDate(x.getDate()+off);return x.toISOString();};
   const ymd=(off)=>{const x=new Date(now);x.setDate(x.getDate()+off);return x.toISOString().slice(0,10);};
   const c=[
-    {id:'c1',name:'田中 誠一',name_kana:'たなか せいいち',email:'tanaka@example.com',phone:'090-1234-5678',company:'田中商事株式会社',country:'日本',status:'active',source:'資産戦略診断',assignee:'佐藤',tags:['富裕層','法人'],notes:'PMA経由での不動産保有を検討中。CRSリスクを懸念。',created_at:d(-42)},
-    {id:'c2',name:'山本 由美',name_kana:'やまもと ゆみ',email:'yamamoto.y@example.com',phone:'080-2222-3333',company:'',country:'日本',status:'active',source:'紹介',assignee:'鈴木',tags:['個人','リピート'],notes:'まずは銀行口座のみ。将来的にヴィラ投資も。',created_at:d(-30)},
-    {id:'c3',name:'John Anderson',name_kana:'ジョン アンダーソン',email:'j.anderson@example.com',phone:'+61 400 111 222',company:'Anderson Holdings',country:'オーストラリア',status:'lead',source:'広告',assignee:'佐藤',tags:['海外','法人'],notes:'Seminyakのヴィラ購入希望。予算$450k。',created_at:d(-8)},
-    {id:'c4',name:'高橋 健太',name_kana:'たかはし けんた',email:'takahashi.k@example.com',phone:'090-4444-5555',company:'株式会社Green',country:'日本',status:'completed',source:'資産戦略診断',assignee:'鈴木',tags:['法人','成約'],notes:'PMA設立・銀行口座・不動産まで一括で完了。',created_at:d(-95)},
-    {id:'c5',name:'佐々木 麻衣',name_kana:'ささき まい',email:'sasaki.m@example.com',phone:'080-6666-7777',company:'',country:'日本',status:'lead',source:'セミナー',assignee:'佐藤',tags:['個人'],notes:'診断レポート待ち。移住も視野。',created_at:d(-3)},
-    {id:'c6',name:'渡辺 隆',name_kana:'わたなべ たかし',email:'watanabe@example.com',phone:'090-8888-9999',company:'渡辺不動産',country:'日本',status:'churned',source:'広告',assignee:'鈴木',tags:['法人'],notes:'今回は見送り。半年後に再アプローチ予定。',created_at:d(-70)}
+    {id:'c1',name:'田中 誠一',name_kana:'たなか せいいち',email:'tanaka@example.com',phone:'090-1234-5678',company:'田中商事株式会社',country:'日本',status:'active',source:'資産戦略診断',assignee:'佐藤',tags:['富裕層','法人'],notes:'PMA経由での不動産保有を検討中。CRSリスクを懸念。',waiting_on:'us',next_action:'公証人アポの候補日を返信する',next_action_date:ymd(1),last_contact:ymd(-3),created_at:d(-42)},
+    {id:'c2',name:'山本 由美',name_kana:'やまもと ゆみ',email:'yamamoto.y@example.com',phone:'080-2222-3333',company:'',country:'日本',status:'active',source:'紹介',assignee:'鈴木',tags:['個人','リピート'],notes:'まずは銀行口座のみ。将来的にヴィラ投資も。',waiting_on:'them',next_action:'追加書類の提出待ち',next_action_date:ymd(2),last_contact:ymd(-7),created_at:d(-30)},
+    {id:'c3',name:'John Anderson',name_kana:'ジョン アンダーソン',email:'j.anderson@example.com',phone:'+61 400 111 222',company:'Anderson Holdings',country:'オーストラリア',status:'lead',source:'広告',assignee:'佐藤',tags:['海外','法人'],notes:'Seminyakのヴィラ購入希望。予算$450k。',waiting_on:'us',next_action:'物件リストを作成して送付',next_action_date:ymd(0),last_contact:ymd(-1),created_at:d(-8)},
+    {id:'c4',name:'高橋 健太',name_kana:'たかはし けんた',email:'takahashi.k@example.com',phone:'090-4444-5555',company:'株式会社Green',country:'日本',status:'completed',source:'資産戦略診断',assignee:'鈴木',tags:['法人','成約'],notes:'PMA設立・銀行口座・不動産まで一括で完了。',waiting_on:'none',next_action:'',next_action_date:null,last_contact:ymd(-14),created_at:d(-95)},
+    {id:'c5',name:'佐々木 麻衣',name_kana:'ささき まい',email:'sasaki.m@example.com',phone:'080-6666-7777',company:'',country:'日本',status:'lead',source:'セミナー',assignee:'佐藤',tags:['個人'],notes:'診断レポート待ち。移住も視野。',waiting_on:'them',next_action:'レポート内容の確認返信待ち',next_action_date:ymd(-1),last_contact:ymd(-9),created_at:d(-3)},
+    {id:'c6',name:'渡辺 隆',name_kana:'わたなべ たかし',email:'watanabe@example.com',phone:'090-8888-9999',company:'渡辺不動産',country:'日本',status:'churned',source:'広告',assignee:'鈴木',tags:['法人'],notes:'今回は見送り。半年後に再アプローチ予定。',waiting_on:'none',next_action:'',next_action_date:null,last_contact:ymd(-40),created_at:d(-70)}
   ];
   const deals=[
     {id:'d1',customer_id:'c1',service_type:'pma',stage:'in_progress',amount:1200000,expected_close_date:ymd(20),notes:'公証人手配済み',created_at:d(-40)},
@@ -610,6 +617,38 @@ function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('on');
 function statusChip(s){return `<span class="chip st-${s}"><span class="cd" style="background:currentColor"></span>${STATUS[s]||s}</span>`;}
 function svcChip(t){const s=SERVICES[t];return `<span class="svc" style="background:${s.bg};color:${s.color}">${s.label}</span>`;}
 function ava(c,cls=''){return `<span class="ava ${cls}" style="background:${avaColor(c.id)}">${esc(initial(c.name))}</span>`;}
+
+/* ================= BALL-IN-COURT / 対応状況 ================= */
+function daysSince(d){ if(!d)return null; return Math.floor((Date.now()-new Date(d))/86400000); }
+function waitBadge(c){
+  const w=WAIT[c.waiting_on||'none']; if(!w)return '';
+  if((c.waiting_on||'none')==='none')return '';
+  let extra='';
+  if(c.waiting_on==='them'){const d=daysSince(c.last_contact);if(d!=null)extra=` ${d}日`;}
+  return `<span class="chip" style="background:${w.bg};color:${w.fg}"><span class="cd" style="background:${w.dot}"></span>${w.label}${extra}</span>`;
+}
+// 我々の対応が必要な顧客（期限順）
+function needActionList(){
+  return store.all('customers').filter(c=>c.waiting_on==='us'&&c.status!=='churned')
+    .sort((a,b)=>new Date(a.next_action_date||'2999')-new Date(b.next_action_date||'2999'));
+}
+// 先方の返信待ち（待ち日数が長い順）
+function waitingList(){
+  return store.all('customers').filter(c=>c.waiting_on==='them'&&c.status!=='churned')
+    .sort((a,b)=>(daysSince(b.last_contact)||0)-(daysSince(a.last_contact)||0));
+}
+
+/* ================= EMAIL (Gmail 作成) ================= */
+const MAIL_TPL={
+  followup:{l:'フォローアップ',su:c=>`【Leaves Bali】その後のご状況について`,body:c=>`${c.name} 様\n\nいつもお世話になっております。Leaves Baliです。\n先日ご案内した件につきまして、その後のご状況はいかがでしょうか。\nご不明点やご相談がございましたら、お気軽にご返信ください。\n\n引き続きどうぞよろしくお願いいたします。\nLeaves Bali`},
+  docs:{l:'書類のお願い',su:c=>`【Leaves Bali】お手続きに必要な書類のご案内`,body:c=>`${c.name} 様\n\nお世話になっております。Leaves Baliです。\nお手続きを進めるにあたり、下記の書類をご用意いただけますでしょうか。\n\n・パスポートのコピー\n・（その他必要書類）\n\nご準備が整いましたら、本メールにご返信ください。\nよろしくお願いいたします。\nLeaves Bali`},
+  schedule:{l:'日程調整',su:c=>`【Leaves Bali】オンライン面談の日程について`,body:c=>`${c.name} 様\n\nお世話になっております。Leaves Baliです。\n次回のオンライン面談につきまして、下記いずれかでご都合はいかがでしょうか。\n\n・◯月◯日（◯）10:00〜\n・◯月◯日（◯）15:00〜\n\nご希望の日時をお知らせください。よろしくお願いいたします。\nLeaves Bali`}
+};
+function gmailComposeUrl(c,tplKey){
+  const t=MAIL_TPL[tplKey]||MAIL_TPL.followup;
+  const p=new URLSearchParams({view:'cm',fs:'1',to:c.email||'',su:t.su(c),body:t.body(c)});
+  return 'https://mail.google.com/mail/?'+p.toString();
+}
 
 /* ================= FORECAST (weighted pipeline) ================= */
 const STAGE_PROB={inquiry:0.1,proposal:0.4,in_progress:0.65,review:0.85,completed:1,lost:0};
@@ -785,12 +824,44 @@ function renderDashboard(){
       <div class="meta">${meta}</div>
     </div>`;
 
+  const needAction=needActionList(), waiting=waitingList();
+  const actRow=(c,mode)=>{
+    const d=mode==='us'?c.next_action_date:c.last_contact;
+    const overdue=mode==='us'&&isOverdue(c.next_action_date);
+    const wdays=mode==='them'?daysSince(c.last_contact):null;
+    const chase=mode==='them'&&wdays!=null&&wdays>=FOLLOWUP_DAYS;
+    return `<div class="trow" data-open="${c.id}" style="padding:12px 6px;cursor:pointer">
+      ${ava(c)}
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:600;font-size:13px">${esc(c.name)}${chase?' <span class="chip" style="background:var(--warn-lt);color:var(--warn);padding:1px 7px">催促どき</span>':''}</div>
+        <div style="font-size:11.5px;color:var(--ink-l);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(mode==='us'?(c.next_action||'次のアクション未設定'):(c.next_action||'返信待ち'))}</div>
+      </div>
+      ${mode==='us'
+        ? `<span class="tk-due ${overdue?'over':''}" style="white-space:nowrap">${svg('clock')}${c.next_action_date?fmtDate(c.next_action_date):'期限なし'}</span>`
+        : `<span class="tk-due ${chase?'over':''}" style="white-space:nowrap">${wdays!=null?wdays+'日待ち':'—'}</span>`}
+    </div>`;
+  };
   $('#view').innerHTML=`
     <div class="kpis">
       ${kpi('users','#F3DCD3','#AE655A','アクティブ顧客',active,'件',`全 ${custs.length} 件のうち`)}
       ${kpi('briefcase','#F5ECD8','#C79A55','進行中案件',openDeals.length,'件',`パイプ総額 ${yen(pipeline)}`)}
       ${kpi('yen','#E6F0E4','#5C8A5A','成約売上',(revenue/10000).toLocaleString('ja-JP',{maximumFractionDigits:0}),'万円',`成約 ${wonCount} 件`)}
       ${kpi('trend','#F4EAE3','#9C6B58','成約率',winRate,'%',`勝 ${wonCount} / 負 ${lostCount}`)}
+    </div>
+
+    <div class="grid-2" style="margin-bottom:22px">
+      <div class="panel" style="border-left:3px solid var(--danger)">
+        <div class="panel-h"><span class="cd" style="width:9px;height:9px;border-radius:50%;background:var(--danger)"></span><h2>要対応（あなたの番）</h2><span class="spacer"></span><span class="chip st-active" style="background:var(--danger-lt);color:var(--danger)">${needAction.length}件</span></div>
+        <div class="panel-b" style="padding:8px 14px">
+          ${needAction.length?needAction.map(c=>actRow(c,'us')).join(''):'<div class="empty" style="padding:24px">対応待ちはありません 🎉</div>'}
+        </div>
+      </div>
+      <div class="panel" style="border-left:3px solid #9C86B0">
+        <div class="panel-h"><span class="cd" style="width:9px;height:9px;border-radius:50%;background:#9C86B0"></span><h2>先方の返信待ち</h2><span class="spacer"></span><span class="chip" style="background:#EDE7F0;color:#7A6A8A">${waiting.length}件</span></div>
+        <div class="panel-b" style="padding:8px 14px">
+          ${waiting.length?waiting.map(c=>actRow(c,'them')).join(''):'<div class="empty" style="padding:24px">返信待ちはありません</div>'}
+        </div>
+      </div>
     </div>
 
     <div class="grid-2">
@@ -846,35 +917,42 @@ function renderDashboard(){
       </div>
     </div>`;
   bindTaskTicks(); bindNavBtns();
+  $('#view').querySelectorAll('[data-open]').forEach(el=>el.onclick=()=>go('customers',{detailId:el.dataset.open}));
 }
 
 /* ================= CUSTOMERS ================= */
 let custFilter='all';
 function renderCustomers(){
   let list=store.all('customers').slice().sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
-  if(custFilter!=='all') list=list.filter(c=>c.status===custFilter);
+  if(custFilter==='wait_us')list=list.filter(c=>c.waiting_on==='us');
+  else if(custFilter==='wait_them')list=list.filter(c=>c.waiting_on==='them');
+  else if(custFilter!=='all') list=list.filter(c=>c.status===custFilter);
   if(searchQ) list=list.filter(c=>(`${c.name}${c.name_kana}${c.company}${c.email}${(c.tags||[]).join('')}`).toLowerCase().includes(searchQ.toLowerCase()));
-  const counts={all:store.all('customers').length};
+  const counts={all:store.all('customers').length,
+    wait_us:store.all('customers').filter(c=>c.waiting_on==='us').length,
+    wait_them:store.all('customers').filter(c=>c.waiting_on==='them').length};
   Object.keys(STATUS).forEach(k=>counts[k]=store.all('customers').filter(c=>c.status===k).length);
   const pill=(k,l)=>`<button class="btn ${custFilter===k?'pri':'gho'} sm" data-filter="${k}" style="border-radius:999px">${l} <b style="opacity:.7;margin-left:2px">${counts[k]||0}</b></button>`;
 
   $('#view').innerHTML=`
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px">
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;align-items:center">
       ${pill('all','すべて')}${pill('lead','リード')}${pill('active','進行中')}${pill('completed','成約済')}${pill('churned','失注')}
+      <span style="width:1px;height:22px;background:var(--rule-2);margin:0 2px"></span>
+      ${pill('wait_us','🔴 要対応')}${pill('wait_them','🕐 返信待ち')}
     </div>
     <div class="panel">
-      <div class="panel-b" style="padding:6px 10px">
+      <div class="panel-b" style="padding:6px 10px;overflow-x:auto">
         ${list.length?`<table><thead><tr>
-          <th>顧客</th><th>ステータス</th><th>担当</th><th>案件</th><th>流入元</th><th>登録日</th><th></th>
+          <th>顧客</th><th>ステータス</th><th>対応状況</th><th>次にやること</th><th>担当</th><th>案件</th><th></th>
         </tr></thead><tbody>
         ${list.map(c=>{const ds=dealsOf(c.id);const open=ds.filter(d=>!['completed','lost'].includes(d.stage)).length;return `
           <tr data-open="${c.id}">
             <td><div class="cust-cell">${ava(c)}<div><div class="cust-name">${esc(c.name)}</div><div class="cust-sub">${esc(c.company||c.name_kana||c.email||'')}</div></div></div></td>
             <td>${statusChip(c.status)}</td>
+            <td>${waitBadge(c)||'<span style="color:var(--ink-l);font-size:12px">—</span>'}</td>
+            <td style="font-size:12.5px;color:var(--ink-m);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.waiting_on==='us'?esc(c.next_action||''):''}</td>
             <td style="font-size:13px">${esc(c.assignee||'—')}</td>
             <td><span style="font-weight:600">${ds.length}</span><span style="color:var(--ink-l);font-size:12px"> 件${open?` (進行${open})`:''}</span></td>
-            <td><span class="tag">${esc(c.source||'—')}</span></td>
-            <td style="font-size:12.5px;color:var(--ink-m)">${fmtDate(c.created_at)}</td>
             <td style="text-align:right"><button class="btn gho sm" data-edit="${c.id}">${svg('edit')}</button></td>
           </tr>`;}).join('')}
         </tbody></table>`:`<div class="empty">${svg('users')}<div>該当する顧客がいません</div></div>`}
@@ -898,7 +976,22 @@ function renderDetail(id){
   const tab=(k,l,n)=>`<button class="${detTab===k?'on':''}" data-tab="${k}">${l}${n!=null?` <b style="color:var(--ink-l)">${n}</b>`:''}</button>`;
   let body='';
   if(detTab==='overview'){
-    body=`<div class="grid-2">
+    const w=WAIT[c.waiting_on||'none'];
+    const wdays=c.waiting_on==='them'?daysSince(c.last_contact):null;
+    const chase=wdays!=null&&wdays>=FOLLOWUP_DAYS;
+    const statusCard=(c.waiting_on&&c.waiting_on!=='none')?`
+      <div class="panel" style="border-left:3px solid ${w.dot};margin-bottom:0">
+        <div class="panel-b" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+          <div style="flex:1;min-width:180px">
+            <div style="font-size:11px;color:var(--ink-l);font-weight:600;letter-spacing:.04em">対応状況</div>
+            <div style="font-family:var(--serif);font-size:17px;font-weight:700;color:${w.fg};margin-top:2px">${w.label}${c.waiting_on==='them'&&wdays!=null?`（${wdays}日待ち）`:''}${chase?' <span class="chip" style="background:var(--warn-lt);color:var(--warn)">催促どき</span>':''}</div>
+            ${c.next_action?`<div style="font-size:13px;color:var(--ink-m);margin-top:6px">次にやること：<b>${esc(c.next_action)}</b>${c.next_action_date?` <span class="${isOverdue(c.next_action_date)?'':''}" style="color:${isOverdue(c.next_action_date)?'var(--danger)':'var(--ink-l)'}">（${fmtDate(c.next_action_date)}）</span>`:''}</div>`:''}
+          </div>
+          ${c.waiting_on==='them'?`<button class="btn pri sm" data-flip="us" data-cid="${id}">${svg('check')}こちらが対応した</button>`:`<button class="btn gho sm" data-flip="them" data-cid="${id}">先方へボールを渡す</button>`}
+        </div>
+      </div>`:'';
+    body=`<div style="margin-bottom:22px">${statusCard}</div>
+    <div class="grid-2">
       <div>
         <div class="panel"><div class="panel-h"><h2>案件</h2><span class="spacer"></span><button class="btn pri sm" data-adddeal="${id}">${svg('plus')}案件追加</button></div>
           <div class="panel-b" style="padding:10px 12px">
@@ -969,6 +1062,15 @@ function renderDetail(id){
           ${c.phone?`<span>${svg('phone')}${esc(c.phone)}</span>`:''}
         </div>
       </div>
+      <div class="menu-wrap">
+        <button class="btn gho" id="mailBtn">${svg('mail')}<span class="hide-sm">メール</span></button>
+        <div class="menu" id="mailMenu">
+          <div class="mlab">Gmailで作成</div>
+          <button data-mail="followup">${svg('mail')}フォローアップ</button>
+          <button data-mail="docs">${svg('note')}書類のお願い</button>
+          <button data-mail="schedule">${svg('cal')}日程調整</button>
+        </div>
+      </div>
       <button class="btn gho" data-print="${id}">${svg('print')}<span class="hide-sm">印刷/PDF</span></button>
       <button class="btn gho" data-edit="${id}">${svg('edit')}編集</button>
       <button class="btn dng" data-del="${id}">${svg('trash')}</button>
@@ -981,6 +1083,21 @@ function renderDetail(id){
   $('#view').querySelector('[data-edit]').onclick=()=>openCustomerModal(id);
   $('#view').querySelector('[data-del]').onclick=()=>confirmDelCustomer(id);
   $('#view').querySelector('[data-print]').onclick=()=>window.print();
+  // メールメニュー
+  const mailBtn=$('#mailBtn'),mailMenu=$('#mailMenu');
+  mailBtn.onclick=(e)=>{e.stopPropagation();mailMenu.classList.toggle('on');};
+  mailMenu.querySelectorAll('[data-mail]').forEach(b=>b.onclick=()=>{
+    mailMenu.classList.remove('on');
+    if(!c.email){toast('この顧客のメールアドレスが未登録です');return;}
+    window.open(gmailComposeUrl(c,b.dataset.mail),'_blank','noopener');
+  });
+  // ボール受け渡し
+  $('#view').querySelectorAll('[data-flip]').forEach(b=>b.onclick=async()=>{
+    const to=b.dataset.flip;
+    await store.update('customers',id,{waiting_on:to,last_contact:new Date().toISOString().slice(0,10)});
+    toast(to==='us'?'あなたの対応待ちにしました':'先方の返信待ちにしました');
+    renderDetail(id);
+  });
   bindDetailActions(id);
   bindTaskTicks();
 }
@@ -1172,6 +1289,14 @@ function openCustomerModal(id){
         ${field('流入元','source',c.source||'資産戦略診断','select',['資産戦略診断','紹介','広告','セミナー','SNS','その他'].map(x=>({v:x,l:x})))}
       </div>
       <div class="fg row">${field('担当者','assignee',c.assignee)}${field('タグ（カンマ区切り）','tags',(c.tags||[]).join(', '))}</div>
+      <div style="background:var(--cream);border-radius:11px;padding:14px 15px;margin-bottom:15px">
+        <div style="font-size:11px;font-weight:700;letter-spacing:.05em;color:var(--ink-l);margin-bottom:11px">対応状況（ボールはどちらに？）</div>
+        <div class="fg row" style="margin-bottom:11px">
+          ${field('状況','waiting_on',c.waiting_on||'none','select',[['us','要対応（あなたの番）'],['them','返信待ち（先方の番）'],['none','対応不要']].map(([v,l])=>({v,l})))}
+          ${field('次アクションの期限','next_action_date',c.next_action_date,'date')}
+        </div>
+        ${field('次にやること','next_action',c.next_action)}
+      </div>
       ${field('メモ','notes',c.notes,'textarea')}
     </div>
     <div class="modal-f"><button type="button" class="btn gho" data-close>キャンセル</button><button type="submit" class="btn pri">${svg('check')}保存</button></div>
@@ -1181,6 +1306,7 @@ function openCustomerModal(id){
     const o=readForm(e.target);
     if(!o.name.trim()){toast('氏名を入力してください');return;}
     o.tags=o.tags?o.tags.split(',').map(s=>s.trim()).filter(Boolean):[];
+    if(!o.next_action_date)o.next_action_date=null;
     if(id){await store.update('customers',id,o);toast('顧客を更新しました');}
     else{const r=await store.insert('customers',o);toast('顧客を登録しました');}
     closeModal();
@@ -1233,13 +1359,20 @@ function openActivityModal(custId){
         ${field('担当者','created_by','')}
       </div>
       ${field('内容 *','body','','textarea')}
+      ${field('この記録のあと、ボールは？','after','keep','select',[['keep','変更しない'],['them','先方の返信待ちにする'],['us','自分の対応待ちにする'],['none','対応不要にする']].map(([v,l])=>({v,l})))}
     </div>
     <div class="modal-f"><button type="button" class="btn gho" data-close>キャンセル</button><button type="submit" class="btn pri">${svg('check')}記録する</button></div>
     </form>`);
   bindClose();
   $('#mForm').onsubmit=async(e)=>{e.preventDefault();const o=readForm(e.target);
     if(!o.body.trim()){toast('内容を入力してください');return;}
-    o.customer_id=custId;await store.insert('activities',o);closeModal();toast('記録しました');renderDetail(custId);
+    const after=o.after; delete o.after;
+    o.customer_id=custId;await store.insert('activities',o);
+    // 記録したら最終接触日を今日に更新。必要ならボールの持ち手も更新
+    const patch={last_contact:new Date().toISOString().slice(0,10)};
+    if(after&&after!=='keep')patch.waiting_on=after;
+    await store.update('customers',custId,patch);
+    closeModal();toast('記録しました');renderDetail(custId);
   };
 }
 

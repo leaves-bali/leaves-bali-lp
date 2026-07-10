@@ -25,9 +25,20 @@ create table if not exists public.customers (
   assignee     text,                          -- 担当者
   tags         text[] default '{}',
   notes        text,
+  waiting_on   text default 'none',           -- us（要対応）/ them（先方の返信待ち）/ none
+  next_action  text,                          -- 次にやること
+  next_action_date date,                      -- 次アクションの期限
+  last_contact date,                          -- 最終接触日
   created_at   timestamptz not null default now(),
   updated_at   timestamptz not null default now()
 );
+
+-- 既に customers テーブルを作成済みの場合は、下記を実行して列を追加してください：
+-- alter table public.customers
+--   add column if not exists waiting_on text default 'none',
+--   add column if not exists next_action text,
+--   add column if not exists next_action_date date,
+--   add column if not exists last_contact date;
 
 -- ---------------------------------------------------------------------
 -- 案件（サービス進捗パイプライン）
