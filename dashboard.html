@@ -28,6 +28,7 @@ body{font-family:var(--sans);background:var(--off);color:var(--ink);font-weight:
 a{color:inherit;text-decoration:none}
 button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
 input,select,textarea{font-family:inherit;font-size:14px}
+svg{width:1em;height:1em;flex:none}
 ::-webkit-scrollbar{width:9px;height:9px}
 ::-webkit-scrollbar-thumb{background:var(--green-mid);border-radius:9px}
 
@@ -238,7 +239,52 @@ body.authed #login{display:none}
 .side-foot button.logout{margin-top:8px;border-color:rgba(224,140,120,.4);color:#E0A090}
 .side-foot button.logout:hover{background:rgba(192,85,74,.2);color:#fff}
 
-@media(max-width:1080px){.kpis{grid-template-columns:repeat(2,1fr)}.grid-2{grid-template-columns:1fr}}
+/* ---------- ICON BUTTON / MENUS / THEME ---------- */
+.icon-btn{width:38px;height:38px;border-radius:9px;border:1px solid var(--rule);background:var(--white);display:grid;place-items:center;color:var(--ink-m);transition:.15s;flex:none}
+.icon-btn:hover{border-color:var(--rose);color:var(--rose-dk)}
+.icon-btn svg{width:18px;height:18px;stroke-width:1.8}
+.menu-wrap{position:relative}
+.menu{position:absolute;right:0;top:calc(100% + 8px);background:var(--white);border:1px solid var(--rule);border-radius:12px;box-shadow:var(--sh-lg);padding:6px;min-width:230px;z-index:60;display:none}
+.menu.on{display:block}
+.menu button{display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;border-radius:8px;font-size:13px;font-weight:500;color:var(--ink-m);text-align:left;transition:.12s}
+.menu button:hover{background:var(--green-pale);color:var(--ink)}
+.menu button svg{width:16px;height:16px;flex:none;color:var(--ink-l)}
+.menu .sep{height:1px;background:var(--rule-2);margin:5px 8px}
+.menu .mlab{font-size:10.5px;font-weight:700;letter-spacing:.06em;color:var(--ink-l);text-transform:uppercase;padding:8px 12px 4px}
+.gcal-btn{display:inline-flex;align-items:center;gap:6px;padding:6px 11px;border-radius:8px;font-size:11.5px;font-weight:600;background:var(--blue-lt);color:var(--blue-dk);transition:.15s;border:none;cursor:pointer}
+.gcal-btn:hover{background:var(--blue-dk);color:#fff}
+.gcal-btn svg{width:13px;height:13px}
+.fore-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.fore{background:var(--cream);border-radius:12px;padding:14px 16px}
+.fore .fl{font-size:11.5px;color:var(--ink-l);font-weight:500}
+.fore .fv{font-family:var(--disp);font-size:24px;font-weight:600;color:var(--green-dk);margin-top:3px}
+
+/* ---------- DARK THEME ---------- */
+:root[data-theme="dark"]{
+  --white:#242120; --off:#1A1817; --cream:#2B2724; --stone:#332E2A;
+  --ink:#F1EAE4; --ink-m:#CBBFB6; --ink-l:#968A81;
+  --green-pale:#2C2320; --green-mid:#3A2E28;
+  --rose-pale:#2E2320; --rose-lt:#4A342E; --gold-lt:#3A3020; --blue-lt:#2C2620; --ok-lt:#243024; --warn-lt:#332B1C; --danger-lt:#331F1C;
+  --rule:rgba(204,137,127,0.22); --rule-2:rgba(255,255,255,0.09);
+  --sh:0 1px 2px rgba(0,0,0,.3),0 4px 20px rgba(0,0,0,.24); --sh-lg:0 8px 40px rgba(0,0,0,.5);
+  color-scheme:dark;
+}
+:root[data-theme="dark"] body{background:var(--off)}
+:root[data-theme="dark"] .topbar{background:rgba(26,24,23,.86)}
+:root[data-theme="dark"] #login{background:radial-gradient(120% 120% at 80% -10%,#2C2320 0%,#1A1817 46%,#221D1A 100%)}
+:root[data-theme="dark"] .kpi .ic,:root[data-theme="dark"] .svc,:root[data-theme="dark"] .chip,:root[data-theme="dark"] .gcal-btn,:root[data-theme="dark"] .act-type{filter:saturate(.85) brightness(.96)}
+:root[data-theme="dark"] .spark .b{background:linear-gradient(180deg,var(--rose) 0%,#4A342E 100%)}
+
+/* ---------- PRINT ---------- */
+@media print{
+  .side,.topbar,.tabs,#backBtn,.btn,.icon-btn,.ov,.toast,[data-edit],[data-del]{display:none!important}
+  .app{grid-template-columns:1fr}
+  .content{padding:0;max-width:none}
+  .panel{break-inside:avoid;box-shadow:none}
+  body{background:#fff}
+}
+
+@media(max-width:1080px){.kpis{grid-template-columns:repeat(2,1fr)}.grid-2{grid-template-columns:1fr}.fore-grid{grid-template-columns:1fr}}
 @media(max-width:860px){
   .app{grid-template-columns:1fr}
   .side{position:fixed;left:0;top:0;z-index:150;transform:translateX(-100%);transition:.25s;width:236px}
@@ -297,6 +343,20 @@ body.authed #login{display:none}
       </div>
       <div class="spacer"></div>
       <div class="search">${'ICON_search'}<input id="globalSearch" placeholder="顧客を検索…" autocomplete="off"></div>
+      <button class="icon-btn" id="themeBtn" title="ダークモード切替">${'ICON_moon'}</button>
+      <div class="menu-wrap">
+        <button class="icon-btn" id="toolsBtn" title="ツール">${'ICON_dots'}</button>
+        <div class="menu" id="toolsMenu">
+          <div class="mlab">Googleカレンダー</div>
+          <button data-tool="ics">${'ICON_cal'}全予定を書き出し (.ics)</button>
+          <div class="sep"></div>
+          <div class="mlab">データ管理</div>
+          <button data-tool="backup">${'ICON_download'}全データをバックアップ (JSON)</button>
+          <button data-tool="restore">${'ICON_upload'}バックアップから復元</button>
+          <button data-tool="csvout">${'ICON_download'}顧客をCSVで書き出し</button>
+          <button data-tool="csvin">${'ICON_upload'}顧客をCSVで取り込み</button>
+        </div>
+      </div>
       <button class="btn pri" id="topAdd">${'ICON_plus'}<span class="hide-sm">新規顧客</span></button>
     </div>
     <div class="content" id="view"></div>
@@ -342,16 +402,25 @@ const IC = {
   chevL:'<path d="M15 6l-6 6 6 6"/>', chevR:'<path d="M9 6l6 6-6 6"/>',
   tag:'<path d="M3 12V4h8l9 9-8 8-9-9z"/><circle cx="7.5" cy="7.5" r="1.4"/>',
   note:'<path d="M5 3h10l4 4v14H5z"/><path d="M15 3v4h4M9 12h6M9 16h6"/>',
-  logout:'<path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/><path d="M10 12H2m0 0 3-3m-3 3 3 3"/>'
+  logout:'<path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/><path d="M10 12H2m0 0 3-3m-3 3 3 3"/>',
+  moon:'<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>',
+  sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4 12H2M22 12h-2M5 5l1.5 1.5M17.5 17.5 19 19M19 5l-1.5 1.5M6.5 17.5 5 19"/>',
+  dots:'<circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/>',
+  download:'<path d="M12 3v12m0 0 4-4m-4 4-4-4M4 20h16"/>',
+  upload:'<path d="M12 21V9m0 0 4 4m-4-4-4 4M4 4h16"/>',
+  print:'<path d="M6 9V3h12v6M6 18H4v-6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v6h-2M8 14h8v7H8z"/>',
+  gcal:'<rect x="3" y="4.5" width="18" height="16" rx="2.2"/><path d="M3 9h18M8 3v3.5M16 3v3.5"/><path d="M12 13v3.5M10.3 14.7 12 13l1.7 1.7"/>'
 };
 const svg=(k)=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">${IC[k]||''}</svg>`;
-document.querySelectorAll('.nav a,#topAdd,#cfgBtn,#mobBtn,#logoutBtn,.search').forEach(el=>{
+document.querySelectorAll('.nav a,#topAdd,#cfgBtn,#mobBtn,#logoutBtn,#themeBtn,#toolsBtn,#toolsMenu,.search').forEach(el=>{
   el.innerHTML=el.innerHTML
-    .replace('${\'ICON_home\'}',svg('home')).replace('${\'ICON_users\'}',svg('users'))
-    .replace('${\'ICON_board\'}',svg('board')).replace('${\'ICON_cal\'}',svg('cal'))
-    .replace('${\'ICON_check\'}',svg('check')).replace('${\'ICON_gear\'}',svg('gear'))
-    .replace('${\'ICON_menu\'}',svg('menu')).replace('${\'ICON_search\'}',svg('search'))
-    .replace('${\'ICON_plus\'}',svg('plus')).replace('${\'ICON_logout\'}',svg('logout'));
+    .replace(/\$\{'ICON_home'\}/g,svg('home')).replace(/\$\{'ICON_users'\}/g,svg('users'))
+    .replace(/\$\{'ICON_board'\}/g,svg('board')).replace(/\$\{'ICON_cal'\}/g,svg('cal'))
+    .replace(/\$\{'ICON_check'\}/g,svg('check')).replace(/\$\{'ICON_gear'\}/g,svg('gear'))
+    .replace(/\$\{'ICON_menu'\}/g,svg('menu')).replace(/\$\{'ICON_search'\}/g,svg('search'))
+    .replace(/\$\{'ICON_plus'\}/g,svg('plus')).replace(/\$\{'ICON_logout'\}/g,svg('logout'))
+    .replace(/\$\{'ICON_moon'\}/g,svg('moon')).replace(/\$\{'ICON_dots'\}/g,svg('dots'))
+    .replace(/\$\{'ICON_download'\}/g,svg('download')).replace(/\$\{'ICON_upload'\}/g,svg('upload'));
 });
 
 /* ================= CONFIG / CONSTANTS ================= */
@@ -541,6 +610,126 @@ function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('on');
 function statusChip(s){return `<span class="chip st-${s}"><span class="cd" style="background:currentColor"></span>${STATUS[s]||s}</span>`;}
 function svcChip(t){const s=SERVICES[t];return `<span class="svc" style="background:${s.bg};color:${s.color}">${s.label}</span>`;}
 function ava(c,cls=''){return `<span class="ava ${cls}" style="background:${avaColor(c.id)}">${esc(initial(c.name))}</span>`;}
+
+/* ================= FORECAST (weighted pipeline) ================= */
+const STAGE_PROB={inquiry:0.1,proposal:0.4,in_progress:0.65,review:0.85,completed:1,lost:0};
+function forecast(){
+  const deals=store.all('deals');
+  const open=deals.filter(d=>!['completed','lost'].includes(d.stage));
+  const weighted=open.reduce((a,d)=>a+Number(d.amount||0)*(STAGE_PROB[d.stage]||0),0);
+  const raw=open.reduce((a,d)=>a+Number(d.amount||0),0);
+  const won=deals.filter(d=>d.stage==='completed').reduce((a,d)=>a+Number(d.amount||0),0);
+  return {weighted,raw,won,openCount:open.length};
+}
+
+/* ================= GOOGLE CALENDAR (no-setup interop) ================= */
+function evEnd(e){ return e.end_at?new Date(e.end_at):new Date(new Date(e.start_at).getTime()+3600000); }
+function icsStamp(d){ return new Date(d).toISOString().replace(/[-:]/g,'').replace(/\.\d{3}/,''); }
+function gcalUrl(e){
+  const s=icsStamp(e.start_at), en=icsStamp(evEnd(e));
+  const c=custById(e.customer_id);
+  const det=[c?`顧客: ${c.name}`:'',e.notes||''].filter(Boolean).join('\n');
+  const p=new URLSearchParams({action:'TEMPLATE',text:e.title||'予定',dates:`${s}/${en}`});
+  if(det)p.set('details',det); if(e.location)p.set('location',e.location);
+  return 'https://calendar.google.com/calendar/render?'+p.toString();
+}
+function buildICS(events){
+  const L=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Leaves Bali CRM//JP','CALSCALE:GREGORIAN'];
+  events.forEach(e=>{
+    if(!e.start_at)return;
+    const c=custById(e.customer_id);
+    const desc=[c?`顧客: ${c.name}`:'',e.notes||''].filter(Boolean).join('\\n');
+    L.push('BEGIN:VEVENT',`UID:${e.id}@leaves-bali`,`DTSTAMP:${icsStamp(new Date())}`,
+      `DTSTART:${icsStamp(e.start_at)}`,`DTEND:${icsStamp(evEnd(e))}`,
+      `SUMMARY:${(e.title||'予定').replace(/\n/g,' ')}`);
+    if(desc)L.push(`DESCRIPTION:${desc}`); if(e.location)L.push(`LOCATION:${e.location.replace(/\n/g,' ')}`);
+    L.push('END:VEVENT');
+  });
+  L.push('END:VCALENDAR');
+  return L.join('\r\n');
+}
+
+/* ================= FILE I/O (download / backup / CSV) ================= */
+function download(filename,text,mime='text/plain'){
+  const blob=new Blob([text],{type:mime+';charset=utf-8'});
+  const url=URL.createObjectURL(blob); const a=document.createElement('a');
+  a.href=url; a.download=filename; document.body.appendChild(a); a.click();
+  setTimeout(()=>{URL.revokeObjectURL(url);a.remove();},100);
+}
+function pickFile(accept,cb){
+  const i=document.createElement('input'); i.type='file'; i.accept=accept;
+  i.onchange=()=>{const f=i.files[0]; if(!f)return; const r=new FileReader(); r.onload=()=>cb(r.result,f.name); r.readAsText(f);};
+  i.click();
+}
+function exportBackup(){
+  const data={_app:'leaves-bali-crm',_version:1,_exported:new Date().toISOString(),...store.cache};
+  download(`leaves-bali-backup-${new Date().toISOString().slice(0,10)}.json`,JSON.stringify(data,null,2),'application/json');
+  toast('バックアップを書き出しました');
+}
+async function importBackup(){
+  pickFile('.json,application/json',async(txt)=>{
+    try{
+      const d=JSON.parse(txt);
+      if(!d.customers)throw new Error('CRMのバックアップファイルではないようです');
+      if(!confirm('現在のデータを、選んだバックアップの内容で置き換えます。よろしいですか？'))return;
+      if(store.live){
+        for(const t of TABLES){ if(!Array.isArray(d[t]))continue;
+          await store.sb.from(t).delete().neq('id','00000000-0000-0000-0000-000000000000');
+          if(d[t].length)await store.sb.from(t).insert(d[t]);
+        }
+        await store.loadAll();
+      }else{
+        TABLES.forEach(t=>store.cache[t]=Array.isArray(d[t])?d[t]:[]);
+        store.persistDemo();
+      }
+      toast('バックアップから復元しました'); refreshCurrent();
+    }catch(e){ toast('復元エラー: '+e.message); }
+  });
+}
+function csvCell(v){ v=String(v??''); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; }
+function exportCustomersCSV(){
+  const cols=['name','name_kana','email','phone','company','country','status','source','assignee','tags','notes'];
+  const head=['氏名','フリガナ','メール','電話','会社','国','ステータス','流入元','担当','タグ','メモ'];
+  const rows=[head.join(',')];
+  store.all('customers').forEach(c=>rows.push(cols.map(k=>csvCell(k==='tags'?(c[k]||[]).join(' / '):k==='status'?(STATUS[c[k]]||c[k]):c[k])).join(',')));
+  download(`leaves-bali-customers-${new Date().toISOString().slice(0,10)}.csv`,'﻿'+rows.join('\r\n'),'text/csv');
+  toast('顧客CSVを書き出しました');
+}
+function parseCSV(text){
+  const rows=[]; let row=[],cur='',q=false;
+  for(let i=0;i<text.length;i++){const ch=text[i];
+    if(q){ if(ch==='"'){ if(text[i+1]==='"'){cur+='"';i++;} else q=false; } else cur+=ch; }
+    else{ if(ch==='"')q=true; else if(ch===',')  {row.push(cur);cur='';}
+      else if(ch==='\n'){row.push(cur);rows.push(row);row=[];cur='';}
+      else if(ch!=='\r')cur+=ch; }
+  }
+  if(cur!==''||row.length){row.push(cur);rows.push(row);}
+  return rows.filter(r=>r.some(c=>c.trim()!==''));
+}
+function importCustomersCSV(){
+  pickFile('.csv,text/csv',async(txt)=>{
+    try{
+      const rows=parseCSV(txt.replace(/^﻿/,'')); if(rows.length<2)throw new Error('データ行がありません');
+      const statusRev=Object.fromEntries(Object.entries(STATUS).map(([k,v])=>[v,k]));
+      let n=0;
+      for(const r of rows.slice(1)){
+        if(!r[0]||!r[0].trim())continue;
+        await store.insert('customers',{
+          name:r[0].trim(),name_kana:r[1]||'',email:r[2]||'',phone:r[3]||'',company:r[4]||'',country:r[5]||'日本',
+          status:statusRev[r[6]]||(['lead','active','completed','churned'].includes(r[6])?r[6]:'lead'),
+          source:r[7]||'',assignee:r[8]||'',
+          tags:(r[9]||'').split(/[\/,、]/).map(s=>s.trim()).filter(Boolean),notes:r[10]||''
+        }); n++;
+      }
+      toast(`${n}件の顧客を取り込みました`); refreshCurrent();
+    }catch(e){ toast('取り込みエラー: '+e.message); }
+  });
+}
+
+/* ================= THEME ================= */
+function applyTheme(t){ document.documentElement.setAttribute('data-theme',t); LS.setItem('lb_theme',t);
+  const b=$('#themeBtn'); if(b)b.innerHTML=svg(t==='dark'?'sun':'moon'); }
+function toggleTheme(){ applyTheme((LS.getItem('lb_theme')||'light')==='dark'?'light':'dark'); }
 
 /* ================= ROUTER ================= */
 const ROUTES={
@@ -761,7 +950,8 @@ function renderDetail(id){
             <div style="flex:1"><div style="font-weight:600">${esc(e.title)}</div>
               <div style="font-size:12px;color:var(--ink-l)">${fmtDT(e.start_at)}${e.location?' ・ '+esc(e.location):''}</div></div>
             <span class="act-type">${k.l}</span>
-            <button class="btn gho sm" data-delev="${e.id}" style="margin-left:8px">${svg('trash')}</button>
+            <a class="gcal-btn" href="${gcalUrl(e)}" target="_blank" rel="noopener" title="Googleカレンダーに追加">${svg('gcal')}Google</a>
+            <button class="btn gho sm" data-delev="${e.id}" style="margin-left:4px">${svg('trash')}</button>
           </div>`;}).join(''):'<div class="empty" style="padding:22px">予定がありません</div>'}
       </div></div>`;
   }
@@ -779,6 +969,7 @@ function renderDetail(id){
           ${c.phone?`<span>${svg('phone')}${esc(c.phone)}</span>`:''}
         </div>
       </div>
+      <button class="btn gho" data-print="${id}">${svg('print')}<span class="hide-sm">印刷/PDF</span></button>
       <button class="btn gho" data-edit="${id}">${svg('edit')}編集</button>
       <button class="btn dng" data-del="${id}">${svg('trash')}</button>
     </div>
@@ -789,6 +980,7 @@ function renderDetail(id){
   $('#view').querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{detTab=b.dataset.tab;renderDetail(id);});
   $('#view').querySelector('[data-edit]').onclick=()=>openCustomerModal(id);
   $('#view').querySelector('[data-del]').onclick=()=>confirmDelCustomer(id);
+  $('#view').querySelector('[data-print]').onclick=()=>window.print();
   bindDetailActions(id);
   bindTaskTicks();
 }
@@ -827,14 +1019,19 @@ function renderPipeline(){
     </div>`;
   }).join('');
 
+  const fc=forecast();
   $('#view').innerHTML=`
+    <div class="fore-grid" style="margin-bottom:18px">
+      <div class="fore"><div class="fl">進行中パイプライン（総額）</div><div class="fv">${yen(fc.raw)}</div></div>
+      <div class="fore"><div class="fl">加重売上予測（受注確度反映）</div><div class="fv" style="color:var(--rose-dk)">${yen(Math.round(fc.weighted))}</div></div>
+      <div class="fore"><div class="fl">今期の成約売上</div><div class="fv" style="color:var(--ok)">${yen(fc.won)}</div></div>
+    </div>
     <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;flex-wrap:wrap">
-      <div style="font-size:13px;color:var(--ink-m)">進行中パイプライン総額 <b style="font-family:var(--disp);font-size:19px;color:var(--green-dk);margin-left:6px">${yen(total)}</b></div>
       <span class="spacer" style="flex:1"></span>
       <button class="btn pri" id="addDeal">${svg('plus')}案件を追加</button>
     </div>
     <div class="board">${cols}</div>
-    <p class="hint" style="margin-top:12px">💡 カードをドラッグ＆ドロップしてステージを移動できます。</p>`;
+    <p class="hint" style="margin-top:12px">💡 カードをドラッグ＆ドロップしてステージを移動できます。加重予測は各ステージの受注確度（問い合わせ10%〜確認待ち85%）で計算しています。</p>`;
   $('#addDeal').onclick=()=>openDealModal();
   $('#view').querySelectorAll('.deal').forEach(el=>{
     el.onclick=(e)=>{if(el._dragging)return;openDealModal(el.dataset.deal);};
@@ -1079,6 +1276,7 @@ function openEventModal(id,presetCust,presetStart){
       <div class="fg row">${field('日時','start_at',startVal,'datetime-local')}${field('種別','kind',e0.kind||'meeting','select',Object.entries(EVKIND).map(([v,o])=>({v,l:o.l})))}</div>
       <div class="fg row">${field('場所','location',e0.location)}${field('関連顧客','customer_id',e0.customer_id||'','select',[{v:'',l:'（なし）'},...custOpts()])}</div>
       ${field('メモ','notes',e0.notes,'textarea')}
+      ${id&&e0.start_at?`<a class="gcal-btn" href="${gcalUrl(e0)}" target="_blank" rel="noopener">${svg('gcal')}この予定をGoogleカレンダーに追加</a>`:''}
     </div>
     <div class="modal-f">${id?`<button type="button" class="btn dng" id="delEv" style="margin-right:auto">${svg('trash')}削除</button>`:''}<button type="button" class="btn gho" data-close>キャンセル</button><button type="submit" class="btn pri">${svg('check')}保存</button></div>
     </form>`);
@@ -1137,7 +1335,32 @@ function refreshCurrent(){if(detailId)renderDetail(detailId);else ROUTES[cur].re
 $('#topAdd').onclick=()=>openCustomerModal();
 $('#mobBtn').onclick=()=>$('#side').classList.toggle('open');
 $('#logoutBtn').onclick=()=>auth.signOut();
+$('#themeBtn').onclick=toggleTheme;
 $('#globalSearch').oninput=(e)=>{searchQ=e.target.value;if(cur!=='customers'){go('customers');}else{renderCustomers();}$('#globalSearch').focus();};
+
+// ツールメニュー
+const toolsMenu=$('#toolsMenu');
+$('#toolsBtn').onclick=(e)=>{e.stopPropagation();toolsMenu.classList.toggle('on');};
+document.addEventListener('click',()=>toolsMenu.classList.remove('on'));
+toolsMenu.onclick=(e)=>e.stopPropagation();
+toolsMenu.querySelectorAll('[data-tool]').forEach(b=>b.onclick=()=>{
+  toolsMenu.classList.remove('on');
+  const t=b.dataset.tool;
+  if(t==='ics'){const evs=store.all('events');if(!evs.length){toast('予定がありません');return;}download('leaves-bali-events.ics',buildICS(evs),'text/calendar');toast('予定を .ics で書き出しました');}
+  else if(t==='backup')exportBackup();
+  else if(t==='restore')importBackup();
+  else if(t==='csvout')exportCustomersCSV();
+  else if(t==='csvin')importCustomersCSV();
+});
+
+// キーボードショートカット
+document.addEventListener('keydown',e=>{
+  if(!document.body.classList.contains('authed'))return;
+  const typing=/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName);
+  if(e.key==='/'&&!typing){e.preventDefault();$('#globalSearch').focus();}
+  else if(e.key==='n'&&!typing&&!ov.classList.contains('on')){e.preventDefault();openCustomerModal();}
+  else if((e.key==='d')&&!typing&&e.altKey){e.preventDefault();toggleTheme();}
+});
 function setConn(){
   const dot=$('#connDot'),txt=$('#connTxt');
   if(store.live){dot.className='dot live';txt.textContent='Supabase 接続中';}
@@ -1177,6 +1400,7 @@ async function enterApp(){
 }
 
 /* ================= BOOT ================= */
+applyTheme(LS.getItem('lb_theme')||'light');
 (async()=>{
   await store.initClient();
   const authed=await auth.check();
