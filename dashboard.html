@@ -310,6 +310,13 @@ body.authed #login{display:none}
 // Supabase クライアントは連携設定がある場合のみ動的に読み込む（デモモードは完全オフライン動作）
 const SUPABASE_CDN='https://esm.sh/@supabase/supabase-js@2';
 
+// ストレージが使えない環境（サンドボックス等）ではメモリ内に退避してクラッシュを防ぐ
+function safeStore(real){
+  try{ const k='__lb_test__'; real.setItem(k,'1'); real.removeItem(k); return real; }
+  catch(e){ const m={}; return {getItem:k=>k in m?m[k]:null,setItem:(k,v)=>{m[k]=String(v);},removeItem:k=>{delete m[k];},clear:()=>{for(const k in m)delete m[k];}}; }
+}
+const LS=safeStore(window.localStorage), SS=safeStore(window.sessionStorage);
+
 /* ================= ICONS ================= */
 const IC = {
   home:'<path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/>',
@@ -370,7 +377,7 @@ const AVA=['#CC897F','#9C6B58','#C79A55','#5C8A5A','#BE6B4C','#AE655A','#C2A294'
 const TABLES=['customers','deals','activities','tasks','events'];
 const store={
   sb:null, live:false,
-  cfg:{url:localStorage.getItem('lb_url')||'',key:localStorage.getItem('lb_key')||''},
+  cfg:{url:LS.getItem('lb_url')||'',key:LS.getItem('lb_key')||''},
   cache:{},
   async initClient(){
     if(this.cfg.url && this.cfg.key){
@@ -397,12 +404,12 @@ const store={
     }
   },
   loadDemo(){
-    const saved=localStorage.getItem('lb_demo');
+    const saved=LS.getItem('lb_demo');
     if(saved){ this.cache=JSON.parse(saved); return; }
     this.cache=SEED();
     this.persistDemo();
   },
-  persistDemo(){ if(!this.live) localStorage.setItem('lb_demo',JSON.stringify(this.cache)); },
+  persistDemo(){ if(!this.live) LS.setItem('lb_demo',JSON.stringify(this.cache)); },
   all(t){ return this.cache[t]||[]; },
   async insert(t,row){
     if(this.live){
@@ -438,7 +445,7 @@ const uid=()=>'id_'+Math.abs(Array.from(String(performance.now())+Math.floor(1e9
 
 /* ================= AUTH (email + password gate) ================= */
 const DEMO_CRED_DEFAULT={email:'owner@leaves-bali.jp',pass:'leavesbali2026'};
-function demoCred(){try{return {...DEMO_CRED_DEFAULT,...JSON.parse(localStorage.getItem('lb_demo_cred')||'{}')};}catch(e){return DEMO_CRED_DEFAULT;}}
+function demoCred(){try{return {...DEMO_CRED_DEFAULT,...JSON.parse(LS.getItem('lb_demo_cred')||'{}')};}catch(e){return DEMO_CRED_DEFAULT;}}
 const auth={
   user:null,
   async check(){
@@ -447,7 +454,7 @@ const auth={
       this.user=data.session?.user||null;
       return !!this.user;
     }
-    if(sessionStorage.getItem('lb_demo_auth')==='1'){ this.user={email:demoCred().email}; return true; }
+    if(SS.getItem('lb_demo_auth')==='1'){ this.user={email:demoCred().email}; return true; }
     return false;
   },
   async signIn(email,password){
@@ -459,13 +466,13 @@ const auth={
     }
     const c=demoCred();
     if(email.toLowerCase()===c.email.toLowerCase() && password===c.pass){
-      sessionStorage.setItem('lb_demo_auth','1'); this.user={email:c.email}; return true;
+      SS.setItem('lb_demo_auth','1'); this.user={email:c.email}; return true;
     }
     throw new Error('メールアドレスまたはパスワードが違います');
   },
   async signOut(){
     if(store.live && store.sb){ try{await store.sb.auth.signOut();}catch(e){} }
-    sessionStorage.removeItem('lb_demo_auth'); this.user=null;
+    SS.removeItem('lb_demo_auth'); this.user=null;
     location.reload();
   }
 };
@@ -1115,11 +1122,11 @@ function openConfigModal(){
   bindClose();
   $('#cfgSave').onclick=()=>{
     const o=readForm($('#cfgForm'));
-    localStorage.setItem('lb_url',o.url.trim());localStorage.setItem('lb_key',o.key.trim());
-    if($('#credForm')){const c=readForm($('#credForm'));if(c.email&&c.pass)localStorage.setItem('lb_demo_cred',JSON.stringify({email:c.email.trim(),pass:c.pass}));}
+    LS.setItem('lb_url',o.url.trim());LS.setItem('lb_key',o.key.trim());
+    if($('#credForm')){const c=readForm($('#credForm'));if(c.email&&c.pass)LS.setItem('lb_demo_cred',JSON.stringify({email:c.email.trim(),pass:c.pass}));}
     toast('設定を保存しました。再読み込みします…');setTimeout(()=>location.reload(),700);
   };
-  if($('#cfgClear'))$('#cfgClear').onclick=()=>{localStorage.removeItem('lb_url');localStorage.removeItem('lb_key');setTimeout(()=>location.reload(),300);};
+  if($('#cfgClear'))$('#cfgClear').onclick=()=>{LS.removeItem('lb_url');LS.removeItem('lb_key');setTimeout(()=>location.reload(),300);};
 }
 $('#cfgBtn').onclick=openConfigModal;
 
