@@ -285,6 +285,8 @@ body.authed #login{display:none}
 }
 
 @media(max-width:1080px){.kpis{grid-template-columns:repeat(2,1fr)}.grid-2{grid-template-columns:1fr}.fore-grid{grid-template-columns:1fr}}
+.pgtitle{min-width:0}
+.topbar h1{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 @media(max-width:860px){
   .app{grid-template-columns:1fr}
   .side{position:fixed;left:0;top:0;z-index:150;transform:translateX(-100%);transition:.25s;width:236px}
@@ -293,6 +295,25 @@ body.authed #login{display:none}
   .content{padding:20px 16px 60px}.topbar{padding:14px 16px}
   .search input{width:150px}.search input:focus{width:180px}
   .kpis{grid-template-columns:1fr}
+}
+@media(max-width:640px){
+  .topbar{gap:9px}
+  .topbar>.spacer{display:none}
+  .pgtitle{flex:1 1 auto}
+  .topbar h1{font-size:16px}
+  .topbar .sub{display:none}
+  .topbar .menu-wrap{display:none}         /* ツール(書き出し)はPC向け。モバイルでは非表示 */
+  .search{flex:0 1 auto;min-width:0}
+  .search input,.search input:focus{width:112px}
+  .det-head{flex-wrap:wrap;gap:12px 10px}
+  .det-head h1{font-size:21px}
+  .det-head>.btn,.det-head>.menu-wrap{flex:0 0 auto}
+  .fg.row{grid-template-columns:1fr}       /* 入力欄の横並びは縦積みに */
+  .tabs{overflow-x:auto;white-space:nowrap;-webkit-overflow-scrolling:touch}
+  .tabs button{white-space:nowrap}
+  .cal .cell{min-height:70px;padding:5px 4px}
+  .cal .ev{font-size:9.5px;padding:2px 4px}
+  .modal-b{padding:18px 16px}.modal-h,.modal-f{padding-left:16px;padding-right:16px}
 }
 </style>
 </head>
@@ -337,7 +358,7 @@ body.authed #login{display:none}
   <div class="main">
     <div class="topbar">
       <button class="mob-btn" id="mobBtn">${'ICON_menu'}</button>
-      <div>
+      <div class="pgtitle">
         <h1 id="pgTitle">ダッシュボード</h1>
         <div class="sub" id="pgSub">本日の状況サマリー</div>
       </div>
