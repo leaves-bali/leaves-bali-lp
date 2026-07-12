@@ -473,16 +473,41 @@ const AVA=['#CC897F','#9C6B58','#C79A55','#5C8A5A','#BE6B4C','#AE655A','#C2A294'
 /* ================= STORE (Supabase or local demo) ================= */
 const TABLES=['customers','deals','activities','tasks','events'];
 const store={
-  sb:null, live:false,
+  sb:null, live:false, initError:'',
   cfg:{url:LS.getItem('lb_url')||'',key:LS.getItem('lb_key')||''},
   cache:{},
+  // Supabase本体をロード：まず同梱ファイル、ダメならCDNフォールバック
+  async loadSupabaseLib(){
+    if(window.supabase?.createClient) return window.supabase;
+    const inject=(src)=>new Promise((res,rej)=>{
+      const s=document.createElement('script'); s.src=src; s.async=true;
+      s.onload=()=>res(); s.onerror=()=>rej(new Error('script load failed: '+src));
+      document.head.appendChild(s);
+    });
+    try{ await inject('./supabase.min.js'); }catch(e){ console.warn(e.message); }
+    if(window.supabase?.createClient) return window.supabase;
+    try{ const m=await import(SUPABASE_CDN); if(m?.createClient) window.supabase={createClient:m.createClient}; }catch(e){ console.warn('CDN fallback失敗:',e.message); }
+    return window.supabase;
+  },
   async initClient(){
+    this.initError='';
     if(this.cfg.url && this.cfg.key){
       try{
-        const {createClient}=await import(SUPABASE_CDN);
-        this.sb=createClient(this.cfg.url,this.cfg.key,{auth:{persistSession:true,autoRefreshToken:true}});
+        const lib=await this.loadSupabaseLib();
+        if(!lib?.createClient) throw new Error('Supabaseの部品を読み込めませんでした。通信環境やブラウザ設定をご確認ください。');
+        this.sb=lib.createClient(this.cfg.url,this.cfg.key,{auth:{persistSession:true,autoRefreshToken:true}});
+        // 接続テスト（キー誤り・テーブル未作成などをここで検知）。URL誤りで固まらないようタイムアウト付き
+        const result=await Promise.race([
+          this.sb.from('customers').select('id').limit(1),
+          new Promise((_,rej)=>setTimeout(()=>rej(new Error('接続タイムアウト。Project URL が正しいかご確認ください')),8000))
+        ]);
+        if(result&&result.error) throw new Error(result.error.message||'接続テストに失敗しました');
         this.live=true;
-      }catch(e){ console.warn('Supabaseクライアント生成に失敗、デモモードで起動します:',e.message); this.sb=null; this.live=false; }
+      }catch(e){
+        this.initError=e.message||String(e);
+        console.warn('Supabase接続に失敗、デモモードで起動します:',this.initError);
+        this.sb=null; this.live=false;
+      }
     }
     setConn();
   },
@@ -1456,7 +1481,7 @@ function openConfigModal(){
       <form id="cfgForm">
         ${field('Project URL','url',store.cfg.url,'text')}
         ${field('anon public key','key',store.cfg.key,'text')}
-        <div class="hint">現在の状態：<b>${store.live?'🟢 Supabase接続中':'🟡 デモモード（ブラウザ内保存）'}</b></div>
+        <div class="hint">現在の状態：<b>${store.live?'🟢 Supabase接続中':'🟡 デモモード（ブラウザ内保存）'}</b>${(!store.live&&store.cfg.url&&store.initError)?`<br><span style="color:var(--danger)">⚠️ 接続失敗の理由：${esc(store.initError)}</span>`:''}</div>
       </form>
       ${!store.live?`
       <div style="margin-top:20px;padding-top:18px;border-top:1px solid var(--rule-2)">
@@ -1529,8 +1554,16 @@ function setUserUI(){
 /* ================= LOGIN ================= */
 function showLoginNote(){
   const note=$('#loginNote');
-  if(store.live){ note.innerHTML='Supabaseで登録済みの<b>メールアドレスとパスワード</b>でログインしてください。'; }
-  else{ const c=demoCred(); note.innerHTML=`デモモードで動作中です。テスト用ログイン：<br><b>${esc(c.email)}</b> / <b>${esc(c.pass)}</b><br><span style="opacity:.8">※ 本番運用では左下の設定からSupabaseを連携してください。</span>`; }
+  if(store.live){ note.innerHTML='Supabaseで登録済みの<b>メールアドレスとパスワード</b>でログインしてください。'; return; }
+  const c=demoCred();
+  // キーは設定済みなのに接続に失敗している場合は、理由をはっきり表示
+  if(store.cfg.url && store.initError){
+    note.innerHTML=`<span style="color:var(--danger);font-weight:600">⚠️ Supabase接続に失敗しました</span><br>
+      <span style="font-size:11px;color:var(--ink-l);word-break:break-all">理由：${esc(store.initError)}</span><br>
+      <span style="opacity:.85">キー・URLをご確認のうえ、左下「Supabase 連携設定」で入れ直してください。今はデモ用（<b>${esc(c.email)}</b> / <b>${esc(c.pass)}</b>）でログインできます。</span>`;
+    return;
+  }
+  note.innerHTML=`デモモードで動作中です。テスト用ログイン：<br><b>${esc(c.email)}</b> / <b>${esc(c.pass)}</b><br><span style="opacity:.8">※ 本番運用では左下の設定からSupabaseを連携してください。</span>`;
 }
 $('#loginForm').onsubmit=async(e)=>{
   e.preventDefault();
