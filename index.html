@@ -964,7 +964,8 @@ function renderQ(){
   document.getElementById('pPct').textContent=p+'%';
   document.getElementById('dBack').disabled=cur===0;
 }
-function sel(i){ans[cur]=i;cur<Qs.length-1?(cur++,renderQ()):showRes();}
+function trackDiag(){try{if(window.va)window.va('event',{name:'diagnosis_completed'});}catch(e){}}
+function sel(i){ans[cur]=i;if(cur<Qs.length-1){cur++;renderQ();}else{trackDiag();showRes();}}
 document.getElementById('dBack').addEventListener('click',function(){if(cur>0){cur--;renderQ();}});
 function showRes(){
   var jt=0,it=0,jm=0,im=0;
@@ -1046,5 +1047,8 @@ function seminarSignup(){
 }
 setLang(LANG);
 </script>
+<!-- Vercel Web Analytics（Cookieなし・匿名。個人情報や診断の回答内容は送信せず、診断完了の回数のみを匿名で集計します） -->
+<script>window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments);};</script>
+<script defer src="/_vercel/insights/script.js"></script>
 </body>
 </html>
