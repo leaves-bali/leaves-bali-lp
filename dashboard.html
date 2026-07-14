@@ -472,9 +472,12 @@ const AVA=['#CC897F','#9C6B58','#C79A55','#5C8A5A','#BE6B4C','#AE655A','#C2A294'
 
 /* ================= STORE (Supabase or local demo) ================= */
 const TABLES=['customers','deals','activities','tasks','events'];
+// 既定のSupabase接続（アプリに組み込み＝全端末で自動接続）。
+// publishableキーは公開前提の安全なキー。データはRLS＋ログイン認証で保護。
+const DEFAULT_SUPA={url:'https://zqigwurejpaeakyvmool.supabase.co', key:'sb_publishable_65bYmfxT7MzJKtPEPMViVQ_qEXmSTse'};
 const store={
   sb:null, live:false, initError:'',
-  cfg:{url:LS.getItem('lb_url')||'',key:LS.getItem('lb_key')||''},
+  cfg:{url:LS.getItem('lb_url')||DEFAULT_SUPA.url, key:LS.getItem('lb_key')||DEFAULT_SUPA.key},
   cache:{},
   // Supabase本体をロード：まず同梱ファイル、ダメならCDNフォールバック
   async loadSupabaseLib(){
