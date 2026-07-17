@@ -696,7 +696,8 @@ const relTime=(s)=>{const diff=(Date.now()-new Date(s))/86400000;if(diff<1)retur
 const isOverdue=(d)=>d&&new Date(d)<new Date(new Date().toDateString());
 function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('on');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('on'),2400);}
 function statusChip(s){return `<span class="chip st-${s}"><span class="cd" style="background:currentColor"></span>${STATUS[s]||s}</span>`;}
-function svcChip(t){const s=SERVICES[t];return `<span class="svc" style="background:${s.bg};color:${s.color}">${s.label}</span>`;}
+// 未知のサービス種別（旧データ・手入力揺れ等）でも落ちないようフォールバック
+function svcChip(t){const s=SERVICES[t]||{label:t||'その他',color:'var(--ink-m)',bg:'var(--cream)'};return `<span class="svc" style="background:${s.bg};color:${s.color}">${esc(s.label)}</span>`;}
 function ava(c,cls=''){return `<span class="ava ${cls}" style="background:${avaColor(c.id)}">${esc(initial(c.name))}</span>`;}
 
 /* ================= BALL-IN-COURT / 対応状況 ================= */
@@ -868,7 +869,14 @@ function go(route,opt={}){
   $('#pgSub').textContent=detailId?'':r.s;
   $('#side').classList.remove('open');
   window.scrollTo(0,0);
-  if(detailId) renderDetail(detailId); else r.render();
+  // 予期しないデータ不整合で描画が止まり「押しても何も起きない」状態になるのを防ぐ
+  try{
+    if(detailId) renderDetail(detailId); else r.render();
+  }catch(err){
+    console.error('描画エラー:',err);
+    toast('表示中に問題が発生しました（データをご確認ください）');
+    if(detailId){detailId=null;try{renderCustomers();}catch(e2){console.error(e2);}}
+  }
 }
 document.querySelectorAll('#nav a').forEach(a=>a.onclick=()=>go(a.dataset.route));
 
@@ -885,7 +893,7 @@ function renderDashboard(){
 
   // サービス別売上
   const bySvc={}; Object.keys(SERVICES).forEach(k=>bySvc[k]=0);
-  won.forEach(d=>bySvc[d.service_type]+=Number(d.amount||0));
+  won.forEach(d=>{if(d.service_type in bySvc)bySvc[d.service_type]+=Number(d.amount||0);});
   const maxSvc=Math.max(1,...Object.values(bySvc));
 
   // 月別成約（過去6ヶ月）
