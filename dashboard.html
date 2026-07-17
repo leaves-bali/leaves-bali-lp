@@ -164,6 +164,32 @@ tbody tr:last-child td{border-bottom:none}
 .tl-item .tb{background:var(--cream);border-radius:10px;padding:11px 14px;font-size:13.5px;line-height:1.7}
 .act-type{font-size:10.5px;font-weight:700;padding:1px 8px;border-radius:999px;background:var(--rose-pale);color:var(--rose-dk)}
 
+/* ---------- SITUATION SUMMARY (顧客詳細の現在状況) ---------- */
+.sit{margin-bottom:22px}
+.sit-hero{background:var(--white);border:1px solid var(--rule);border-left:5px solid var(--ink-l);border-radius:15px;box-shadow:var(--sh);padding:20px 22px;display:flex;align-items:flex-start;gap:18px;flex-wrap:wrap}
+.sit-hero .si{width:52px;height:52px;border-radius:13px;display:grid;place-items:center;flex:none}
+.sit-hero .si svg{width:26px;height:26px;stroke-width:1.9}
+.sit-body{flex:1;min-width:200px}
+.sit-lab{font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--ink-l);text-transform:uppercase}
+.sit-title{font-family:var(--serif);font-size:21px;font-weight:700;line-height:1.25;margin-top:3px;display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.sit-sub{font-size:13px;color:var(--ink-m);margin-top:6px;line-height:1.6}
+.sit-next{margin-top:13px;background:var(--cream);border-radius:11px;padding:11px 14px;display:flex;align-items:center;gap:11px;font-size:13.5px}
+.sit-next .nx-lab{font-size:10.5px;font-weight:700;color:var(--ink-l);letter-spacing:.04em;flex:none}
+.sit-next.over{background:var(--danger-lt)}
+.sit-act{display:flex;flex-direction:column;gap:8px;align-items:stretch;flex:none}
+.sit-act .btn{justify-content:center}
+.sit-alert{margin-top:12px;display:flex;align-items:center;gap:8px;background:var(--danger-lt);color:var(--danger);font-size:12.5px;font-weight:600;padding:9px 14px;border-radius:11px}
+.sit-alert svg{width:15px;height:15px;flex:none}
+.sit-tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:14px}
+.sit-tile{background:var(--white);border:1px solid var(--rule);border-radius:13px;padding:14px 16px;box-shadow:var(--sh);min-width:0}
+.sit-tile .tl-lab{font-size:11px;color:var(--ink-l);font-weight:600;letter-spacing:.03em;display:flex;align-items:center;gap:6px}
+.sit-tile .tl-lab svg{width:13px;height:13px;color:var(--ink-l);flex:none}
+.sit-tile .tl-val{font-family:var(--disp);font-size:23px;font-weight:600;line-height:1.1;margin-top:7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sit-tile .tl-val small{font-family:var(--sans);font-size:12px;color:var(--ink-l);font-weight:500;margin-left:2px}
+.sit-tile .tl-meta{font-size:11px;color:var(--ink-l);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media(max-width:1080px){.sit-tiles{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:520px){.sit-tiles{grid-template-columns:1fr}.sit-hero{gap:14px}.sit-act{width:100%}.sit-next{flex-wrap:wrap;gap:6px 10px}.sit-next b{flex:1 1 100%}}
+
 /* ---------- TASK / LIST ROWS ---------- */
 .trow{display:flex;align-items:center;gap:13px;padding:13px 6px;border-bottom:1px solid var(--rule-2)}
 .trow:last-child{border-bottom:none}
@@ -1025,21 +1051,87 @@ function renderDetail(id){
   const tab=(k,l,n)=>`<button class="${detTab===k?'on':''}" data-tab="${k}">${l}${n!=null?` <b style="color:var(--ink-l)">${n}</b>`:''}</button>`;
   let body='';
   if(detTab==='overview'){
-    const w=WAIT[c.waiting_on||'none'];
     const wdays=c.waiting_on==='them'?daysSince(c.last_contact):null;
-    const chase=wdays!=null&&wdays>=FOLLOWUP_DAYS;
-    const statusCard=(c.waiting_on&&c.waiting_on!=='none')?`
-      <div class="panel" style="border-left:3px solid ${w.dot};margin-bottom:0">
-        <div class="panel-b" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
-          <div style="flex:1;min-width:180px">
-            <div style="font-size:11px;color:var(--ink-l);font-weight:600;letter-spacing:.04em">対応状況</div>
-            <div style="font-family:var(--serif);font-size:17px;font-weight:700;color:${w.fg};margin-top:2px">${w.label}${c.waiting_on==='them'&&wdays!=null?`（${wdays}日待ち）`:''}${chase?' <span class="chip" style="background:var(--warn-lt);color:var(--warn)">催促どき</span>':''}</div>
-            ${c.next_action?`<div style="font-size:13px;color:var(--ink-m);margin-top:6px">次にやること：<b>${esc(c.next_action)}</b>${c.next_action_date?` <span class="${isOverdue(c.next_action_date)?'':''}" style="color:${isOverdue(c.next_action_date)?'var(--danger)':'var(--ink-l)'}">（${fmtDate(c.next_action_date)}）</span>`:''}</div>`:''}
-          </div>
-          ${c.waiting_on==='them'?`<button class="btn pri sm" data-flip="us" data-cid="${id}">${svg('check')}こちらが対応した</button>`:`<button class="btn gho sm" data-flip="them" data-cid="${id}">先方へボールを渡す</button>`}
+    const chase=c.waiting_on==='them'&&wdays!=null&&wdays>=FOLLOWUP_DAYS;
+    const openDeals=ds.filter(d=>!['completed','lost'].includes(d.stage));
+    const pipeline=openDeals.reduce((a,d)=>a+Number(d.amount||0),0);
+    const wonDeals=ds.filter(d=>d.stage==='completed');
+    const openTasks=tks.filter(t=>!t.done);
+    const overdueTasks=openTasks.filter(t=>isOverdue(t.due_date));
+    const nextEv=evs.find(e=>new Date(e.start_at)>=new Date(new Date().toDateString()));
+    const nextOverdue=c.waiting_on==='us'&&isOverdue(c.next_action_date);
+
+    // ── 現在の状況を1つの見出しに集約（ボール＋ライフサイクル）
+    let sit;
+    if(c.waiting_on==='us'){
+      sit={color:'var(--danger)',bg:'var(--danger-lt)',fg:'var(--danger)',icon:'clock',
+        title:'要対応 — あなたの番',
+        sub:nextOverdue?'対応の期限を過ぎています。早めの対応を。':'あなたの返信・対応を待っています。'};
+    }else if(c.waiting_on==='them'){
+      sit={color:'#9C86B0',bg:'#EDE7F0',fg:'#7A6A8A',icon:'mail',
+        title:`先方の返信待ち${wdays!=null?` — ${wdays}日経過`:''}`,
+        sub:chase?'返信が滞っています。催促のタイミングです。':'先方からの返信を待っています。'};
+    }else if(c.status==='completed'){
+      sit={color:'var(--ok)',bg:'var(--ok-lt)',fg:'var(--ok)',icon:'check',
+        title:'対応完了',sub:'現在、対応中の案件はありません。'};
+    }else if(c.status==='churned'){
+      sit={color:'var(--ink-l)',bg:'var(--rule-2)',fg:'var(--ink-l)',icon:'note',
+        title:'失注・保留',sub:'現在、アクティブな対応はありません。'};
+    }else{
+      sit={color:'var(--warn)',bg:'var(--warn-lt)',fg:'var(--warn)',icon:'spark',
+        title:'対応中',sub:'次のアクションが未設定です。予定を決めましょう。'};
+    }
+    if(chase){sit.color='var(--warn)';sit.bg='var(--warn-lt)';sit.fg='var(--warn)';}
+
+    const flipBtn=c.waiting_on==='them'
+      ? `<button class="btn pri sm" data-flip="us" data-cid="${id}">${svg('check')}こちらが対応した</button>`
+      : (c.waiting_on==='us'
+        ? `<button class="btn gho sm" data-flip="them" data-cid="${id}">先方へボールを渡す</button>`
+        : `<button class="btn gho sm" data-flip="us" data-cid="${id}">${svg('clock')}要対応にする</button>`);
+
+    const nextBlock=c.next_action
+      ? `<div class="sit-next ${nextOverdue?'over':''}"><span class="nx-lab">次にやること</span><b style="flex:1;min-width:0">${esc(c.next_action)}</b>${c.next_action_date?`<span class="tk-due ${nextOverdue?'over':''}" style="white-space:nowrap">${svg('clock')}${fmtDate(c.next_action_date)}</span>`:''}</div>`
+      : (c.waiting_on==='us'?`<div class="sit-next"><span class="nx-lab">次にやること</span><span style="color:var(--ink-l)">未設定 — 「編集」から追加できます</span></div>`:'');
+
+    const alertHTML=(overdueTasks.length||nextOverdue)?`<div class="sit-alert">${svg('clock')}<span>${[nextOverdue?'次アクションが期限切れ':'',overdueTasks.length?`期限切れタスク ${overdueTasks.length}件`:''].filter(Boolean).join(' ・ ')}</span></div>`:'';
+
+    const heroHTML=`
+      <div class="sit-hero" style="border-left-color:${sit.color}">
+        <div class="si" style="background:${sit.bg};color:${sit.fg}">${svg(sit.icon)}</div>
+        <div class="sit-body">
+          <div class="sit-lab">現在の状況</div>
+          <div class="sit-title" style="color:${sit.fg}">${sit.title}${chase?' <span class="chip" style="background:var(--warn-lt);color:var(--warn)">催促どき</span>':''}</div>
+          <div class="sit-sub">${sit.sub}</div>
+          ${nextBlock}
         </div>
-      </div>`:'';
-    body=`<div style="margin-bottom:22px">${statusCard}</div>
+        <div class="sit-act">${flipBtn}</div>
+      </div>`;
+
+    const tilesHTML=`
+      <div class="sit-tiles">
+        <div class="sit-tile">
+          <div class="tl-lab">${svg('briefcase')}進行中の案件</div>
+          <div class="tl-val">${openDeals.length}<small>件</small></div>
+          <div class="tl-meta">${openDeals.length?'パイプ '+yen(pipeline):'進行中なし'}</div>
+        </div>
+        <div class="sit-tile">
+          <div class="tl-lab">${svg('yen')}累計成約額</div>
+          <div class="tl-val" style="color:var(--green-dk)">${revenue?Math.round(revenue/10000).toLocaleString('ja-JP'):'0'}<small>万円</small></div>
+          <div class="tl-meta">成約 ${wonDeals.length} 件</div>
+        </div>
+        <div class="sit-tile">
+          <div class="tl-lab">${svg('clock')}最終接触</div>
+          <div class="tl-val" style="font-size:19px">${c.last_contact?relTime(c.last_contact):'—'}</div>
+          <div class="tl-meta">${c.last_contact?fmtDate(c.last_contact):'記録なし'}</div>
+        </div>
+        <div class="sit-tile">
+          <div class="tl-lab">${svg('cal')}次の予定</div>
+          <div class="tl-val" style="font-size:19px">${nextEv?fmtDT(nextEv.start_at):'—'}</div>
+          <div class="tl-meta">${nextEv?esc(nextEv.title):'予定なし'}</div>
+        </div>
+      </div>`;
+
+    body=`<div class="sit">${heroHTML}${alertHTML}${tilesHTML}</div>
     <div class="grid-2">
       <div>
         <div class="panel"><div class="panel-h"><h2>案件</h2><span class="spacer"></span><button class="btn pri sm" data-adddeal="${id}">${svg('plus')}案件追加</button></div>
