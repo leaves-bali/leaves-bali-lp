@@ -494,7 +494,6 @@ const WAIT={
   none:{label:'対応不要',short:'—',bg:'var(--cream)',fg:'var(--ink-l)',dot:'#B8ADA4'}
 };
 const FOLLOWUP_DAYS=5; // 先方待ちがこの日数を超えたら「催促どき」
-const AVA=['#CC897F','#9C6B58','#C79A55','#5C8A5A','#BE6B4C','#AE655A','#C2A294'];
 
 /* ================= STORE (Supabase or local demo) ================= */
 const TABLES=['customers','deals','activities','tasks','events'];
@@ -680,7 +679,14 @@ function SEED(){
 const $=(s,r=document)=>r.querySelector(s);
 const esc=(s)=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const yen=(n)=>'¥'+Number(n||0).toLocaleString('ja-JP');
-const avaColor=(id)=>AVA[Math.abs(String(id).split('').reduce((a,c)=>a+c.charCodeAt(0),0))%AVA.length];
+// 顧客ごとに固有の色を割り当て（全員別色）。IDの安定した並び順に黄金角でずらして色相を均等分散。
+function avaColor(id){
+  const ids=store.all('customers').map(c=>c.id).sort();
+  let i=ids.indexOf(id);
+  if(i<0)i=Math.abs(String(id).split('').reduce((a,c)=>a+c.charCodeAt(0),0)); // 顧客一覧外からの参照はハッシュで代替
+  const hue=Math.round((i*137.508)%360); // 黄金角＝隣同士が最も離れる
+  return `hsl(${hue} 46% 50%)`;
+}
 const initial=(n)=>String(n||'?').trim().charAt(0);
 const custById=(id)=>store.all('customers').find(c=>c.id===id);
 const dealsOf=(id)=>store.all('deals').filter(d=>d.customer_id===id);
