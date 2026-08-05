@@ -1267,6 +1267,8 @@ function bindDetailActions(id){
   v.querySelector('[data-addev]')&&(v.querySelector('[data-addev]').onclick=()=>openEventModal(null,id));
   v.querySelectorAll('[data-delev]').forEach(b=>b.onclick=async()=>{await store.remove('events',b.dataset.delev);renderDetail(id);toast('予定を削除しました');});
   v.querySelectorAll('[data-edittask]').forEach(b=>b.onclick=()=>openTaskModal(b.dataset.edittask));
+  v.querySelectorAll('[data-deltask]').forEach(b=>b.onclick=async()=>{await store.remove('tasks',b.dataset.deltask);renderDetail(id);toast('タスクを削除しました');});
+  bindRemind(v);
 }
 
 /* ================= PIPELINE (Kanban) ================= */
@@ -1389,6 +1391,7 @@ function renderTasks(){
   $('#addTask').onclick=()=>openTaskModal();
   $('#view').querySelectorAll('[data-tf]').forEach(b=>b.onclick=()=>{taskFilter=b.dataset.tf;renderTasks();});
   bindTaskTicks();
+  bindRemind($('#view'));
   $('#view').querySelectorAll('[data-edittask]').forEach(b=>b.onclick=()=>openTaskModal(b.dataset.edittask));
   $('#view').querySelectorAll('[data-deltask]').forEach(b=>b.onclick=async()=>{await store.remove('tasks',b.dataset.deltask);renderTasks();toast('タスクを削除しました');});
 }
@@ -1399,9 +1402,10 @@ function taskListHTML(list,showCust){
       <div class="tick ${t.done?'done':''}" data-task="${t.id}">${svg('check')}</div>
       <div style="flex:1;min-width:0">
         <div class="tk-title">${t.priority==='high'?'<span class="pri-high" title="優先度：高">● </span>':''}${esc(t.title)}</div>
-        ${c?`<div style="font-size:11.5px;color:var(--ink-l)">${esc(c.name)}</div>`:''}
+        <div style="font-size:11.5px;color:var(--ink-l);display:flex;gap:8px;flex-wrap:wrap;align-items:center">${c?`<span>${esc(c.name)}</span>`:''}${t.assignee?`<span style="color:var(--brand);font-weight:600">担当: ${esc(t.assignee)}</span>`:''}${t.notes?`<span title="${esc(t.notes)}">📝メモ</span>`:''}</div>
       </div>
       <span class="tk-due ${!t.done&&isOverdue(t.due_date)?'over':''}">${svg('clock')}${t.due_date?fmtDate(t.due_date):'期限なし'}</span>
+      <button class="btn gho sm" data-remind="${t.id}" title="担当者にメールでリマインドを送信">リマインド</button>
       <button class="btn gho sm" data-edittask="${t.id}">${svg('edit')}</button>
       <button class="btn gho sm" data-deltask="${t.id}">${svg('trash')}</button>
     </div>`;}).join('');
@@ -1414,6 +1418,21 @@ function bindTaskTicks(){
     if(detailId)renderDetail(detailId); else ROUTES[cur].render();
   });
 }
+async function remindTask(id){
+  const t=store.all('tasks').find(x=>x.id===id); if(!t)return;
+  if(!store.live||!store.sb){toast('リマインドはクラウド接続（ログイン）時のみ利用できます');return;}
+  if(!t.assignee){toast('先に担当を設定してください');return;}
+  toast('リマインドを送信中…');
+  try{
+    const {data,error}=await store.sb.functions.invoke('notify-task',{body:{id}});
+    if(error)throw error;
+    if(data&&data.skipped==='no-email-for-assignee'){toast('この担当にはメールアドレスが未登録です');return;}
+    if(data&&data.skipped==='already-done'){toast('このタスクは完了済みです');return;}
+    const rc=(data&&data.recipients)||[];
+    toast(rc.length?('リマインドを送信しました → '+rc.join(', ')):'送信対象がありませんでした');
+  }catch(err){toast('送信に失敗しました: '+(err.message||err));}
+}
+function bindRemind(root){(root||document).querySelectorAll('[data-remind]').forEach(b=>b.onclick=()=>remindTask(b.dataset.remind));}
 function bindNavBtns(){document.querySelectorAll('[data-nav]').forEach(b=>b.onclick=()=>go(b.dataset.nav));}
 
 /* ================= MODALS ================= */
@@ -1540,6 +1559,8 @@ function openTaskModal(id,presetCust){
       ${field('タイトル *','title',t.title)}
       <div class="fg row">${field('期限','due_date',t.due_date,'date')}${field('優先度','priority',t.priority||'normal','select',[['low','低'],['normal','中'],['high','高']].map(([v,l])=>({v,l})))}</div>
       ${field('関連顧客','customer_id',t.customer_id||'','select',[{v:'',l:'（なし）'},...custOpts()])}
+      ${field('担当','assignee',t.assignee||'','select',[{v:'',l:'（未割り当て）'},{v:'Suzu',l:'Suzu'},{v:'Yoshiko',l:'Yoshiko'},{v:'Suzu,Yoshiko',l:'Suzu ＆ Yoshiko'}])}
+      ${field('メモ','notes',t.notes||'','textarea')}
     </div>
     <div class="modal-f"><button type="button" class="btn gho" data-close>キャンセル</button><button type="submit" class="btn pri">${svg('check')}保存</button></div>
     </form>`);
@@ -1547,6 +1568,7 @@ function openTaskModal(id,presetCust){
   $('#mForm').onsubmit=async(e)=>{e.preventDefault();const o=readForm(e.target);
     if(!o.title.trim()){toast('タイトルを入力してください');return;}
     if(!o.due_date)o.due_date=null; if(!o.customer_id)o.customer_id=null;
+    if(!o.assignee)o.assignee=null; if(!o.notes)o.notes=null;
     if(id){await store.update('tasks',id,o);toast('タスクを更新しました');}
     else{o.done=false;await store.insert('tasks',o);toast('タスクを追加しました');}
     closeModal();refreshCurrent();
