@@ -1402,7 +1402,7 @@ function taskListHTML(list,showCust){
       <div class="tick ${t.done?'done':''}" data-task="${t.id}">${svg('check')}</div>
       <div style="flex:1;min-width:0">
         <div class="tk-title">${t.priority==='high'?'<span class="pri-high" title="優先度：高">● </span>':''}${esc(t.title)}</div>
-        <div style="font-size:11.5px;color:var(--ink-l);display:flex;gap:8px;flex-wrap:wrap;align-items:center">${c?`<span>${esc(c.name)}</span>`:''}${t.assignee?`<span style="color:var(--brand);font-weight:600">担当: ${esc(t.assignee)}</span>`:''}${t.notes?`<span title="${esc(t.notes)}">📝メモ</span>`:''}</div>
+        <div style="font-size:11.5px;color:var(--ink-l);display:flex;gap:8px;flex-wrap:wrap;align-items:center">${c?`<span>${esc(c.name)}</span>`:''}${t.assignee?`<span style="color:var(--brand);font-weight:600">担当: ${esc(t.assignee)}</span>`:''}${t.notes?`<span title="${esc(t.notes)}">📝メモ</span>`:''}${t.attachments&&t.attachments.length?`<span>📎${t.attachments.length}</span>`:''}</div>
       </div>
       <span class="tk-due ${!t.done&&isOverdue(t.due_date)?'over':''}">${svg('clock')}${t.due_date?fmtDate(t.due_date):'期限なし'}</span>
       <button class="btn gho sm" data-remind="${t.id}" title="担当者にメールでリマインドを送信">リマインド</button>
@@ -1561,10 +1561,12 @@ function openTaskModal(id,presetCust){
       ${field('関連顧客','customer_id',t.customer_id||'','select',[{v:'',l:'（なし）'},...custOpts()])}
       ${field('担当','assignee',t.assignee||'','select',[{v:'',l:'（未割り当て）'},{v:'Suzu',l:'Suzu'},{v:'Yoshiko',l:'Yoshiko'},{v:'Suzu,Yoshiko',l:'Suzu ＆ Yoshiko'}])}
       ${field('メモ','notes',t.notes||'','textarea')}
+      ${id?`<div class="fg"><label>添付ファイル（資料・画像）</label><div id="attList">${attHTML(t.attachments)}</div><input type="file" id="attInput" multiple style="margin-top:8px;font-size:13px"><div id="attMsg" style="font-size:12px;color:var(--ink-l);margin-top:4px"></div></div>`:`<div class="fg"><label>添付ファイル</label><div style="font-size:12px;color:var(--ink-l)">先にタスクを保存すると、開き直したときに資料・画像を添付できます</div></div>`}
     </div>
     <div class="modal-f"><button type="button" class="btn gho" data-close>キャンセル</button><button type="submit" class="btn pri">${svg('check')}保存</button></div>
     </form>`);
   bindClose();
+  bindTaskAttachments(id);
   $('#mForm').onsubmit=async(e)=>{e.preventDefault();const o=readForm(e.target);
     if(!o.title.trim()){toast('タイトルを入力してください');return;}
     if(!o.due_date)o.due_date=null; if(!o.customer_id)o.customer_id=null;
@@ -1572,6 +1574,53 @@ function openTaskModal(id,presetCust){
     if(id){await store.update('tasks',id,o);toast('タスクを更新しました');}
     else{o.done=false;await store.insert('tasks',o);toast('タスクを追加しました');}
     closeModal();refreshCurrent();
+  };
+}
+function attHTML(list){
+  list=list||[];
+  if(!list.length)return '<div style="font-size:12px;color:var(--ink-l)">まだ添付はありません</div>';
+  return list.map((a,i)=>`<div style="display:flex;align-items:center;gap:8px;padding:6px 8px;border:1px solid #eee;border-radius:8px;margin-bottom:6px">
+    <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px">${/^image\//.test(a.mime||'')?'🖼 ':'📄 '}${esc(a.name)}</span>
+    <button type="button" class="btn gho sm" data-attview="${i}">開く</button>
+    <button type="button" class="btn gho sm" data-attdel="${i}">削除</button>
+  </div>`).join('');
+}
+function bindTaskAttachments(id){
+  if(!id)return;
+  const tk=store.all('tasks').find(x=>x.id===id);
+  let arr=(tk&&Array.isArray(tk.attachments))?tk.attachments.slice():[];
+  const render=()=>{const el=$('#attList');if(!el)return;el.innerHTML=attHTML(arr);bindRows();};
+  function bindRows(){
+    document.querySelectorAll('[data-attview]').forEach(b=>b.onclick=async()=>{
+      const a=arr[+b.dataset.attview];if(!a)return;
+      if(!store.live||!store.sb){toast('閲覧はログイン時のみ可能です');return;}
+      const {data,error}=await store.sb.storage.from('task-files').createSignedUrl(a.path,3600);
+      if(error||!data){toast('開けませんでした: '+(error?.message||''));return;}
+      window.open(data.signedUrl,'_blank');
+    });
+    document.querySelectorAll('[data-attdel]').forEach(b=>b.onclick=async()=>{
+      const i=+b.dataset.attdel;const a=arr[i];if(!a)return;
+      if(!confirm('この添付を削除しますか？'))return;
+      try{await store.sb.storage.from('task-files').remove([a.path]);}catch(e){}
+      arr.splice(i,1);await store.update('tasks',id,{attachments:arr});
+      toast('削除しました');render();
+    });
+  }
+  render();
+  const inp=$('#attInput');
+  if(inp)inp.onchange=async()=>{
+    if(!store.live||!store.sb){toast('添付はログイン（クラウド接続）時のみ利用できます');inp.value='';return;}
+    const files=[...inp.files];if(!files.length)return;
+    const msg=$('#attMsg');if(msg)msg.textContent='アップロード中…';
+    for(const f of files){
+      const safe=f.name.replace(/[^\w.\-]+/g,'_');
+      const path=`${id}/${Date.now()}_${safe}`;
+      const {error}=await store.sb.storage.from('task-files').upload(path,f,{cacheControl:'3600',upsert:false});
+      if(error){if(msg)msg.textContent='失敗: '+error.message;continue;}
+      arr.push({name:f.name,path,size:f.size,mime:f.type});
+    }
+    await store.update('tasks',id,{attachments:arr});
+    if(msg)msg.textContent='';inp.value='';render();toast('添付しました');
   };
 }
 
