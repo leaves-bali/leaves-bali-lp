@@ -83,6 +83,6 @@ export async function POST(
 
     return NextResponse.json({ reply: updated });
   } catch (err) {
-    return errorResponse(err);
+    return await errorResponse(err);
   }
 }

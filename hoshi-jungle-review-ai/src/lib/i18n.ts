@@ -152,6 +152,76 @@ type Dict = {
   reauthNeeded: string;
   reauthLink: string;
   syncErrorPrefix: string;
+
+  // 初期設定ウィザード（オーナー）
+  setupTitle: string;
+  stepOf: (n: number, total: number) => string;
+  stepGoogleLogin: string;
+  stepGoogleHint: string;
+  stepSelectLocation: string;
+  loggedInAs: string;
+  loadingLocations: string;
+  noLocations: string;
+  alreadyRegistered: string;
+  completeSetup: string;
+  fetchingReviews: string;
+  firstSyncNote: string;
+  syncProgress: (fetched: number, generated: number) => string;
+  setupDone: string;
+  statFetched: string;
+  statNew: string;
+  statGenerated: string;
+  someErrors: string;
+  afterSetupNote: string;
+  toDashboard: string;
+  wizardBudgetNote: string;
+  locationLoadFailed: string;
+  registerFailed: string;
+
+  // パスコード管理（オーナー）
+  passcodeTitle: string;
+  passcodeLead: string;
+  issueNew: string;
+  issueNewHint: string;
+  labelPlaceholder: string;
+  issue: string;
+  issuing: string;
+  issuedTitle: string;
+  rotatedTitle: string;
+  onceOnly: string;
+  staffUrlLabel: string;
+  copyBoth: string;
+  copied: string;
+  closeNoted: string;
+  rotate: string;
+  pause: string;
+  resume: string;
+  activeLabel: string;
+  inactiveLabel: string;
+  lastUsed: string;
+  unused: string;
+  rotatedAt: string;
+  noPasscodes: string;
+  handoverTitle: string;
+  handoverWarn: string;
+  securityStatus: string;
+  activePasscodes: string;
+  failedLogins24h: string;
+  bruteForceWarning: string;
+  issueFailed: string;
+  updateFailed: string;
+  copyFailed: string;
+
+  // API のエラー（利用者に見える分だけ）
+  errLoginRequired: string;
+  errOwnerOnly: string;
+  errNotFound: string;
+  errAlreadyPublished: string;
+  errEmptyReply: string;
+  errTooLong: (max: number, len: number) => string;
+  errPasscodeWrong: string;
+  errTooManyAttempts: (minutes: number) => string;
+  errPublishedNoEdit: string;
 };
 
 const ja: Dict = {
@@ -269,6 +339,81 @@ const ja: Dict = {
   reauthNeeded: 'Google のアクセス権が失効しています。クチコミの取得と公開ができません。',
   reauthLink: '再認証する',
   syncErrorPrefix: '直近の自動同期でエラーが発生しました:',
+
+  setupTitle: '初期設定',
+  stepOf: (n, total) => `ステップ ${n} / ${total}`,
+  stepGoogleLogin: 'Google アカウントでログイン',
+  stepGoogleHint:
+    'Hoshi Jungle の Google ビジネスプロフィールを管理しているアカウントでログインしてください。',
+  stepSelectLocation: '対象のロケーションを選択',
+  loggedInAs: 'ログイン中',
+  loadingLocations: 'Google からロケーションを読み込んでいます…',
+  noLocations:
+    'このアカウントで管理できるロケーションが見つかりませんでした。Google ビジネスプロフィールの管理者権限があるアカウントでログインし直してください。',
+  alreadyRegistered: '登録済み',
+  completeSetup: 'このロケーションで設定を完了する',
+  fetchingReviews: 'クチコミを取得しています…',
+  firstSyncNote: '初回はクチコミの取得と返信案の作成を行うため、1〜2 分かかることがあります。',
+  syncProgress: (f, g) => `クチコミ ${f} 件を取得、返信案 ${g} 件を作成しました。続きを処理しています…`,
+  setupDone: '設定が完了しました',
+  statFetched: '取得したクチコミ',
+  statNew: '新規',
+  statGenerated: '返信案を作成',
+  someErrors: '一部の処理でエラーが発生しました:',
+  afterSetupNote:
+    '以降は毎時自動でクチコミを取得し、返信案を作成します。返信案はドラフトとして保存され、公開はスタッフの確認後に行われます。',
+  toDashboard: 'ダッシュボードへ',
+  wizardBudgetNote:
+    '今月の AI 生成上限に達したため、一部のクチコミは返信案が未作成です。来月 1 日にリセットされます。それまでは手動で返信できます。',
+  locationLoadFailed: 'ロケーションの取得に失敗しました。',
+  registerFailed: '登録に失敗しました。',
+
+  passcodeTitle: 'スタッフ用パスコード',
+  passcodeLead:
+    'スタッフはここで発行したパスコードで入室します。Google アカウントは不要です。スタッフは Google の認証情報に一切触れず、クチコミの確認・編集・公開だけを行えます。',
+  issueNew: '新しいパスコードを発行',
+  issueNewHint:
+    '用途ごとに分けて発行すると、片方だけを停止できます（例: 「フロント用」「マネージャー用」）。',
+  labelPlaceholder: '用途の名前（例: フロントデスク用）',
+  issue: '発行する',
+  issuing: '発行中…',
+  issuedTitle: 'パスコードを発行しました',
+  rotatedTitle: 'パスコードを再発行しました',
+  onceOnly: 'この画面を閉じると二度と表示できません。今すぐ控えてください。',
+  staffUrlLabel: 'スタッフが開く URL',
+  copyBoth: 'URL とパスコードをコピー',
+  copied: 'コピーしました',
+  closeNoted: '控えたので閉じる',
+  rotate: '再発行',
+  pause: '停止',
+  resume: '再開',
+  activeLabel: '有効',
+  inactiveLabel: '停止中',
+  lastUsed: '最終利用',
+  unused: '未使用',
+  rotatedAt: '再発行',
+  noPasscodes: 'まだパスコードを発行していません。上のフォームから発行してください。',
+  handoverTitle: 'Hoshi Jungle Review AI ログイン情報',
+  handoverWarn: '※ このパスコードは他の人に共有しないでください。',
+  securityStatus: 'セキュリティの状況',
+  activePasscodes: '有効なパスコード',
+  failedLogins24h: '直近24時間のログイン失敗',
+  bruteForceWarning:
+    'ログイン失敗が多く発生しています。総当たり攻撃の可能性があるため、パスコードの再発行を検討してください（同一IPからは15分あたり10回で自動的に遮断されます）。',
+  issueFailed: 'パスコードの発行に失敗しました。',
+  updateFailed: '更新に失敗しました。',
+  copyFailed: 'コピーできませんでした。手動で控えてください。',
+
+  errLoginRequired: 'ログインが必要です。',
+  errOwnerOnly: 'この操作はオーナーアカウントでのみ実行できます。',
+  errNotFound: '見つかりません。',
+  errAlreadyPublished: 'この返信は既に公開されています。',
+  errEmptyReply: '返信本文が空です。編集してから公開してください。',
+  errTooLong: (max, len) =>
+    `返信本文が Google の上限 ${max} 文字を超えています（現在 ${len} 文字）。`,
+  errPasscodeWrong: 'パスコードが違います。',
+  errTooManyAttempts: (m) => `試行回数が多すぎます。${m} 分ほど待ってからもう一度お試しください。`,
+  errPublishedNoEdit: '公開済みの返信は編集できません。',
 };
 
 const en: Dict = {
@@ -387,6 +532,81 @@ const en: Dict = {
     'Google access has expired. Reviews cannot be fetched and replies cannot be published.',
   reauthLink: 'Reconnect',
   syncErrorPrefix: 'The last automatic sync failed:',
+
+  setupTitle: 'Setup',
+  stepOf: (n, total) => `Step ${n} of ${total}`,
+  stepGoogleLogin: 'Sign in with Google',
+  stepGoogleHint:
+    'Sign in with the Google account that manages the Hoshi Jungle Business Profile.',
+  stepSelectLocation: 'Choose your location',
+  loggedInAs: 'Signed in as',
+  loadingLocations: 'Loading your locations from Google…',
+  noLocations:
+    'No locations found for this account. Sign in with an account that has owner or manager access to the Business Profile.',
+  alreadyRegistered: 'Already added',
+  completeSetup: 'Finish setup with this location',
+  fetchingReviews: 'Fetching reviews…',
+  firstSyncNote: 'The first sync fetches reviews and writes drafts — this can take a minute or two.',
+  syncProgress: (f, g) => `${f} reviews fetched, ${g} drafts written. Continuing…`,
+  setupDone: 'Setup complete',
+  statFetched: 'Reviews fetched',
+  statNew: 'New',
+  statGenerated: 'Drafts written',
+  someErrors: 'Some steps reported errors:',
+  afterSetupNote:
+    'From now on, reviews are fetched every hour and drafts are written automatically. Drafts are saved as drafts — nothing is published until your staff approve it.',
+  toDashboard: 'Go to dashboard',
+  wizardBudgetNote:
+    "This month's AI limit was reached, so some reviews have no draft yet. The limit resets on the 1st. Until then you can write replies by hand.",
+  locationLoadFailed: 'Could not load your locations.',
+  registerFailed: 'Could not save the location.',
+
+  passcodeTitle: 'Staff passcodes',
+  passcodeLead:
+    'Your staff sign in with a passcode issued here — no Google account needed. They never touch your Google credentials; they can only read, edit and publish replies.',
+  issueNew: 'Issue a new passcode',
+  issueNewHint:
+    'Issue separate passcodes per use so you can revoke one without affecting the other (e.g. "Front desk", "Managers").',
+  labelPlaceholder: 'What is it for? (e.g. Front desk)',
+  issue: 'Issue',
+  issuing: 'Issuing…',
+  issuedTitle: 'Passcode issued',
+  rotatedTitle: 'New passcode issued',
+  onceOnly: 'This is the only time it will be shown. Write it down now.',
+  staffUrlLabel: 'URL for staff',
+  copyBoth: 'Copy URL and passcode',
+  copied: 'Copied',
+  closeNoted: "I've written it down",
+  rotate: 'Reissue',
+  pause: 'Disable',
+  resume: 'Enable',
+  activeLabel: 'Active',
+  inactiveLabel: 'Disabled',
+  lastUsed: 'Last used',
+  unused: 'never used',
+  rotatedAt: 'Reissued',
+  noPasscodes: 'No passcodes yet. Issue one using the form above.',
+  handoverTitle: 'Hoshi Jungle Review AI — sign-in details',
+  handoverWarn: 'Please do not share this passcode with anyone else.',
+  securityStatus: 'Security',
+  activePasscodes: 'Active passcodes',
+  failedLogins24h: 'Failed sign-ins (last 24h)',
+  bruteForceWarning:
+    'There have been a lot of failed sign-ins. This may be a brute-force attempt — consider reissuing the passcode. (A single IP is blocked after 10 failures in 15 minutes.)',
+  issueFailed: 'Could not issue the passcode.',
+  updateFailed: 'Could not save the change.',
+  copyFailed: 'Could not copy. Please write it down manually.',
+
+  errLoginRequired: 'Please sign in.',
+  errOwnerOnly: 'Only the owner account can do this.',
+  errNotFound: 'Not found.',
+  errAlreadyPublished: 'This reply has already been published.',
+  errEmptyReply: 'The reply is empty. Please write something before publishing.',
+  errTooLong: (max, len) =>
+    `The reply is over Google's ${max}-character limit (currently ${len}).`,
+  errPasscodeWrong: 'That passcode is not correct.',
+  errTooManyAttempts: (m) => `Too many attempts. Please wait about ${m} minutes and try again.`,
+  errPublishedNoEdit: 'Published replies cannot be edited.',
 };
 
 const id: Dict = {
@@ -505,6 +725,82 @@ const id: Dict = {
     'Akses Google sudah kedaluwarsa. Ulasan tidak bisa diambil dan balasan tidak bisa diterbitkan.',
   reauthLink: 'Hubungkan ulang',
   syncErrorPrefix: 'Sinkronisasi otomatis terakhir gagal:',
+
+  setupTitle: 'Pengaturan awal',
+  stepOf: (n, total) => `Langkah ${n} dari ${total}`,
+  stepGoogleLogin: 'Masuk dengan Google',
+  stepGoogleHint:
+    'Masuk dengan akun Google yang mengelola Profil Bisnis Hoshi Jungle.',
+  stepSelectLocation: 'Pilih lokasi',
+  loggedInAs: 'Masuk sebagai',
+  loadingLocations: 'Memuat lokasi dari Google…',
+  noLocations:
+    'Tidak ada lokasi untuk akun ini. Masuklah dengan akun yang punya akses pemilik atau pengelola pada Profil Bisnis.',
+  alreadyRegistered: 'Sudah terdaftar',
+  completeSetup: 'Selesaikan pengaturan dengan lokasi ini',
+  fetchingReviews: 'Mengambil ulasan…',
+  firstSyncNote:
+    'Sinkronisasi pertama mengambil ulasan dan menulis draf — bisa memakan waktu satu hingga dua menit.',
+  syncProgress: (f, g) => `${f} ulasan diambil, ${g} draf dibuat. Melanjutkan…`,
+  setupDone: 'Pengaturan selesai',
+  statFetched: 'Ulasan diambil',
+  statNew: 'Baru',
+  statGenerated: 'Draf dibuat',
+  someErrors: 'Beberapa langkah melaporkan kesalahan:',
+  afterSetupNote:
+    'Mulai sekarang ulasan diambil setiap jam dan draf dibuat otomatis. Draf disimpan sebagai draf — tidak ada yang terbit sebelum staf menyetujuinya.',
+  toDashboard: 'Ke dasbor',
+  wizardBudgetNote:
+    'Batas AI bulan ini sudah tercapai, jadi sebagian ulasan belum punya draf. Batas direset tanggal 1. Sampai saat itu balasan bisa ditulis manual.',
+  locationLoadFailed: 'Gagal memuat daftar lokasi.',
+  registerFailed: 'Gagal menyimpan lokasi.',
+
+  passcodeTitle: 'Kode akses staf',
+  passcodeLead:
+    'Staf masuk dengan kode akses yang dibuat di sini — tanpa akun Google. Mereka tidak menyentuh kredensial Google Anda; hanya membaca, menyunting, dan menerbitkan balasan.',
+  issueNew: 'Buat kode akses baru',
+  issueNewHint:
+    'Buat kode terpisah per kebutuhan agar satu bisa dinonaktifkan tanpa mengganggu yang lain (misalnya "Resepsionis", "Manajer").',
+  labelPlaceholder: 'Untuk apa? (misalnya Resepsionis)',
+  issue: 'Buat',
+  issuing: 'Membuat…',
+  issuedTitle: 'Kode akses dibuat',
+  rotatedTitle: 'Kode akses baru dibuat',
+  onceOnly: 'Kode ini hanya ditampilkan sekali. Catat sekarang.',
+  staffUrlLabel: 'URL untuk staf',
+  copyBoth: 'Salin URL dan kode akses',
+  copied: 'Tersalin',
+  closeNoted: 'Sudah saya catat',
+  rotate: 'Buat ulang',
+  pause: 'Nonaktifkan',
+  resume: 'Aktifkan',
+  activeLabel: 'Aktif',
+  inactiveLabel: 'Nonaktif',
+  lastUsed: 'Terakhir dipakai',
+  unused: 'belum pernah',
+  rotatedAt: 'Dibuat ulang',
+  noPasscodes: 'Belum ada kode akses. Buat satu lewat formulir di atas.',
+  handoverTitle: 'Hoshi Jungle Review AI — informasi masuk',
+  handoverWarn: 'Mohon jangan bagikan kode akses ini kepada orang lain.',
+  securityStatus: 'Keamanan',
+  activePasscodes: 'Kode akses aktif',
+  failedLogins24h: 'Gagal masuk (24 jam terakhir)',
+  bruteForceWarning:
+    'Banyak percobaan masuk yang gagal. Ini bisa jadi serangan tebak-tebakan — pertimbangkan membuat ulang kode akses. (Satu IP diblokir setelah 10 kegagalan dalam 15 menit.)',
+  issueFailed: 'Gagal membuat kode akses.',
+  updateFailed: 'Gagal menyimpan perubahan.',
+  copyFailed: 'Gagal menyalin. Mohon catat secara manual.',
+
+  errLoginRequired: 'Silakan masuk terlebih dahulu.',
+  errOwnerOnly: 'Hanya akun pemilik yang dapat melakukan ini.',
+  errNotFound: 'Tidak ditemukan.',
+  errAlreadyPublished: 'Balasan ini sudah diterbitkan.',
+  errEmptyReply: 'Balasan masih kosong. Tulis isinya sebelum menerbitkan.',
+  errTooLong: (max, len) =>
+    `Balasan melebihi batas ${max} karakter dari Google (saat ini ${len}).`,
+  errPasscodeWrong: 'Kode akses salah.',
+  errTooManyAttempts: (m) => `Terlalu banyak percobaan. Tunggu sekitar ${m} menit lalu coba lagi.`,
+  errPublishedNoEdit: 'Balasan yang sudah terbit tidak bisa disunting.',
 };
 
 const DICTS: Record<UiLang, Dict> = { ja, en, id };

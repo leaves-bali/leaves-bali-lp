@@ -3,6 +3,8 @@
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 
+import { t, type UiLang } from '@/lib/i18n';
+
 interface StaffAccessItem {
   staff_access_id: string;
   location_id: string;
@@ -29,11 +31,14 @@ export function StaffAccessManager({
   initialItems,
   locations,
   appUrlHint,
+  lang,
 }: {
   initialItems: StaffAccessItem[];
   locations: LocationOption[];
   appUrlHint: string;
+  lang: UiLang;
 }) {
+  const d = t(lang);
   const router = useRouter();
   const [, startTransition] = useTransition();
   const [items, setItems] = useState(initialItems);
@@ -62,14 +67,14 @@ export function StaffAccessManager({
       });
       const json = await response.json();
       if (!response.ok) {
-        setError(json.error ?? 'パスコードの発行に失敗しました。');
+        setError(json.error ?? d.issueFailed);
         return;
       }
       setIssued({ passcode: json.passcode, label: json.label, rotated: json.rotated });
       setLabel('');
       startTransition(() => router.refresh());
     } catch {
-      setError('ネットワークエラーが発生しました。');
+      setError(d.networkError);
     } finally {
       setBusy(null);
     }
@@ -86,7 +91,7 @@ export function StaffAccessManager({
       });
       const json = await response.json();
       if (!response.ok) {
-        setError(json.error ?? '更新に失敗しました。');
+        setError(json.error ?? d.updateFailed);
         return;
       }
       setItems((prev) =>
@@ -94,7 +99,7 @@ export function StaffAccessManager({
       );
       startTransition(() => router.refresh());
     } catch {
-      setError('ネットワークエラーが発生しました。');
+      setError(d.networkError);
     } finally {
       setBusy(null);
     }
@@ -102,18 +107,18 @@ export function StaffAccessManager({
 
   async function copyHandover() {
     const text = [
-      'Hoshi Jungle Review AI ログイン情報',
+      d.handoverTitle,
       '',
-      `URL:       ${staffUrl}`,
-      `パスコード: ${issued?.passcode ?? ''}`,
+      `URL:      ${staffUrl}`,
+      `passcode: ${issued?.passcode ?? ''}`,
       '',
-      '※ このパスコードは他の人に共有しないでください。',
+      d.handoverWarn,
     ].join('\n');
     try {
       await navigator.clipboard.writeText(text);
       setCopied(true);
     } catch {
-      setError('コピーできませんでした。手動で控えてください。');
+      setError(d.copyFailed);
     }
   }
 
@@ -123,22 +128,22 @@ export function StaffAccessManager({
       {issued ? (
         <div className="card border-emerald-300 bg-emerald-50 p-5">
           <h3 className="text-sm font-semibold text-emerald-900">
-            {issued.rotated ? 'パスコードを再発行しました' : 'パスコードを発行しました'}
+            {issued.rotated ? d.rotatedTitle : d.issuedTitle}
             <span className="ml-2 font-normal">（{issued.label}）</span>
           </h3>
           <p className="mt-1 text-xs font-medium text-emerald-800">
-            この画面を閉じると二度と表示できません。今すぐ控えてください。
+            {d.onceOnly}
           </p>
 
           <dl className="mt-4 space-y-3">
             <div>
-              <dt className="text-xs text-emerald-700">スタッフが開く URL</dt>
+              <dt className="text-xs text-emerald-700">{d.staffUrlLabel}</dt>
               <dd className="mt-1 break-all rounded bg-white px-3 py-2 font-mono text-sm text-jungle-800">
                 {staffUrl}
               </dd>
             </div>
             <div>
-              <dt className="text-xs text-emerald-700">パスコード</dt>
+              <dt className="text-xs text-emerald-700">{d.passcode}</dt>
               <dd className="mt-1 rounded bg-white px-3 py-3 text-center font-mono text-2xl tracking-widest text-jungle-900">
                 {issued.passcode}
               </dd>
@@ -147,14 +152,14 @@ export function StaffAccessManager({
 
           <div className="mt-4 flex flex-wrap gap-2">
             <button type="button" onClick={copyHandover} className="btn-primary">
-              {copied ? 'コピーしました' : 'URL とパスコードをコピー'}
+              {copied ? d.copied : d.copyBoth}
             </button>
             <button
               type="button"
               onClick={() => setIssued(null)}
               className="btn-secondary"
             >
-              控えたので閉じる
+              {d.closeNoted}
             </button>
           </div>
         </div>
@@ -166,16 +171,16 @@ export function StaffAccessManager({
 
       {/* --- 新規発行 --- */}
       <div className="card p-5">
-        <h3 className="text-sm font-semibold text-jungle-800">新しいパスコードを発行</h3>
+        <h3 className="text-sm font-semibold text-jungle-800">{d.issueNew}</h3>
         <p className="mt-1 text-xs text-jungle-500">
-          用途ごとに分けて発行すると、片方だけを停止できます（例: 「フロント用」「マネージャー用」）。
+          {d.issueNewHint}
         </p>
         <div className="mt-3 flex flex-wrap gap-2">
           <input
             type="text"
             value={label}
             onChange={(e) => setLabel(e.target.value)}
-            placeholder="用途の名前（例: フロントデスク用）"
+            placeholder={d.labelPlaceholder}
             className="min-w-0 flex-1 rounded-lg border border-jungle-200 px-3 py-2 text-sm
                        outline-none focus:border-jungle-500 focus:ring-1 focus:ring-jungle-500"
           />
@@ -185,7 +190,7 @@ export function StaffAccessManager({
             disabled={busy !== null || locations.length === 0}
             className="btn-primary"
           >
-            {busy === 'new' ? '発行中…' : '発行する'}
+            {busy === 'new' ? d.issuing : d.issue}
           </button>
         </div>
       </div>
@@ -205,16 +210,16 @@ export function StaffAccessManager({
                         : 'bg-jungle-100 text-jungle-400'
                     }`}
                   >
-                    {item.is_active ? '有効' : '停止中'}
+                    {item.is_active ? d.activeLabel : d.inactiveLabel}
                   </span>
                 </p>
                 <p className="mt-0.5 text-xs text-jungle-400">
-                  最終利用:{' '}
+                  {d.lastUsed}:{' '}
                   {item.last_used_at
-                    ? new Date(item.last_used_at).toLocaleString('ja-JP')
-                    : '未使用'}
+                    ? new Date(item.last_used_at).toLocaleString()
+                    : d.unused}
                   {item.rotated_at
-                    ? ` ・ 再発行: ${new Date(item.rotated_at).toLocaleDateString('ja-JP')}`
+                    ? ` · ${d.rotatedAt}: ${new Date(item.rotated_at).toLocaleDateString()}`
                     : ''}
                 </p>
               </div>
@@ -225,7 +230,7 @@ export function StaffAccessManager({
                   disabled={busy !== null}
                   className="btn-secondary"
                 >
-                  再発行
+                  {d.rotate}
                 </button>
                 <button
                   type="button"
@@ -233,7 +238,7 @@ export function StaffAccessManager({
                   disabled={busy !== null}
                   className="btn-ghost"
                 >
-                  {item.is_active ? '停止' : '再開'}
+                  {item.is_active ? d.pause : d.resume}
                 </button>
               </div>
             </div>
@@ -241,7 +246,7 @@ export function StaffAccessManager({
         </div>
       ) : (
         <div className="card p-8 text-center text-sm text-jungle-500">
-          まだパスコードを発行していません。上のフォームから発行してください。
+          {d.noPasscodes}
         </div>
       )}
     </div>

@@ -6,6 +6,7 @@ import {
   reviewParentPath,
   updateReviewReply,
 } from '@/lib/google/businessProfile';
+import type { ErrorCode } from '@/lib/api';
 import type { SessionPayload } from '@/lib/session';
 import { supabaseAdmin } from '@/lib/supabase/admin';
 
@@ -19,11 +20,14 @@ import { supabaseAdmin } from '@/lib/supabase/admin';
 
 export class PublishError extends Error {
   readonly statusCode: number;
+  /** 画面の言語に翻訳できるものはコードを持たせる（api.ts が翻訳する）。 */
+  readonly code?: ErrorCode;
 
-  constructor(message: string, statusCode = 400) {
+  constructor(message: string, statusCode = 400, code?: ErrorCode) {
     super(message);
     this.name = 'PublishError';
     this.statusCode = statusCode;
+    this.code = code;
   }
 }
 
@@ -58,7 +62,7 @@ export async function loadReplyContext(
     .single();
 
   if (error || !data) {
-    throw new PublishError('返信が見つかりません。', 404);
+    throw new PublishError('Not found.', 404, 'not_found');
   }
 
   // Supabase の埋め込みリレーションは配列にもオブジェクトにもなりうるので正規化する。
@@ -70,10 +74,10 @@ export async function loadReplyContext(
   }
   // 存在を漏らさないよう、権限不足はすべて 404 で返す。
   if (location.user_id !== session.userId) {
-    throw new PublishError('返信が見つかりません。', 404);
+    throw new PublishError('Not found.', 404, 'not_found');
   }
   if (session.role === 'staff' && review.location_id !== session.locationId) {
-    throw new PublishError('返信が見つかりません。', 404);
+    throw new PublishError('Not found.', 404, 'not_found');
   }
 
   return {
@@ -101,11 +105,11 @@ export async function publishReply(
   const context = await loadReplyContext(replyId, session);
 
   if (context.status === 'published') {
-    throw new PublishError('この返信は既に公開されています。', 409);
+    throw new PublishError('Already published.', 409, 'already_published');
   }
   const text = context.final_text?.trim();
   if (!text) {
-    throw new PublishError('返信本文が空です。編集してから公開してください。');
+    throw new PublishError('Reply is empty.', 400, 'empty_reply');
   }
   if (text.length > REPLY_MAX_LENGTH) {
     throw new PublishError(

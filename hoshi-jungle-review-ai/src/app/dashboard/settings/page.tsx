@@ -1,7 +1,9 @@
 import { redirect } from 'next/navigation';
 
 import { StaffAccessManager } from '@/components/StaffAccessManager';
+import { t } from '@/lib/i18n';
 import { getSession } from '@/lib/session';
+import { getUiLang } from '@/lib/uiLang';
 import { supabaseAdmin } from '@/lib/supabase/admin';
 
 export const dynamic = 'force-dynamic';
@@ -13,6 +15,8 @@ export default async function SettingsPage() {
   // スタッフが URL を直接叩いても入れない
   if (session.role !== 'owner') redirect('/dashboard');
 
+  const uiLang = await getUiLang();
+  const d = t(uiLang);
   const db = supabaseAdmin();
 
   const { data: locations } = await db
@@ -47,10 +51,9 @@ export default async function SettingsPage() {
   return (
     <section>
       <div className="mb-6">
-        <h2 className="text-xl font-bold text-jungle-800">スタッフ用パスコード</h2>
+        <h2 className="text-xl font-bold text-jungle-800">{d.passcodeTitle}</h2>
         <p className="mt-1 text-sm leading-relaxed text-jungle-500">
-          スタッフはここで発行したパスコードで入室します。Google アカウントは不要です。
-          スタッフは Google の認証情報に一切触れず、クチコミの確認・編集・公開だけを行えます。
+          {d.passcodeLead}
         </p>
       </div>
 
@@ -58,32 +61,32 @@ export default async function SettingsPage() {
         initialItems={items ?? []}
         locations={locations ?? []}
         appUrlHint="/staff"
+        lang={uiLang}
       />
 
       <div className="card mt-6 p-5">
-        <h3 className="text-sm font-semibold text-jungle-800">セキュリティの状況</h3>
+        <h3 className="text-sm font-semibold text-jungle-800">{d.securityStatus}</h3>
         <dl className="mt-3 grid grid-cols-2 gap-4 text-sm">
           <div>
-            <dt className="text-xs text-jungle-500">有効なパスコード</dt>
+            <dt className="text-xs text-jungle-500">{d.activePasscodes}</dt>
             <dd className="mt-0.5 font-bold text-jungle-800">
-              {(items ?? []).filter((i) => i.is_active).length} 件
+              {(items ?? []).filter((i) => i.is_active).length}
             </dd>
           </div>
           <div>
-            <dt className="text-xs text-jungle-500">直近24時間のログイン失敗</dt>
+            <dt className="text-xs text-jungle-500">{d.failedLogins24h}</dt>
             <dd
               className={`mt-0.5 font-bold ${
                 (recentFailures ?? 0) > 20 ? 'text-red-600' : 'text-jungle-800'
               }`}
             >
-              {recentFailures ?? 0} 回
+              {recentFailures ?? 0}
             </dd>
           </div>
         </dl>
         {(recentFailures ?? 0) > 20 ? (
           <p className="mt-3 rounded bg-amber-50 px-3 py-2 text-xs text-amber-900">
-            ログイン失敗が多く発生しています。総当たり攻撃の可能性があるため、
-            パスコードの再発行を検討してください（同一IPからは15分あたり10回で自動的に遮断されます）。
+            {d.bruteForceWarning}
           </p>
         ) : null}
       </div>

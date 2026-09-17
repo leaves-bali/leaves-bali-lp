@@ -29,7 +29,7 @@ export async function GET() {
 
     return NextResponse.json({ items: data ?? [] });
   } catch (err) {
-    return errorResponse(err);
+    return await errorResponse(err);
   }
 }
 
@@ -117,7 +117,7 @@ export async function POST(request: NextRequest) {
       rotated: false,
     });
   } catch (err) {
-    return errorResponse(err);
+    return await errorResponse(err);
   }
 }
 

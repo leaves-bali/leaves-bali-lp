@@ -75,6 +75,6 @@ export async function POST(request: NextRequest) {
       budgetExhausted: results.some((r) => r.budgetExhausted),
     });
   } catch (err) {
-    return errorResponse(err);
+    return await errorResponse(err);
   }
 }

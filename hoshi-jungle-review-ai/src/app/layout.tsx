@@ -5,7 +5,7 @@ import './globals.css';
 export const metadata: Metadata = {
   title: 'Hoshi Jungle Review AI',
   description:
-    'Hoshi Jungle のGoogleクチコミに、日本語・英語・インドネシア語で返信案を自動生成する管理ツール',
+    'Draft replies for Hoshi Jungle Google reviews in the guest\u2019s own language. Staff approve before anything is published.',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

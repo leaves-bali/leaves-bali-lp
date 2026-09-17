@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
+import { t, type UiLang } from '@/lib/i18n';
+
 interface AvailableLocation {
   googleAccountName: string;
   accountLabel: string;
@@ -29,7 +31,8 @@ interface SyncSummary {
 const MAX_ROUNDS = 40;
 
 /** ステップ 2（ロケーション選択）と 3（完了）を担当するクライアントコンポーネント。 */
-export function SetupWizard({ userEmail }: { userEmail: string }) {
+export function SetupWizard({ userEmail, lang }: { userEmail: string; lang: UiLang }) {
+  const d = t(lang);
   const router = useRouter();
   const [locations, setLocations] = useState<AvailableLocation[] | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
@@ -46,7 +49,7 @@ export function SetupWizard({ userEmail }: { userEmail: string }) {
         const json = await response.json();
         if (cancelled) return;
         if (!response.ok) {
-          setLoadError(json.error ?? 'ロケーションの取得に失敗しました。');
+          setLoadError(json.error ?? d.locationLoadFailed);
           return;
         }
         setLocations(json.locations);
@@ -54,7 +57,7 @@ export function SetupWizard({ userEmail }: { userEmail: string }) {
           setSelected(json.locations[0].googleLocationId);
         }
       } catch {
-        if (!cancelled) setLoadError('ネットワークエラーが発生しました。');
+        if (!cancelled) setLoadError(d.networkError);
       }
     })();
     return () => {
@@ -83,7 +86,7 @@ export function SetupWizard({ userEmail }: { userEmail: string }) {
       });
       const json = await response.json();
       if (!response.ok) {
-        setLoadError(json.error ?? '登録に失敗しました。');
+        setLoadError(json.error ?? d.registerFailed);
         return;
       }
 
@@ -91,9 +94,7 @@ export function SetupWizard({ userEmail }: { userEmail: string }) {
 
       // 2 回目以降: 残りがなくなるまで同期を続ける
       for (let round = 0; round < MAX_ROUNDS && totals.hasMore; round += 1) {
-        setProgress(
-          `クチコミ ${totals.reviewsNew} 件を取得、返信案 ${totals.repliesGenerated} 件を作成しました。続きを処理しています…`,
-        );
+        setProgress(d.syncProgress(totals.reviewsNew, totals.repliesGenerated));
         const next = await fetch('/api/sync', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -114,7 +115,7 @@ export function SetupWizard({ userEmail }: { userEmail: string }) {
 
       setSummary(totals);
     } catch {
-      setLoadError('ネットワークエラーが発生しました。');
+      setLoadError(d.networkError);
     } finally {
       setSubmitting(false);
       setProgress(null);
@@ -125,22 +126,21 @@ export function SetupWizard({ userEmail }: { userEmail: string }) {
   if (summary) {
     return (
       <div className="card p-6">
-        <p className="text-xs text-jungle-400">ステップ 3 / 3</p>
-        <h2 className="mt-1 text-lg font-semibold text-jungle-800">設定が完了しました</h2>
+        <p className="text-xs text-jungle-400">{d.stepOf(3, 3)}</p>
+        <h2 className="mt-1 text-lg font-semibold text-jungle-800">{d.setupDone}</h2>
         <dl className="mt-5 grid grid-cols-3 gap-4 text-center">
-          <Stat label="取得したクチコミ" value={summary.reviewsFetched} />
-          <Stat label="新規" value={summary.reviewsNew} />
-          <Stat label="返信案を作成" value={summary.repliesGenerated} />
+          <Stat label={d.statFetched} value={summary.reviewsFetched} />
+          <Stat label={d.statNew} value={summary.reviewsNew} />
+          <Stat label={d.statGenerated} value={summary.repliesGenerated} />
         </dl>
         {summary.budgetExhausted ? (
           <div className="mt-4 rounded-lg bg-amber-50 p-3 text-xs leading-relaxed text-amber-900">
-            今月の AI 生成上限に達したため、一部のクチコミは返信案が未作成です。
-            来月 1 日に上限がリセットされます。それまでは手動で返信できます。
+            {d.wizardBudgetNote}
           </div>
         ) : null}
         {summary.errors.length > 0 ? (
           <div className="mt-4 rounded-lg bg-amber-50 p-3 text-xs text-amber-800">
-            <p className="font-medium">一部処理でエラーが発生しました:</p>
+            <p className="font-medium">{d.someErrors}</p>
             <ul className="mt-1 list-disc pl-4">
               {summary.errors.slice(0, 3).map((e) => (
                 <li key={e}>{e}</li>
@@ -149,15 +149,14 @@ export function SetupWizard({ userEmail }: { userEmail: string }) {
           </div>
         ) : null}
         <p className="mt-5 text-sm text-jungle-600">
-          以降は毎時自動でクチコミを取得し、返信案を作成します。
-          返信案は<strong>ドラフトとして保存</strong>され、公開はスタッフの確認後に行われます。
+          {d.afterSetupNote}
         </p>
         <button
           type="button"
           onClick={() => router.push('/dashboard')}
           className="btn-primary mt-5 w-full"
         >
-          ダッシュボードへ
+          {d.toDashboard}
         </button>
       </div>
     );
@@ -166,11 +165,11 @@ export function SetupWizard({ userEmail }: { userEmail: string }) {
   // --- ステップ 2: ロケーション選択 -----------------------------------------
   return (
     <div className="card p-6">
-      <p className="text-xs text-jungle-400">ステップ 2 / 3</p>
+      <p className="text-xs text-jungle-400">{d.stepOf(2, 3)}</p>
       <h2 className="mt-1 text-lg font-semibold text-jungle-800">
-        対象のロケーションを選択
+        {d.stepSelectLocation}
       </h2>
-      <p className="mt-1 text-xs text-jungle-500">ログイン中: {userEmail}</p>
+      <p className="mt-1 text-xs text-jungle-500">{d.loggedInAs}: {userEmail}</p>
 
       {loadError ? (
         <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">
@@ -179,13 +178,12 @@ export function SetupWizard({ userEmail }: { userEmail: string }) {
       ) : null}
 
       {locations === null && !loadError ? (
-        <p className="mt-6 text-sm text-jungle-500">Google からロケーションを読み込んでいます…</p>
+        <p className="mt-6 text-sm text-jungle-500">{d.loadingLocations}</p>
       ) : null}
 
       {locations && locations.length === 0 ? (
         <div className="mt-6 rounded-lg bg-amber-50 p-4 text-sm text-amber-900">
-          このアカウントで管理できるロケーションが見つかりませんでした。
-          Google ビジネスプロフィールの管理者権限があるアカウントでログインし直してください。
+          {d.noLocations}
         </div>
       ) : null}
 
@@ -210,7 +208,7 @@ export function SetupWizard({ userEmail }: { userEmail: string }) {
               <span className="block text-sm font-medium text-jungle-800">
                 {location.name}
                 {location.alreadyRegistered ? (
-                  <span className="badge ml-2 bg-jungle-100 text-jungle-600">登録済み</span>
+                  <span className="badge ml-2 bg-jungle-100 text-jungle-600">{d.alreadyRegistered}</span>
                 ) : null}
               </span>
               {location.address ? (
@@ -230,12 +228,11 @@ export function SetupWizard({ userEmail }: { userEmail: string }) {
         disabled={!selected || submitting}
         className="btn-primary mt-6 w-full"
       >
-        {submitting ? 'クチコミを取得しています…' : 'このロケーションで設定を完了する'}
+        {submitting ? d.fetchingReviews : d.completeSetup}
       </button>
       {submitting ? (
         <p className="mt-2 text-center text-xs text-jungle-500">
-          {progress ??
-            '初回はクチコミの取得と返信案の生成を行うため、1〜2 分かかることがあります。'}
+          {progress ?? d.firstSyncNote}
         </p>
       ) : null}
     </div>

@@ -307,7 +307,7 @@ export function ReviewCard({
                   className="btn-primary"
                   title={isDirty ? d.saveFirst : d.publish}
                 >
-                  {busy === 'publish' ? '公開中…' : 'Google に公開'}
+                  {busy === 'publish' ? d.publishing : d.publish}
                 </button>
                 <button
                   type="button"

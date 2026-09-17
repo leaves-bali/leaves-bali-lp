@@ -29,7 +29,7 @@ export async function PATCH(
 
     if (body.editedText !== undefined) {
       const text = body.editedText.trim();
-      if (!text) throw new HttpError('返信本文が空です。');
+      if (!text) throw new HttpError('Reply is empty.', 400, 'empty_reply');
       if (text.length > REPLY_MAX_LENGTH) {
         throw new HttpError(
           `返信本文が Google の上限 ${REPLY_MAX_LENGTH} 文字を超えています（現在 ${text.length} 文字）。`,
@@ -37,7 +37,7 @@ export async function PATCH(
       }
       if (context.status === 'published') {
         // 公開済みの上書きは意図せぬ事故になりやすいので、明示的な再公開操作に限定する。
-        throw new HttpError('公開済みの返信は編集できません。再公開が必要な場合は再生成してください。', 409);
+        throw new HttpError('Published replies cannot be edited.', 409, 'published_no_edit');
       }
       update.edited_text = text;
       update.status = 'edited';
@@ -72,6 +72,6 @@ export async function PATCH(
 
     return NextResponse.json({ reply: data });
   } catch (err) {
-    return errorResponse(err);
+    return await errorResponse(err);
   }
 }

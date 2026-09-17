@@ -118,7 +118,7 @@ export default async function DashboardLayout({
           <span>{d.autoHourly}</span>
           <span
             className={budget.exhausted ? 'font-medium text-amber-700' : ''}
-            title={`今月の AI 生成コスト $${budget.spentUsd.toFixed(4)} / 上限 $${budget.budgetUsd}`}
+            title={`$${budget.spentUsd.toFixed(4)} / $${budget.budgetUsd}`}
           >
             {d.remainingThisMonth} {budget.remainingReplies}
           </span>

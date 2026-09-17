@@ -57,6 +57,6 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ locationId: location.location_id, sync: result });
   } catch (err) {
-    return errorResponse(err);
+    return await errorResponse(err);
   }
 }

@@ -47,6 +47,6 @@ export async function GET() {
       locations: flattened.map((l) => ({ ...l, alreadyRegistered: registeredIds.has(l.googleLocationId) })),
     });
   } catch (err) {
-    return errorResponse(err);
+    return await errorResponse(err);
   }
 }

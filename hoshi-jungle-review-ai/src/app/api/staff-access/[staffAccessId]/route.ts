@@ -47,6 +47,6 @@ export async function PATCH(
     if (error) throw new HttpError(`更新に失敗しました: ${error.message}`, 500);
     return NextResponse.json({ item: data });
   } catch (err) {
-    return errorResponse(err);
+    return await errorResponse(err);
   }
 }

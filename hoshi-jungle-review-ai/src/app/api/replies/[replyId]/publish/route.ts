@@ -16,6 +16,6 @@ export async function POST(
     const result = await publishReply(replyId, session);
     return NextResponse.json({ ok: true, ...result });
   } catch (err) {
-    return errorResponse(err);
+    return await errorResponse(err);
   }
 }

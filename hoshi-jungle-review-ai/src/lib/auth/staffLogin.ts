@@ -28,7 +28,8 @@ export type StaffLoginOutcome =
       staffAccessId: string;
       staffLabel: string;
     }
-  | { ok: false; status: number; message: string };
+  // 文言ではなく理由を返す。画面の言語（日/英/尼）に合わせて呼び出し側が翻訳する。
+  | { ok: false; status: number; reason: 'empty' | 'wrong' | 'rate_limited'; waitMinutes?: number };
 
 /** IP は生のまま保存しない。監査に必要なのは「同一送信元かどうか」だけ。 */
 export function hashIp(ip: string, salt: string): string {
@@ -43,7 +44,7 @@ export async function loginWithPasscode(
   const passcode = normalizePasscode(rawPasscode);
 
   if (passcode.length < 6) {
-    return { ok: false, status: 400, message: 'パスコードを入力してください。' };
+    return { ok: false, status: 400, reason: 'empty' };
   }
 
   // --- 1. IP 単位のレート制限 ---------------------------------------------
@@ -59,7 +60,8 @@ export async function loginWithPasscode(
     return {
       ok: false,
       status: 429,
-      message: `試行回数が多すぎます。${IP_WINDOW_MINUTES} 分ほど待ってからもう一度お試しください。`,
+      reason: 'rate_limited',
+      waitMinutes: IP_WINDOW_MINUTES,
     };
   }
 
@@ -102,7 +104,7 @@ export async function loginWithPasscode(
   // --- 3. 不一致 -----------------------------------------------------------
   await recordAttempt(null, ipHash, false);
 
-  return { ok: false, status: 401, message: 'パスコードが違います。' };
+  return { ok: false, status: 401, reason: 'wrong' };
 }
 
 async function recordAttempt(
