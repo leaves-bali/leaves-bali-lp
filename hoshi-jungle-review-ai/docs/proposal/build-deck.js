@@ -432,22 +432,22 @@ function footer(s, n) {
 {
   const s = pres.addSlide();
   s.background = { color: SURF };
-  heading(s, "管理費はいただきません", "月額の管理費・保守費はありません。サーバー代もすべて無料枠に収まるよう設計しました");
+  heading(s, "管理費はいただきません", "月額の管理費・保守費はありません。返信数を増やしたいときだけ、AIの実費で上限を上げられます");
 
   // 大きな数字（1行にまとめる。枠からはみ出さない高さを確保）
-  card(s, M, 2.1, 4.3, 3.1, WHITE);
+  card(s, M, 2.1, 4.3, 2.85, WHITE);
   s.addText(
     [
       { text: "0", options: { fontSize: 80, bold: true, color: PINE, fontFace: HEAD } },
       { text: "  円 / 月", options: { fontSize: 22, bold: true, color: INK, fontFace: HEAD } },
     ],
     {
-      x: M, y: 2.8, w: 4.3, h: 1.8,
+      x: M, y: 2.66, w: 4.3, h: 1.7,
       align: "center", valign: "middle", isTextBox: true, margin: 0,
     }
   );
   s.addText("毎月かかる費用はありません", {
-    x: M, y: 4.62, w: 4.3, h: 0.4,
+    x: M, y: 4.42, w: 4.3, h: 0.4,
     fontFace: BODY, fontSize: 11.5, color: INK3,
     align: "center", isTextBox: true, margin: 0,
   });
@@ -477,19 +477,61 @@ function footer(s, n) {
     border: { type: "solid", color: LINE, pt: 1 },
     fill: { color: WHITE },
     fontFace: BODY,
-    rowH: 0.44,
+    rowH: 0.38,
     valign: "middle",
     margin: 0.08,
   });
 
   s.addText("AIの利用分は無料枠の範囲で自動的に停止します。上限に達してもクチコミの取得は続き、手動での返信は可能です。上限は毎月1日にリセットされます。", {
-    x: M + 4.7, y: 5.35, w: W - M * 2 - 4.7, h: 0.8,
-    fontFace: BODY, fontSize: 10.5, color: INK3, lineSpacing: 17,
+    x: M + 4.7, y: 5.22, w: W - M * 2 - 4.7, h: 0.5,
+    fontFace: BODY, fontSize: 10, color: INK3, lineSpacing: 15,
     isTextBox: true, margin: 0,
   });
 
+  // --- 増量プラン（無料枠で足りないとき） ---
+  s.addText("返信が月43件で足りないときは", {
+    x: M, y: 5.68, w: 3.3, h: 0.3,
+    fontFace: HEAD, fontSize: 13, bold: true, color: INK, isTextBox: true, margin: 0,
+  });
+  s.addText("AIの利用料だけを実費でお支払いいただければ、上限を上げられます。管理費は変わらず0円です。", {
+    x: M, y: 5.98, w: 3.3, h: 0.65,
+    fontFace: BODY, fontSize: 9.5, color: INK2, lineSpacing: 14,
+    isTextBox: true, margin: 0,
+  });
+
+  const tiers = [
+    ["0円 / 月", "43件", "無料枠のまま", true],
+    ["約150円 / 月", "109件", "2.5倍", false],
+    ["約300円 / 月", "219件", "5倍", false],
+    ["約750円 / 月", "549件", "12倍", false],
+  ];
+  const tw = 1.95;
+  tiers.forEach(function (tier, i) {
+    const x = M + 4.05 + i * (tw + 0.15);
+    s.addShape(pres.ShapeType.roundRect, {
+      x: x, y: 5.64, w: tw, h: 1.0,
+      fill: { color: tier[3] ? MOSS : WHITE }, rectRadius: 0.06,
+      line: { color: tier[3] ? "A9C9B8" : LINE, width: 1 },
+    });
+    s.addText(tier[0], {
+      x: x, y: 5.74, w: tw, h: 0.24,
+      fontFace: BODY, fontSize: 9.5, bold: true, color: tier[3] ? PINE : INK3,
+      align: "center", isTextBox: true, margin: 0,
+    });
+    s.addText(tier[1], {
+      x: x, y: 5.96, w: tw, h: 0.4,
+      fontFace: HEAD, fontSize: 20, bold: true, color: INK,
+      align: "center", isTextBox: true, margin: 0,
+    });
+    s.addText(tier[2], {
+      x: x, y: 6.34, w: tw, h: 0.24,
+      fontFace: BODY, fontSize: 8.5, color: INK3,
+      align: "center", isTextBox: true, margin: 0,
+    });
+  });
+
   footer(s, 8);
-  s.addNotes("返信量を増やしたい場合は月数百円程度で拡張できます。");
+  s.addNotes("管理費は0円のまま。返信数だけ、AIの実費で増やせるという説明の仕方が伝わりやすい。");
 }
 
 // =====================================================================

@@ -280,6 +280,23 @@
     margin-top: 14px; font-size: 12.5px; color: var(--ink-3); line-height: 1.7;
   }
 
+  /* ---------- 増量プラン ---------- */
+  .mt-tier { margin-top: 20px; padding: 22px 24px; }
+  .tier-h { font-size: 16px; }
+  .tier-p { margin: 8px 0 0; font-size: 13px; color: var(--ink-2); line-height: 1.7; }
+  .tier-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 16px; }
+  @media (max-width: 640px) { .tier-row { grid-template-columns: repeat(2, 1fr); } }
+  .tier-box {
+    border: 1px solid var(--line); border-radius: 6px; padding: 14px 10px;
+    text-align: center; display: flex; flex-direction: column; gap: 3px;
+    background: var(--surface);
+  }
+  .tier-box.on { background: var(--pine-soft); border-color: var(--pine); }
+  .tier-box .p { font-size: 11.5px; font-weight: 700; color: var(--ink-3); }
+  .tier-box.on .p { color: var(--pine); }
+  .tier-box b { font-family: var(--display); font-size: 24px; }
+  .tier-box .s { font-size: 11px; color: var(--ink-3); }
+
   /* ---------- steps ---------- */
   .steps { display: grid; gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 4px; overflow: hidden; }
   .step { background: var(--surface); padding: 22px 20px; display: grid; grid-template-columns: 34px 1fr; gap: 16px; align-items: start; }
@@ -518,8 +535,8 @@
   <div class="wrap">
     <div class="sec-head">
       <div class="eyebrow">費用</div>
-      <h2>月額0円で運用します</h2>
-      <p>すべて無料枠に収まるよう設計しました。従量課金で青天井になる部分はありません。</p>
+      <h2>管理費はいただきません</h2>
+      <p>月額の管理費・保守費はありません。返信数を増やしたいときだけ、AIの実費で上限を上げられます。</p>
     </div>
 
     <div class="tbl-wrap">
@@ -528,11 +545,12 @@
           <tr><th>内訳</th><th>役割</th><th class="num">月額</th></tr>
         </thead>
         <tbody>
+          <tr><td>管理費・保守費</td><td>毎月の運用サポート</td><td class="num">0円</td></tr>
           <tr><td>サーバー</td><td>画面の表示</td><td class="num">0円</td></tr>
           <tr><td>データベース</td><td>クチコミと返信の保存</td><td class="num">0円</td></tr>
           <tr><td>定期取得</td><td>毎時間の自動チェック</td><td class="num">0円</td></tr>
           <tr><td>Google連携</td><td>クチコミの取得・返信の投稿</td><td class="num">0円</td></tr>
-          <tr><td>AI（返信案の作成）</td><td>月71件まで</td><td class="num">0円</td></tr>
+          <tr><td>AI（3案の作成）</td><td>月43件まで</td><td class="num">0円</td></tr>
         </tbody>
         <tfoot>
           <tr><td colspan="2">合計</td><td class="num">0円</td></tr>
@@ -542,8 +560,22 @@
 
     <p class="demo-note">
       AIの利用分は無料枠の範囲で自動的に停止します。上限に達しても、クチコミの取得は続き、スタッフが手動で返信することは可能です。
-      上限は毎月1日にリセットされます。返信量を増やしたい場合は、月数百円程度で拡張できます。
+      上限は毎月1日にリセットされます。
     </p>
+
+    <div class="card mt-tier">
+      <h3 class="tier-h">返信が月43件で足りないときは</h3>
+      <p class="tier-p">
+        AIの利用料だけを実費でお支払いいただければ、上限を上げられます。
+        管理費は変わらず0円です。いつでも元に戻せます。
+      </p>
+      <div class="tier-row">
+        <div class="tier-box on"><span class="p">0円 / 月</span><b>43件</b><span class="s">無料枠のまま</span></div>
+        <div class="tier-box"><span class="p">約150円 / 月</span><b>109件</b><span class="s">2.5倍</span></div>
+        <div class="tier-box"><span class="p">約300円 / 月</span><b>219件</b><span class="s">5倍</span></div>
+        <div class="tier-box"><span class="p">約750円 / 月</span><b>549件</b><span class="s">12倍</span></div>
+      </div>
+    </div>
   </div>
 </section>
 
