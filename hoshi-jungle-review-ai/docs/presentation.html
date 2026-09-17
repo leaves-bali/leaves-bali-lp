@@ -1,0 +1,816 @@
+<title>Hoshi Jungle Review AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Old+Mincho:wght@500;700&display=swap">
+<style>
+  :root {
+    --bg:        #F4F7F2;
+    --surface:   #FFFFFF;
+    --surface-2: #EAEFE7;
+    --line:      #D6DFD3;
+    --line-soft: #E5EBE2;
+    --ink:       #16221A;
+    --ink-2:     #43584A;
+    --ink-3:     #6E8375;
+    --pine:      #1F5C47;
+    --pine-2:    #174837;
+    --pine-soft: #DDEAE2;
+    --brass:     #9A7A32;
+    --warn:      #8A5A11;
+    --warn-bg:   #FBF1DC;
+    --warn-line: #E8D3A6;
+    --crit:      #9B3730;
+    --crit-bg:   #FAE8E5;
+    --ok:        #1F5C47;
+    --ok-bg:     #DEEDE4;
+    --on-pine:   #FFFFFF;
+    --shadow:    0 1px 2px rgba(20,40,28,.06), 0 8px 24px -12px rgba(20,40,28,.18);
+
+    --display: "Zen Old Mincho", "Hiragino Mincho ProN", "Yu Mincho", serif;
+    --body: system-ui, -apple-system, "Hiragino Sans", "Noto Sans JP", "Yu Gothic", sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg:        #0D1411;
+      --surface:   #151F1A;
+      --surface-2: #1C2922;
+      --line:      #2B3B32;
+      --line-soft: #223029;
+      --ink:       #E7EEE8;
+      --ink-2:     #B3C4B8;
+      --ink-3:     #859A8C;
+      --pine:      #62C099;
+      --pine-2:    #7ED0AC;
+      --pine-soft: #1A3B2D;
+      --brass:     #D4B266;
+      --warn:      #E2B972;
+      --warn-bg:   #2E2415;
+      --warn-line: #4A3A1E;
+      --crit:      #EE9A92;
+      --crit-bg:   #331C1A;
+      --ok:        #62C099;
+      --ok-bg:     #17332A;
+      --on-pine:   #0B120F;
+      --shadow:    0 1px 2px rgba(0,0,0,.4), 0 10px 28px -14px rgba(0,0,0,.7);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg:        #0D1411;
+    --surface:   #151F1A;
+    --surface-2: #1C2922;
+    --line:      #2B3B32;
+    --line-soft: #223029;
+    --ink:       #E7EEE8;
+    --ink-2:     #B3C4B8;
+    --ink-3:     #859A8C;
+    --pine:      #62C099;
+    --pine-2:    #7ED0AC;
+    --pine-soft: #1A3B2D;
+    --brass:     #D4B266;
+    --warn:      #E2B972;
+    --warn-bg:   #2E2415;
+    --warn-line: #4A3A1E;
+    --crit:      #EE9A92;
+    --crit-bg:   #331C1A;
+    --ok:        #62C099;
+    --ok-bg:     #17332A;
+    --on-pine:   #0B120F;
+    --shadow:    0 1px 2px rgba(0,0,0,.4), 0 10px 28px -14px rgba(0,0,0,.7);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 15px;
+    line-height: 1.75;
+    -webkit-font-smoothing: antialiased;
+    padding-inline: 20px;
+    padding-block: 0 0;
+  }
+
+  .wrap { max-width: 780px; margin-inline: auto; }
+  .wide { max-width: 1000px; margin-inline: auto; }
+
+  h1, h2, h3 { font-family: var(--display); font-weight: 700; text-wrap: balance; line-height: 1.35; margin: 0; }
+
+  .eyebrow {
+    font-size: 11px; letter-spacing: .16em; text-transform: uppercase;
+    color: var(--ink-3); font-weight: 600;
+  }
+
+  /* ---------- masthead ---------- */
+  .masthead { padding-block: 64px 48px; }
+  .masthead .route {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    font-size: 11px; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--ink-3); font-weight: 600;
+  }
+  .masthead .route .arrow { color: var(--pine); }
+  .masthead h1 {
+    font-size: clamp(30px, 6.4vw, 48px);
+    margin-block: 22px 0;
+    letter-spacing: .01em;
+  }
+  .masthead h1 .quiet { color: var(--pine); }
+  .masthead .lead {
+    margin-block: 20px 0; max-width: 34em;
+    font-size: 16px; color: var(--ink-2);
+  }
+  .masthead .stamp {
+    margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--line);
+    display: flex; gap: 18px; flex-wrap: wrap;
+    font-size: 12px; color: var(--ink-3);
+  }
+
+  /* ---------- pillars ---------- */
+  .pillars { display: grid; gap: 14px; grid-template-columns: repeat(3, 1fr); padding-bottom: 56px; }
+  @media (max-width: 720px) { .pillars { grid-template-columns: 1fr; } }
+  .pillar {
+    background: var(--surface); border: 1px solid var(--line-soft);
+    border-radius: 3px; padding: 22px 20px 24px;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .pillar .k { font-family: var(--display); font-size: 19px; font-weight: 700; line-height: 1.4; }
+  .pillar .v { font-size: 13.5px; color: var(--ink-2); line-height: 1.7; }
+
+  /* ---------- section ---------- */
+  section { padding-block: 56px; border-top: 1px solid var(--line); }
+  section.flush { border-top: none; }
+  .sec-head { margin-bottom: 28px; }
+  .sec-head h2 { font-size: clamp(22px, 4vw, 29px); margin-top: 8px; }
+  .sec-head p { margin: 12px 0 0; color: var(--ink-2); max-width: 36em; font-size: 14.5px; }
+
+  /* ---------- demo frame ---------- */
+  .frame {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 8px; overflow: hidden; box-shadow: var(--shadow);
+  }
+  .frame-bar {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 14px; background: var(--surface-2);
+    border-bottom: 1px solid var(--line);
+  }
+  .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--line); }
+  .frame-url {
+    margin-left: 8px; font-family: var(--mono); font-size: 11.5px;
+    color: var(--ink-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+
+  .app-head {
+    padding: 18px 20px 0;
+    display: flex; align-items: flex-start; gap: 14px; flex-wrap: wrap;
+  }
+  .app-head .name { font-family: var(--display); font-size: 20px; font-weight: 700; }
+  .app-head .sub { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); font-weight: 600; }
+  .app-head .right { margin-left: auto; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 11.5px; font-weight: 600; padding: 4px 10px; border-radius: 999px;
+    background: var(--surface-2); color: var(--ink-2); border: 1px solid var(--line-soft);
+  }
+  .chip.quota { font-variant-numeric: tabular-nums; }
+
+  .app-nav {
+    display: flex; gap: 2px; padding: 16px 20px 0; flex-wrap: wrap;
+    border-bottom: 1px solid var(--line); margin-top: 14px;
+  }
+  .app-nav button {
+    appearance: none; background: none; border: none; cursor: pointer;
+    font: inherit; font-size: 13.5px; font-weight: 600; color: var(--ink-3);
+    padding: 9px 13px; border-bottom: 2px solid transparent; margin-bottom: -1px;
+    border-radius: 3px 3px 0 0;
+  }
+  .app-nav button:hover { color: var(--ink); background: var(--surface-2); }
+  .app-nav button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--pine); }
+  .app-nav button[data-lang="id"][aria-selected="true"] { border-bottom-color: var(--warn); color: var(--warn); }
+  .app-nav button .n { color: var(--ink-3); font-weight: 500; margin-left: 5px; font-variant-numeric: tabular-nums; }
+  .app-nav button:focus-visible { outline: 2px solid var(--pine); outline-offset: -2px; }
+
+  .app-tools {
+    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+    padding: 12px 20px; background: var(--surface-2); border-bottom: 1px solid var(--line);
+    font-size: 12.5px; color: var(--ink-2);
+  }
+  .switch { display: inline-flex; align-items: center; gap: 7px; cursor: pointer; user-select: none; font-weight: 600; }
+  .switch input { accent-color: var(--pine); width: 15px; height: 15px; }
+
+  .cards { display: flex; flex-direction: column; }
+  .card { border-bottom: 1px solid var(--line-soft); padding: 22px 20px; }
+  .card:last-child { border-bottom: none; }
+  .card.flag { border-left: 3px solid var(--warn); }
+  .card.done { background: var(--surface-2); }
+
+  .card-top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+  .stars { color: var(--brass); letter-spacing: 1px; font-size: 14px; }
+  .stars .off { color: var(--line); }
+  .who { font-weight: 700; font-size: 14px; }
+  .when { margin-left: auto; font-size: 11.5px; color: var(--ink-3); }
+
+  .tag { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; letter-spacing: .02em; }
+  .tag.ja { background: var(--pine-soft); color: var(--pine); }
+  .tag.en { background: var(--surface-2); color: var(--ink-2); border: 1px solid var(--line); }
+  .tag.id { background: var(--warn-bg); color: var(--warn); border: 1px solid var(--warn-line); }
+  .tag.st-draft { background: var(--surface-2); color: var(--ink-2); border: 1px solid var(--line); }
+  .tag.st-done { background: var(--ok-bg); color: var(--ok); }
+
+  .review-body { font-size: 14.5px; color: var(--ink); white-space: pre-wrap; margin: 0 0 4px; }
+
+  .alert {
+    display: flex; gap: 9px; align-items: flex-start;
+    margin-top: 14px; padding: 10px 13px; border-radius: 4px;
+    background: var(--warn-bg); border: 1px solid var(--warn-line);
+    font-size: 12.5px; line-height: 1.65; color: var(--warn);
+  }
+  .alert b { font-weight: 700; }
+  .alert.crit { background: var(--crit-bg); border-color: var(--crit); color: var(--crit); }
+
+  .reply { margin-top: 16px; }
+  .reply-head {
+    display: flex; align-items: baseline; gap: 10px; margin-bottom: 7px;
+    font-size: 11.5px; color: var(--ink-3); font-weight: 600;
+  }
+  .reply-head .count { margin-left: auto; font-variant-numeric: tabular-nums; font-family: var(--mono); font-size: 11px; }
+  textarea {
+    width: 100%; min-height: 96px; resize: vertical; overflow: hidden;
+    font: inherit; font-size: 14px; line-height: 1.8;
+    color: var(--ink); background: var(--bg);
+    border: 1px solid var(--line); border-radius: 4px; padding: 13px 14px;
+  }
+  textarea:focus { outline: none; border-color: var(--pine); box-shadow: 0 0 0 2px var(--pine-soft); }
+  textarea[readonly] { background: var(--surface-2); color: var(--ink-2); }
+
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; align-items: center; }
+  button.act {
+    appearance: none; font: inherit; font-size: 13px; font-weight: 700;
+    padding: 8px 15px; border-radius: 4px; cursor: pointer; border: 1px solid transparent;
+  }
+  button.act:focus-visible { outline: 2px solid var(--pine); outline-offset: 2px; }
+  .act.primary { background: var(--pine); color: var(--on-pine); border-color: var(--pine); }
+    .act.primary:hover { background: var(--pine-2); }
+  .act.ghost { background: transparent; color: var(--ink-2); border-color: var(--line); }
+  .act.ghost:hover { background: var(--surface-2); color: var(--ink); }
+  .act.quiet { background: none; border: none; color: var(--ink-3); margin-left: auto; font-weight: 600; }
+  .act.quiet:hover { color: var(--ink); text-decoration: underline; }
+  .act[disabled] { opacity: .45; cursor: not-allowed; }
+
+  .published-note { margin-top: 12px; font-size: 12.5px; color: var(--ok); font-weight: 600; }
+
+  .empty { padding: 44px 20px; text-align: center; color: var(--ink-3); font-size: 14px; }
+
+  .demo-note {
+    margin-top: 14px; font-size: 12.5px; color: var(--ink-3); line-height: 1.7;
+  }
+
+  /* ---------- steps ---------- */
+  .steps { display: grid; gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 4px; overflow: hidden; }
+  .step { background: var(--surface); padding: 22px 20px; display: grid; grid-template-columns: 34px 1fr; gap: 16px; align-items: start; }
+  .step .num {
+    font-family: var(--mono); font-size: 12px; font-weight: 700; color: var(--pine);
+    border: 1px solid var(--pine-soft); background: var(--pine-soft);
+    width: 30px; height: 30px; border-radius: 50%;
+    display: grid; place-items: center;
+  }
+  .step h3 { font-size: 16.5px; margin-bottom: 5px; }
+  .step p { margin: 0; font-size: 14px; color: var(--ink-2); }
+
+  /* ---------- safety ---------- */
+  .facts { display: grid; gap: 14px; grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 700px) { .facts { grid-template-columns: 1fr; } }
+  .fact { border-left: 2px solid var(--pine); padding: 2px 0 2px 16px; }
+  .fact h3 { font-size: 15.5px; margin-bottom: 6px; }
+  .fact p { margin: 0; font-size: 13.5px; color: var(--ink-2); }
+
+  /* ---------- table ---------- */
+  .tbl-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 4px; }
+  table { border-collapse: collapse; width: 100%; min-width: 440px; font-size: 14px; }
+  th, td { text-align: left; padding: 12px 16px; border-bottom: 1px solid var(--line-soft); }
+  th { background: var(--surface-2); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); font-weight: 700; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; font-family: var(--mono); font-size: 13px; }
+  tbody tr:last-child td { border-bottom: none; }
+  tfoot td { background: var(--surface-2); font-weight: 700; border-top: 1px solid var(--line); }
+
+  /* ---------- timeline ---------- */
+  .tl { display: flex; flex-direction: column; gap: 0; }
+  .tl-row { display: grid; grid-template-columns: 96px 1fr; gap: 18px; padding: 16px 0; border-bottom: 1px solid var(--line-soft); }
+  .tl-row:last-child { border-bottom: none; }
+  .tl-when { font-size: 12px; font-weight: 700; color: var(--pine); letter-spacing: .02em; padding-top: 2px; }
+  .tl-what h3 { font-size: 15.5px; margin-bottom: 4px; }
+  .tl-what p { margin: 0; font-size: 13.5px; color: var(--ink-2); }
+  @media (max-width: 560px) { .tl-row { grid-template-columns: 1fr; gap: 4px; } }
+
+  .ask {
+    margin-top: 28px; background: var(--surface); border: 1px solid var(--line);
+    border-left: 3px solid var(--pine); border-radius: 4px; padding: 24px 22px;
+  }
+  .ask h3 { font-size: 17px; margin-bottom: 12px; }
+  .ask ol { margin: 0; padding-left: 20px; }
+  .ask li { margin-bottom: 9px; font-size: 14px; color: var(--ink-2); }
+  .ask li b { color: var(--ink); }
+  .ask li:last-child { margin-bottom: 0; }
+
+  footer {
+    border-top: 1px solid var(--line); padding-block: 32px 56px;
+    font-size: 12.5px; color: var(--ink-3);
+    display: flex; justify-content: space-between; gap: 14px; flex-wrap: wrap;
+  }
+
+  .toast {
+    position: fixed; left: 50%; transform: translateX(-50%) translateY(16px);
+    bottom: calc(22px + env(safe-area-inset-bottom, 0px));
+    background: var(--ink); color: var(--bg);
+    padding: 11px 20px; border-radius: 999px; font-size: 13px; font-weight: 700;
+    opacity: 0; pointer-events: none; transition: opacity .18s ease, transform .18s ease;
+    z-index: 50; box-shadow: var(--shadow); max-width: calc(100vw - 40px); text-align: center;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+  }
+</style>
+
+<div class="wrap">
+  <header class="masthead">
+    <div class="route">
+      <span>Leaves Bali</span>
+      <span class="arrow">→</span>
+      <span>Hoshi Jungle 御中</span>
+    </div>
+    <h1>クチコミ返信を、<br><span class="quiet">取りこぼさない。</span></h1>
+    <p class="lead">
+      Googleマップに届く日本語・英語・インドネシア語のクチコミに、AIが返信の下書きを用意します。
+      公開するかどうかを決めるのは、いつでもスタッフの方です。
+    </p>
+    <div class="stamp">
+      <span>Hoshi Jungle Review AI</span>
+      <span>ご提案・2026年9月</span>
+    </div>
+  </header>
+</div>
+
+<div class="wrap">
+  <div class="pillars">
+    <div class="pillar">
+      <div class="k">届いた言語で、<br>そのまま返す</div>
+      <div class="v">日本語には日本語、英語には英語、インドネシア語にはインドネシア語で返信案を作成します。翻訳の貼り付けではありません。</div>
+    </div>
+    <div class="pillar">
+      <div class="k">勝手には<br>公開しない</div>
+      <div class="v">AIが書くのは下書きまで。スタッフが読んで、直して、ボタンを押して初めてGoogleに反映されます。</div>
+    </div>
+    <div class="pillar">
+      <div class="k">運用費は<br>月額0円</div>
+      <div class="v">サーバー・データベース・Google連携はすべて無料枠で運用します。追加のご負担はありません。</div>
+    </div>
+  </div>
+</div>
+
+<section class="flush">
+  <div class="wide">
+    <div class="sec-head">
+      <div class="eyebrow">実際の画面</div>
+      <h2>スタッフが毎朝ひらく画面です</h2>
+      <p>
+        下の画面は実物と同じものです。文章を書き換えたり、公開ボタンを押したり、実際に触ってみてください。
+      </p>
+    </div>
+
+    <div class="frame">
+      <div class="frame-bar">
+        <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+        <span class="frame-url">hoshi-jungle-review.netlify.app/dashboard</span>
+      </div>
+
+      <div class="app-head">
+        <div>
+          <div class="sub">Hoshi Jungle Review AI</div>
+          <div class="name">Hoshi Jungle</div>
+        </div>
+        <div class="right">
+          <span class="chip">スタッフ・フロントデスク用</span>
+          <span class="chip quota">今月の返信案 残り <strong id="quota">64</strong> 件</span>
+        </div>
+      </div>
+
+      <nav class="app-nav" id="tabs" role="tablist" aria-label="言語で絞り込む">
+        <button role="tab" data-lang="all" aria-selected="true">すべて <span class="n">6</span></button>
+        <button role="tab" data-lang="ja" aria-selected="false">日本語 <span class="n">2</span></button>
+        <button role="tab" data-lang="en" aria-selected="false">English <span class="n">3</span></button>
+        <button role="tab" data-lang="id" aria-selected="false">Bahasa Indonesia <span class="n">1</span></button>
+      </nav>
+
+      <div class="app-tools">
+        <label class="switch">
+          <input type="checkbox" id="onlyFlag">
+          要確認のみ表示
+        </label>
+        <span>低評価・インドネシア語・AIが判断したものに <b>要確認</b> が付きます</span>
+      </div>
+
+      <div class="cards" id="cards"></div>
+      <div class="empty" id="empty" hidden>該当するクチコミはありません。</div>
+    </div>
+
+    <p class="demo-note">
+      ※ 上記はデモ用のサンプルです。実際に投稿されたクチコミではありません。
+      返信案に登場するホテルの魅力（早朝の霧など）は、事前にいただいた情報の範囲だけで書きます。
+      AIが実在しない設備やサービスを書くことはありません。
+    </p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow">スタッフの作業</div>
+      <h2>読む、直す、押す。それだけです</h2>
+      <p>専門知識は要りません。パソコンでもスマートフォンでも同じように使えます。</p>
+    </div>
+
+    <div class="steps">
+      <div class="step">
+        <div class="num">1</div>
+        <div>
+          <h3>開く</h3>
+          <p>配られたURLを開き、パスコードを入力します。Googleアカウントは必要ありません。新しいクチコミは毎時間、自動で集まっています。</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="num">2</div>
+        <div>
+          <h3>読んで、必要なら直す</h3>
+          <p>AIの返信案がすでに入っています。そのままでよければ何もしません。言い回しを変えたければ、その場で書き換えられます。</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="num">3</div>
+        <div>
+          <h3>公開する</h3>
+          <p>ボタンを押すとGoogleマップに反映されます。返信したくないクチコミは「返信しない」で片付けられます。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow">安全のための設計</div>
+      <h2>「AIが勝手なことを書く」が起きない理由</h2>
+      <p>
+        返信はGoogleマップに残り続け、これから予約を検討する方が読みます。
+        取り返しがつかないからこそ、止まる仕組みを先に入れてあります。
+      </p>
+    </div>
+
+    <div class="facts">
+      <div class="fact">
+        <h3>全件が下書きで止まります</h3>
+        <p>自動公開の機能は既定で切ってあります。人が押さないかぎり、1件もGoogleには出ません。</p>
+      </div>
+      <div class="fact">
+        <h3>返金や補償を約束しません</h3>
+        <p>金銭に関わる判断はホテル側のものです。AIには書かせない制約を入れています。</p>
+      </div>
+      <div class="fact">
+        <h3>危ないクチコミは隔離します</h3>
+        <p>低評価、衛生・盗難・法的措置の主張、返金要求は「要確認」に分けて表示します。</p>
+      </div>
+      <div class="fact">
+        <h3>スタッフはGoogleに触れません</h3>
+        <p>パスコードで入るだけなので、店舗情報や写真を誤って変更する心配がありません。退職時はパスコードを作り直すだけです。</p>
+      </div>
+      <div class="fact">
+        <h3>インドネシア語は必ず人が確認</h3>
+        <p>現地の言い回しや敬意表現はAIに任せきれません。自動公開の対象から外してあります。</p>
+      </div>
+      <div class="fact">
+        <h3>事実を作りません</h3>
+        <p>いただいた情報にない設備・サービス・スタッフ名には触れない設計です。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow">費用</div>
+      <h2>月額0円で運用します</h2>
+      <p>すべて無料枠に収まるよう設計しました。従量課金で青天井になる部分はありません。</p>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr><th>内訳</th><th>役割</th><th class="num">月額</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>サーバー</td><td>画面の表示</td><td class="num">0円</td></tr>
+          <tr><td>データベース</td><td>クチコミと返信の保存</td><td class="num">0円</td></tr>
+          <tr><td>定期取得</td><td>毎時間の自動チェック</td><td class="num">0円</td></tr>
+          <tr><td>Google連携</td><td>クチコミの取得・返信の投稿</td><td class="num">0円</td></tr>
+          <tr><td>AI（返信案の作成）</td><td>月71件まで</td><td class="num">0円</td></tr>
+        </tbody>
+        <tfoot>
+          <tr><td colspan="2">合計</td><td class="num">0円</td></tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <p class="demo-note">
+      AIの利用分は無料枠の範囲で自動的に停止します。上限に達しても、クチコミの取得は続き、スタッフが手動で返信することは可能です。
+      上限は毎月1日にリセットされます。返信量を増やしたい場合は、月数百円程度で拡張できます。
+    </p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow">導入</div>
+      <h2>ご承認をいただいてから、約1か月</h2>
+      <p>システムはすでに完成しています。待ち時間のほとんどは、Google社の審査です。</p>
+    </div>
+
+    <div class="tl">
+      <div class="tl-row">
+        <div class="tl-when">完了済み</div>
+        <div class="tl-what">
+          <h3>システムの開発・検証</h3>
+          <p>画面、AIの返信生成、データベース、セキュリティまで構築と動作確認を終えています。</p>
+        </div>
+      </div>
+      <div class="tl-row">
+        <div class="tl-when">1日目</div>
+        <div class="tl-what">
+          <h3>Google社へ利用申請</h3>
+          <p>クチコミの取得・返信にはGoogle社の承認が必要です。申請はこちらで行います。</p>
+        </div>
+      </div>
+      <div class="tl-row">
+        <div class="tl-when">数日〜数週間</div>
+        <div class="tl-what">
+          <h3>審査待ち</h3>
+          <p>Google社の審査期間です。この間、ホテル様にしていただくことはありません。</p>
+        </div>
+      </div>
+      <div class="tl-row">
+        <div class="tl-when">承認後・30分</div>
+        <div class="tl-what">
+          <h3>接続とお引き渡し</h3>
+          <p>Hoshi Jungle様のGoogleアカウントで接続し、スタッフ用のパスコードをお渡しします。当日から使えます。</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="ask">
+      <h3>ご承認いただけましたら、3点だけお願いします</h3>
+      <ol>
+        <li><b>Googleビジネスプロフィールを管理しているアカウント</b>のメールアドレス。システムはHoshi Jungle様のアカウントで動かします。担当者が変わっても止まらない形にするためです。</li>
+        <li><b>設定作業の代行可否。</b>ご希望の場合は <code>leavesbali@gmail.com</code> を管理者として追加していただきます。パスワードをお伺いすることはありません。</li>
+        <li><b>返信に使う情報。</b>署名の名前、低評価時のご連絡先、お客様に伝えたい魅力を2〜3つ。これがAIの書ける範囲になります。</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+  <footer>
+    <span>Leaves Bali</span>
+    <span>Hoshi Jungle Review AI — ご提案資料</span>
+  </footer>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+  var SIGN = "Hoshi Jungle Team";
+
+  var REVIEWS = [
+    {
+      id: "r1", lang: "ja", rating: 5, who: "田中 美咲", when: "9月12日", flag: null,
+      text: "ジャングルビューのプールが忘れられません。朝は鳥の声で目が覚めて、夜はカエルの合唱。スタッフの皆さんも本当に温かくて、バリで一番好きな場所になりました。",
+      reply: "田中様、こうしてお言葉を残してくださり、ありがとうございます。\n鳥の声で目覚め、カエルの合唱で眠る——私たちがこの谷に宿をつくった理由を、そのまま言葉にしていただいたようです。スタッフにも必ず伝えます。\n次にお越しの際は、霧が谷を渡る早朝の時間もぜひ味わってみてください。またお会いできる日を楽しみにしております。\n\n" + SIGN,
+      alt: "田中様、うれしいお言葉をありがとうございます。\n朝の鳥と夜のカエル——この谷の音を気に入っていただけたことが、何よりの褒め言葉です。スタッフ一同、励みにいたします。\nバリで一番、とまで言っていただけて光栄です。またお帰りをお待ちしております。\n\n" + SIGN
+    },
+    {
+      id: "r2", lang: "id", rating: 5, who: "Putu Ayu", when: "9月11日",
+      flag: { kind: "warn", label: "要確認", why: "インドネシア語のため、現地スタッフによる表現確認をお願いします。自動公開の対象外です。" },
+      text: "Tempatnya luar biasa indah, benar-benar menyatu dengan alam. Pelayanannya ramah sekali dan sarapannya enak. Pasti akan kembali lagi!",
+      reply: "Terima kasih banyak, Putu.\nSenang sekali membaca bahwa Anda merasakan kedekatan dengan alam di sini — itulah hal yang paling kami jaga.\nPujian Anda untuk tim kami akan kami sampaikan langsung kepada mereka. Kami tunggu kedatangan Anda berikutnya.\n\n" + SIGN,
+      alt: "Putu, terima kasih atas ulasan yang hangat ini.\nKami sangat senang mendengar bahwa suasana alam dan keramahan tim kami berkesan untuk Anda.\nSampai jumpa lagi di Hoshi Jungle.\n\n" + SIGN
+    },
+    {
+      id: "r3", lang: "en", rating: 2, who: "Michael R.", when: "9月10日",
+      flag: { kind: "warn", label: "要確認", why: "低評価（1〜2つ星）です。公開前に必ず内容をご確認ください。" },
+      text: "Room wasn't clean on arrival and the AC in the bedroom didn't work for two nights. Staff were apologetic but nothing was actually fixed.",
+      reply: "Michael, thank you for telling us — and I am sorry.\nArriving to a room that had not been properly cleaned, then two nights without working air conditioning, is not a stay we can be satisfied with. You are right that an apology without a repair is not much of an apology.\nWe have taken both points to our housekeeping and engineering teams. I would like to hear the details directly so we can put this right — please reach us at stay@hoshijungle.com.\n\n" + SIGN,
+      alt: "Michael, I am sorry. Neither the state of the room nor two nights without air conditioning should have happened, and being told sorry without anything being fixed only made it worse.\nWe have raised both with the teams responsible. Please write to us at stay@hoshijungle.com — I would like to hear what happened from you directly.\n\n" + SIGN
+    },
+    {
+      id: "r4", lang: "ja", rating: 4, who: "Yuki", when: "9月8日", flag: null,
+      text: "静かで居心地がよく、ゆっくり過ごせました。朝食のメニューがもう少し種類があると嬉しかったです。",
+      reply: "ご滞在ありがとうございました。静かにお過ごしいただけたようで安心いたしました。\n朝食についての率直なご意見にも感謝いたします。種類の少なさは私たちも気にかけている点で、いただいたお声はキッチンチームと共有いたします。\n次にお越しの際、少しでも良くなったと感じていただけるよう努めます。またのお越しをお待ちしております。\n\n" + SIGN,
+      alt: "ご滞在ありがとうございました。ゆっくりお過ごしいただけたとのこと、うれしく思います。\n朝食のメニューについては、おっしゃる通りです。すぐにすべてを変えるお約束はできませんが、キッチンと相談してまいります。\nまたお越しいただければ幸いです。\n\n" + SIGN
+    },
+    {
+      id: "r5", lang: "en", rating: 1, who: "Sarah L.", when: "9月7日",
+      flag: { kind: "crit", label: "要確認", why: "AIが判定: 返金の要求と金銭トラブルの主張があります。事実確認のうえ、必ず内容をご確認ください。AIは返金を約束していません。" },
+      text: "We were charged twice for the airport transfer and no one has responded to my emails for a week. I want a refund.",
+      reply: "Sarah, I am sorry — both for the duplicate charge and for the silence that followed it.\nA week without a reply is not acceptable, and I understand why you are writing here instead of waiting any longer.\nWe are looking into the transfer booking now and will come back to you directly. Please contact us at stay@hoshijungle.com so that we can reach you.\n\n" + SIGN,
+      alt: "Sarah, I am sorry for both the billing problem and for being left without an answer for a week.\nWe are checking the transfer booking now. Please write to stay@hoshijungle.com so we can respond to you directly and resolve this properly.\n\n" + SIGN
+    },
+    {
+      id: "r6", lang: "en", rating: 5, who: "James", when: "9月5日", flag: null,
+      text: "Perfect stay. The staff made it.",
+      reply: "Thank you, James — that is the compliment our team values most, and we will pass it on to them.\nYou are welcome back any time.\n\n" + SIGN,
+      alt: "Thank you, James. Our team will be glad to hear it — they are the reason people come back.\nWe hope to see you again.\n\n" + SIGN
+    }
+  ];
+
+  var LANG_LABEL = { ja: "日本語", en: "English", id: "Bahasa Indonesia" };
+  var MAX = 4096;
+  var state = { lang: "all", onlyFlag: false, published: {}, skipped: {}, quota: 64 };
+
+  var cardsEl = document.getElementById("cards");
+  var emptyEl = document.getElementById("empty");
+  var toastEl = document.getElementById("toast");
+  var quotaEl = document.getElementById("quota");
+
+  function stars(n) {
+    var s = "";
+    for (var i = 1; i <= 5; i++) s += i <= n ? "★" : '<span class="off">★</span>';
+    return s;
+  }
+
+  function esc(t) {
+    return t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+
+  function toast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add("show");
+    clearTimeout(toast._t);
+    toast._t = setTimeout(function () { toastEl.classList.remove("show"); }, 2600);
+  }
+
+  function visible() {
+    return REVIEWS.filter(function (r) {
+      if (state.lang !== "all" && r.lang !== state.lang) return false;
+      if (state.onlyFlag && !r.flag) return false;
+      return true;
+    });
+  }
+
+  function render() {
+    var list = visible();
+    cardsEl.innerHTML = "";
+    emptyEl.hidden = list.length > 0;
+
+    list.forEach(function (r) {
+      var done = !!state.published[r.id];
+      var skipped = !!state.skipped[r.id];
+      var body = state.published[r.id] || r.current || r.reply;
+
+      var card = document.createElement("article");
+      card.className = "card" + (r.flag && !done ? " flag" : "") + (done || skipped ? " done" : "");
+
+      var statusTag = done
+        ? '<span class="tag st-done">公開済み</span>'
+        : skipped
+          ? '<span class="tag st-draft">返信しない</span>'
+          : '<span class="tag st-draft">AI生成（未確認）</span>';
+
+      var alertHtml = "";
+      if (r.flag && !done && !skipped) {
+        alertHtml =
+          '<div class="alert' + (r.flag.kind === "crit" ? " crit" : "") + '">' +
+          "<div><b>" + r.flag.label + "</b> — " + esc(r.flag.why) + "</div></div>";
+      }
+
+      var replyHtml = "";
+      if (skipped) {
+        replyHtml = '<p class="published-note">このクチコミには返信しない設定にしました。</p>';
+      } else {
+        replyHtml =
+          '<div class="reply">' +
+            '<div class="reply-head">' +
+              "<span>" + (done ? "公開した返信" : "AIが作成した返信案") + "</span>" +
+              '<span class="count" data-count="' + r.id + '">' + body.length + " / " + MAX + "</span>" +
+            "</div>" +
+            '<textarea id="ta-' + r.id + '" data-id="' + r.id + '"' + (done ? " readonly" : "") +
+              ' aria-label="返信案">' + esc(body) + "</textarea>" +
+            (done
+              ? '<p class="published-note">Googleマップに公開しました（デモ）</p>'
+              : '<div class="actions">' +
+                  '<button class="act primary" data-do="publish" data-id="' + r.id + '">Googleに公開</button>' +
+                  '<button class="act ghost" data-do="regen" data-id="' + r.id + '">AIで作り直す</button>' +
+                  '<button class="act quiet" data-do="skip" data-id="' + r.id + '">返信しない</button>' +
+                "</div>") +
+          "</div>";
+      }
+
+      card.innerHTML =
+        '<div class="card-top">' +
+          '<span class="stars" aria-label="' + r.rating + ' / 5">' + stars(r.rating) + "</span>" +
+          '<span class="who">' + esc(r.who) + "</span>" +
+          '<span class="tag ' + r.lang + '">' + LANG_LABEL[r.lang] + "</span>" +
+          statusTag +
+          '<time class="when">' + r.when + "</time>" +
+        "</div>" +
+        '<p class="review-body">' + esc(r.text) + "</p>" +
+        alertHtml +
+        replyHtml;
+
+      cardsEl.appendChild(card);
+    });
+
+    // 返信文が枠からはみ出して署名が切れないよう、内容に合わせて高さを揃える
+    autosize();
+  }
+
+  function autosize() {
+    Array.prototype.forEach.call(cardsEl.querySelectorAll("textarea"), function (ta) {
+      ta.style.height = "auto";
+      ta.style.height = ta.scrollHeight + 2 + "px";
+    });
+  }
+
+  document.getElementById("tabs").addEventListener("click", function (e) {
+    var btn = e.target.closest("button[data-lang]");
+    if (!btn) return;
+    state.lang = btn.dataset.lang;
+    Array.prototype.forEach.call(this.querySelectorAll("button"), function (b) {
+      b.setAttribute("aria-selected", String(b === btn));
+    });
+    render();
+  });
+
+  document.getElementById("onlyFlag").addEventListener("change", function () {
+    state.onlyFlag = this.checked;
+    render();
+  });
+
+  cardsEl.addEventListener("input", function (e) {
+    var ta = e.target.closest("textarea[data-id]");
+    if (!ta) return;
+    var rec = REVIEWS.find(function (r) { return r.id === ta.dataset.id; });
+    if (rec) rec.current = ta.value;
+    var c = cardsEl.querySelector('[data-count="' + ta.dataset.id + '"]');
+    if (c) c.textContent = ta.value.length + " / " + MAX;
+    ta.style.height = "auto";
+    ta.style.height = ta.scrollHeight + 2 + "px";
+  });
+
+  cardsEl.addEventListener("click", function (e) {
+    var btn = e.target.closest("button[data-do]");
+    if (!btn) return;
+    var id = btn.dataset.id;
+    var rec = REVIEWS.find(function (r) { return r.id === id; });
+    var ta = document.getElementById("ta-" + id);
+
+    if (btn.dataset.do === "publish") {
+      var text = ta ? ta.value.trim() : "";
+      if (!text) { toast("返信が空です。文章を入れてください。"); return; }
+      state.published[id] = text;
+      toast("Googleマップに公開しました（デモ）");
+      render();
+    }
+
+    if (btn.dataset.do === "regen") {
+      btn.disabled = true;
+      btn.textContent = "生成中…";
+      setTimeout(function () {
+        var next = (rec.current || rec.reply) === rec.reply ? rec.alt : rec.reply;
+        rec.current = next;
+        state.quota = Math.max(0, state.quota - 1);
+        quotaEl.textContent = state.quota;
+        toast("返信案を作り直しました");
+        render();
+      }, 700);
+    }
+
+    if (btn.dataset.do === "skip") {
+      state.skipped[id] = true;
+      toast("このクチコミには返信しない設定にしました");
+      render();
+    }
+  });
+
+  render();
+
+  // Webフォントの読み込み完了後に行の高さが変わるため、高さを取り直す
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(autosize);
+  }
+  window.addEventListener("resize", autosize);
+</script>
