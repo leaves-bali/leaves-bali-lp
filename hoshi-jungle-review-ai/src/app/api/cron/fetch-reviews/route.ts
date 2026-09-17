@@ -43,6 +43,8 @@ export async function GET(request: NextRequest) {
         reviewsNew: 0,
         repliesGenerated: 0,
         repliesPublished: 0,
+        hasMore: false,
+        budgetExhausted: false,
         errors: [],
         skipped: `連続 ${location.consecutive_failures} 回失敗中のため、1日1回のみ再試行します`,
       });

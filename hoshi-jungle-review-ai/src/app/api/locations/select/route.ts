@@ -5,7 +5,10 @@ import { syncLocation } from '@/lib/reviews/sync';
 import { supabaseAdmin } from '@/lib/supabase/admin';
 
 export const runtime = 'nodejs';
-export const maxDuration = 300;
+export const maxDuration = 60;
+
+/** Netlify Free の 10 秒制限に収めるための時間予算。 */
+const TIME_BUDGET_MS = 7_000;
 
 /**
  * 初期設定ウィザード ステップ 3。
@@ -46,8 +49,11 @@ export async function POST(request: NextRequest) {
       throw new HttpError(`ロケーションの登録に失敗しました: ${error?.message}`, 500);
     }
 
-    // 初回同期。件数が多いと時間がかかるので maxDuration を伸ばしてある。
-    const result = await syncLocation(location.location_id, 'onboarding');
+    // 初回同期。件数が多いと 1 回では終わらないため、時間予算内で進めて
+    // hasMore を返す。ウィザード側が hasMore=false になるまで呼び直す。
+    const result = await syncLocation(location.location_id, 'onboarding', {
+      timeBudgetMs: TIME_BUDGET_MS,
+    });
 
     return NextResponse.json({ locationId: location.location_id, sync: result });
   } catch (err) {

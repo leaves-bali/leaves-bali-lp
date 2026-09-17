@@ -1,0 +1,77 @@
+# =============================================================================
+# クチコミの定期同期（無料枠で動かすためのスケジューラ）
+# -----------------------------------------------------------------------------
+# なぜ GitHub Actions なのか:
+#   - Vercel Cron は Pro プラン（$20/月）が必要
+#   - Netlify Free の関数は 10 秒でタイムアウトし、AI 生成のバッチが収まらない
+#   - GitHub Actions はプライベートリポジトリでも月 2,000 分まで無料で、
+#     1 ジョブ最大 6 時間動かせる
+#
+# 消費量の見積もり: 1 回の実行は数十秒だが GitHub は分単位で切り上げる。
+#   毎時実行 = 24 × 30 = 720 回/月 → 約 720 分（無料枠 2,000 分の約 36%）
+#   1日2回    = 60 回/月           → 約 60 分（約 3%）
+# 既定は「毎時」。もっと余裕を持たせたい場合は下の cron を変更する。
+# =============================================================================
+
+name: Sync Google Reviews
+
+on:
+  schedule:
+    # 毎時 0 分（UTC）。GitHub の schedule は混雑時に数分〜十数分遅れることがあるが、
+    # クチコミ返信の用途では実害がない。
+    - cron: '0 * * * *'
+  # 手動実行も可能にしておく（初回セットアップ直後や障害調査で使う）
+  workflow_dispatch:
+
+# 同じワークフローが重複実行されないようにする。
+# 同期処理自体は冪等なので重なっても壊れないが、Claude API を二重に呼ぶのは無駄。
+concurrency:
+  group: sync-reviews
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    # 無料枠を守るための保険。想定は数十秒なので 15 分あれば十分。
+    timeout-minutes: 15
+
+    defaults:
+      run:
+        working-directory: hoshi-jungle-review-ai
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: hoshi-jungle-review-ai/package-lock.json
+
+      - name: 依存関係をインストール
+        run: npm ci
+
+      - name: クチコミを同期
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          TOKEN_ENCRYPTION_KEY: ${{ secrets.TOKEN_ENCRYPTION_KEY }}
+          # 生成の質とコストを決める設定（無料運用なら haiku + low）
+          ANTHROPIC_MODEL: ${{ vars.ANTHROPIC_MODEL || 'claude-haiku-4-5' }}
+          ANTHROPIC_EFFORT: ${{ vars.ANTHROPIC_EFFORT || 'low' }}
+          # 月次の AI 予算（USD）。これを超えたら生成を止める
+          AI_MONTHLY_BUDGET_USD: ${{ vars.AI_MONTHLY_BUDGET_USD || '0.40' }}
+          MAX_GENERATIONS_PER_RUN: ${{ vars.MAX_GENERATIONS_PER_RUN || '25' }}
+          # ホテル情報（プロンプトに使われる）
+          HOTEL_NAME: ${{ vars.HOTEL_NAME || 'Hoshi Jungle' }}
+          HOTEL_LOCATION: ${{ vars.HOTEL_LOCATION || 'Ubud, Bali, Indonesia' }}
+          HOTEL_SIGNATURE: ${{ vars.HOTEL_SIGNATURE || 'Hoshi Jungle Team' }}
+          HOTEL_CONTACT_EMAIL: ${{ vars.HOTEL_CONTACT_EMAIL }}
+          # 自動公開は既定で無効（全件ドラフト保存）
+          AUTO_PUBLISH_ENABLED: ${{ vars.AUTO_PUBLISH_ENABLED || 'false' }}
+          AUTO_PUBLISH_LANGUAGES: ${{ vars.AUTO_PUBLISH_LANGUAGES }}
+          AUTO_PUBLISH_MIN_RATING: ${{ vars.AUTO_PUBLISH_MIN_RATING || '4' }}
+        run: npm run sync

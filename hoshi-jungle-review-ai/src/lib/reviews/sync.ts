@@ -1,5 +1,7 @@
 import 'server-only';
 
+import { getBudgetState, recordUsage } from '@/lib/ai/budget';
+import { estimateCostUsd } from '@/lib/ai/pricing';
 import { generateReply, ReplyGenerationError } from '@/lib/ai/generateReply';
 import type { ReviewLanguage } from '@/lib/database.types';
 import { env } from '@/lib/env';
@@ -25,9 +27,27 @@ import { supabaseAdmin } from '@/lib/supabase/admin';
  * 冪等性: google_review_id を一意キーにしているため、同じ実行を何度繰り返しても
  * レビューが重複せず、返信案も 1 レビュー 1 件しか作られない。
  * Cron が二重起動しても壊れない。
+ *
+ * ── 時間予算という考え方 ──────────────────────────────────────────
+ * 無料ホスティング（Netlify Free）の関数タイムアウトは 10 秒しかない。
+ * 一方 AI 生成は 1 件あたり数秒かかるため、全件を 1 回の呼び出しで処理できない。
+ *
+ * そこで `timeBudgetMs` を受け取り、その時間内で処理できるところまで進めて
+ * `hasMore` を返す。呼び出し側（ブラウザ / GitHub Actions）が hasMore が
+ * false になるまで繰り返せばよい。途中で中断しても DB は常に整合した状態になる。
+ *
+ * これにより「長時間実行できるサーバー」が一切不要になり、
+ * どのホスティングでも動く。
  */
 
 export type TriggerSource = 'cron' | 'manual' | 'onboarding';
+
+export interface SyncOptions {
+  /** この時間を超えたら生成ループを打ち切って hasMore=true を返す */
+  timeBudgetMs?: number;
+  /** 1 回の呼び出しで生成する最大件数 */
+  maxGenerations?: number;
+}
 
 export interface SyncResult {
   locationId: string;
@@ -35,13 +55,21 @@ export interface SyncResult {
   reviewsNew: number;
   repliesGenerated: number;
   repliesPublished: number;
+  /** まだ未生成のレビューが残っているか。true なら再度呼ぶ */
+  hasMore: boolean;
+  /** 月次 AI 予算を使い切って生成を止めたか */
+  budgetExhausted: boolean;
   errors: string[];
 }
 
 export async function syncLocation(
   locationId: string,
   triggerSource: TriggerSource,
+  options: SyncOptions = {},
 ): Promise<SyncResult> {
+  const startedAt = Date.now();
+  // 既定は 5 分。Netlify Free から呼ぶ場合は 7 秒など短い値を渡す。
+  const timeBudgetMs = options.timeBudgetMs ?? 5 * 60_000;
   const db = supabaseAdmin();
   const result: SyncResult = {
     locationId,
@@ -49,6 +77,8 @@ export async function syncLocation(
     reviewsNew: 0,
     repliesGenerated: 0,
     repliesPublished: 0,
+    hasMore: false,
+    budgetExhausted: false,
     errors: [],
   };
 
@@ -83,8 +113,13 @@ export async function syncLocation(
     result.reviewsNew = await upsertReviews(locationId, reviews);
 
     // --- 3. 未返信レビューに AI 返信案を生成 --------------------------------
-    const generated = await generateMissingReplies(locationId);
+    const generated = await generateMissingReplies(locationId, {
+      deadline: startedAt + timeBudgetMs,
+      maxGenerations: options.maxGenerations ?? env.maxGenerationsPerRun,
+    });
     result.repliesGenerated = generated.generated;
+    result.hasMore = generated.hasMore;
+    result.budgetExhausted = generated.budgetExhausted;
     result.errors.push(...generated.errors);
 
     // --- 4. ポリシーが許す返信だけ自動公開 ----------------------------------
@@ -231,11 +266,33 @@ async function upsertReviews(
 
 async function generateMissingReplies(
   locationId: string,
-): Promise<{ generated: number; errors: string[] }> {
+  limits: { deadline: number; maxGenerations: number },
+): Promise<{
+  generated: number;
+  hasMore: boolean;
+  budgetExhausted: boolean;
+  errors: string[];
+}> {
   const db = supabaseAdmin();
   const errors: string[] = [];
 
+  // --- 月次 AI 予算のチェック ---------------------------------------------
+  // 無料クレジットを超えさせないため、1 件も生成する前に残額を見る。
+  let budget = await getBudgetState(locationId);
+  if (budget.exhausted) {
+    return {
+      generated: 0,
+      hasMore: false,
+      budgetExhausted: true,
+      errors: [
+        `今月の AI 生成予算 ($${budget.budgetUsd}) に達したため、返信案の生成を停止しました。` +
+          'クチコミの取得は継続しています。スタッフは手動で返信できます。',
+      ],
+    };
+  }
+
   // 返信案がまだ無く、Google 上でも未返信のものだけが対象。
+  // 残り件数を知るために、1 回の処理上限より 1 件多く取得する。
   const { data: pending, error } = await db
     .from('review_queue')
     .select(
@@ -245,15 +302,43 @@ async function generateMissingReplies(
     .is('reply_id', null)
     .eq('has_google_reply', false)
     .order('google_create_time', { ascending: false })
-    .limit(env.maxGenerationsPerRun);
+    .limit(limits.maxGenerations + 1);
 
   if (error) {
-    return { generated: 0, errors: [`未返信レビューの取得に失敗: ${error.message}`] };
+    return {
+      generated: 0,
+      hasMore: false,
+      budgetExhausted: false,
+      errors: [`未返信レビューの取得に失敗: ${error.message}`],
+    };
   }
 
-  let generated = 0;
+  const queue = pending ?? [];
+  // 上限より多く取れた = まだ残りがある
+  let hasMore = queue.length > limits.maxGenerations;
+  const targets = queue.slice(0, limits.maxGenerations);
 
-  for (const review of pending ?? []) {
+  let generated = 0;
+  let processed = 0;
+
+  for (const review of targets) {
+    // --- 時間予算 ---------------------------------------------------------
+    // 次の 1 件を生成する余裕が無ければ打ち切る。中断しても DB は整合している。
+    if (Date.now() >= limits.deadline) {
+      hasMore = hasMore || processed < targets.length;
+      break;
+    }
+
+    // --- 予算の再チェック（生成のたびに残額が減るため） -------------------
+    if (budget.exhausted) {
+      hasMore = false;
+      errors.push(
+        `今月の AI 生成予算 ($${budget.budgetUsd}) に達したため、残りの生成を停止しました。`,
+      );
+      break;
+    }
+
+    processed += 1;
     const languageIsUncertain = (review.language_confidence ?? 0) < 0.3;
 
     try {
@@ -295,6 +380,21 @@ async function generateMissingReplies(
           .eq('review_id', review.review_id);
       }
 
+      // 実トークン数からコストを算出して記録する。
+      // 生成が成功した時点で必ず課金されているので、DB 保存の成否に関わらず記録する。
+      const costUsd = estimateCostUsd(meta.model, meta.input_tokens, meta.output_tokens);
+      await recordUsage({
+        locationId,
+        reviewId: review.review_id,
+        model: meta.model,
+        inputTokens: meta.input_tokens,
+        outputTokens: meta.output_tokens,
+        estimatedCostUsd: costUsd,
+        purpose: 'generate',
+      });
+      // 次のループで使う残額を更新する
+      budget = await getBudgetState(locationId);
+
       const { error: insertError } = await db.from('replies').insert({
         review_id: review.review_id,
         ai_generated_text: draft.reply_text,
@@ -302,7 +402,7 @@ async function generateMissingReplies(
         needs_human_attention: attention.needsAttention,
         attention_reason: attention.reasons.join(' / ') || null,
         model: meta.model,
-        generation_meta: { ...meta, tone_used: draft.tone_used },
+        generation_meta: { ...meta, tone_used: draft.tone_used, cost_usd: costUsd },
       });
 
       if (insertError) {
@@ -332,7 +432,12 @@ async function generateMissingReplies(
     }
   }
 
-  return { generated, errors };
+  return {
+    generated,
+    hasMore,
+    budgetExhausted: budget.exhausted,
+    errors,
+  };
 }
 
 // -----------------------------------------------------------------------------

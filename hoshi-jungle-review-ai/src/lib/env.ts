@@ -110,6 +110,17 @@ export const env = {
     return int('MAX_GENERATIONS_PER_RUN', 25);
   },
 
+  /**
+   * 1 か月あたりの AI 生成予算 (USD)。
+   * これに達した時点で返信案の生成を止める（クチコミの取得は続く）。
+   * Anthropic の無料クレジット内に必ず収めるための安全弁。
+   */
+  get aiMonthlyBudgetUsd(): number {
+    const raw = optional('AI_MONTHLY_BUDGET_USD', '0.40');
+    const parsed = Number.parseFloat(raw);
+    return Number.isFinite(parsed) && parsed >= 0 ? parsed : 0.4;
+  },
+
   // --- ホテル情報 ---
   get hotelName(): string {
     return optional('HOTEL_NAME', 'Hoshi Jungle');

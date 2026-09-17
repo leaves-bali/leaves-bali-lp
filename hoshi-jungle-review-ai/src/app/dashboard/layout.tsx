@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
 import { SyncButton } from '@/components/SyncButton';
+import { getBudgetState } from '@/lib/ai/budget';
 import { getQueueCounts, getUserLocations } from '@/lib/reviews/queries';
 import { getSession } from '@/lib/session';
 import { supabaseAdmin } from '@/lib/supabase/admin';
@@ -23,6 +24,7 @@ export default async function DashboardLayout({
   }
 
   const counts = await getQueueCounts(session);
+  const budget = await getBudgetState(locations[0]?.location_id);
 
   const isOwner = session.role === 'owner';
 
@@ -99,12 +101,31 @@ export default async function DashboardLayout({
 
       <main className="mx-auto max-w-5xl px-6 py-8">{children}</main>
 
-      <footer className="mx-auto max-w-5xl px-6 pb-10 text-xs text-jungle-400">
-        最終同期:{' '}
-        {location.last_synced_at
-          ? new Date(location.last_synced_at).toLocaleString('ja-JP')
-          : '未実行'}
-        ・毎時自動で取得しています
+      <footer className="mx-auto max-w-5xl px-6 pb-10">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-jungle-400">
+          <span>
+            最終同期:{' '}
+            {location.last_synced_at
+              ? new Date(location.last_synced_at).toLocaleString('ja-JP')
+              : '未実行'}
+          </span>
+          <span>毎時自動で取得しています</span>
+          <span
+            className={budget.exhausted ? 'font-medium text-amber-700' : ''}
+            title={`今月の AI 生成コスト $${budget.spentUsd.toFixed(4)} / 上限 $${budget.budgetUsd}`}
+          >
+            今月の AI 返信案: 残りおよそ {budget.remainingReplies} 件
+          </span>
+        </div>
+
+        {budget.exhausted ? (
+          <p className="mt-2 rounded-lg bg-amber-50 px-3 py-2 text-xs leading-relaxed text-amber-900">
+            今月の AI 生成上限に達しました。クチコミの取得は続いていますが、
+            新しい返信案は作成されません。返信は手動で書いていただくか、
+            来月 1 日のリセットをお待ちください
+            {isOwner ? '（上限はオーナーが環境変数で変更できます）' : ''}。
+          </p>
+        ) : null}
       </footer>
     </div>
   );

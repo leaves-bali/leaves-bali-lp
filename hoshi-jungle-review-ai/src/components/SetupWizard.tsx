@@ -17,8 +17,16 @@ interface SyncSummary {
   reviewsFetched: number;
   reviewsNew: number;
   repliesGenerated: number;
+  hasMore: boolean;
+  budgetExhausted: boolean;
   errors: string[];
 }
+
+/**
+ * サーバーは 1 回の呼び出しを 7 秒で打ち切る（無料ホスティングの 10 秒制限のため）。
+ * 残りがあれば hasMore=true が返るので、false になるまで呼び直す。
+ */
+const MAX_ROUNDS = 40;
 
 /** ステップ 2（ロケーション選択）と 3（完了）を担当するクライアントコンポーネント。 */
 export function SetupWizard({ userEmail }: { userEmail: string }) {
@@ -27,6 +35,7 @@ export function SetupWizard({ userEmail }: { userEmail: string }) {
   const [selected, setSelected] = useState<string | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [progress, setProgress] = useState<string | null>(null);
   const [summary, setSummary] = useState<SyncSummary | null>(null);
 
   useEffect(() => {
@@ -59,7 +68,9 @@ export function SetupWizard({ userEmail }: { userEmail: string }) {
 
     setSubmitting(true);
     setLoadError(null);
+    setProgress(null);
     try {
+      // 1 回目: ロケーションを登録し、初回同期を時間予算内で開始する
       const response = await fetch('/api/locations/select', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -75,11 +86,38 @@ export function SetupWizard({ userEmail }: { userEmail: string }) {
         setLoadError(json.error ?? '登録に失敗しました。');
         return;
       }
-      setSummary(json.sync);
+
+      const totals: SyncSummary = { ...json.sync };
+
+      // 2 回目以降: 残りがなくなるまで同期を続ける
+      for (let round = 0; round < MAX_ROUNDS && totals.hasMore; round += 1) {
+        setProgress(
+          `クチコミ ${totals.reviewsNew} 件を取得、返信案 ${totals.repliesGenerated} 件を作成しました。続きを処理しています…`,
+        );
+        const next = await fetch('/api/sync', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({}),
+        });
+        const nextJson = await next.json();
+        if (!next.ok) break;
+
+        for (const r of nextJson.results ?? []) {
+          totals.reviewsNew += r.reviewsNew;
+          totals.reviewsFetched = Math.max(totals.reviewsFetched, r.reviewsFetched);
+          totals.repliesGenerated += r.repliesGenerated;
+          totals.errors.push(...r.errors);
+        }
+        totals.hasMore = Boolean(nextJson.hasMore);
+        totals.budgetExhausted = totals.budgetExhausted || Boolean(nextJson.budgetExhausted);
+      }
+
+      setSummary(totals);
     } catch {
       setLoadError('ネットワークエラーが発生しました。');
     } finally {
       setSubmitting(false);
+      setProgress(null);
     }
   }
 
@@ -94,6 +132,12 @@ export function SetupWizard({ userEmail }: { userEmail: string }) {
           <Stat label="新規" value={summary.reviewsNew} />
           <Stat label="返信案を作成" value={summary.repliesGenerated} />
         </dl>
+        {summary.budgetExhausted ? (
+          <div className="mt-4 rounded-lg bg-amber-50 p-3 text-xs leading-relaxed text-amber-900">
+            今月の AI 生成上限に達したため、一部のクチコミは返信案が未作成です。
+            来月 1 日に上限がリセットされます。それまでは手動で返信できます。
+          </div>
+        ) : null}
         {summary.errors.length > 0 ? (
           <div className="mt-4 rounded-lg bg-amber-50 p-3 text-xs text-amber-800">
             <p className="font-medium">一部処理でエラーが発生しました:</p>
@@ -190,7 +234,8 @@ export function SetupWizard({ userEmail }: { userEmail: string }) {
       </button>
       {submitting ? (
         <p className="mt-2 text-center text-xs text-jungle-500">
-          初回はクチコミの取得と返信案の生成を行うため、1〜2 分かかることがあります。
+          {progress ??
+            '初回はクチコミの取得と返信案の生成を行うため、1〜2 分かかることがあります。'}
         </p>
       ) : null}
     </div>

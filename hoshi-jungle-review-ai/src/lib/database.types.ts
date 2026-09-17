@@ -100,6 +100,18 @@ export type StaffLoginAttemptRow = {
   attempted_at: string;
 };
 
+export type AiUsageRow = {
+  ai_usage_id: string;
+  location_id: string | null;
+  review_id: string | null;
+  model: string;
+  input_tokens: number;
+  output_tokens: number;
+  estimated_cost_usd: number;
+  purpose: string;
+  created_at: string;
+};
+
 export type SyncRunRow = {
   sync_run_id: string;
   location_id: string | null;
@@ -197,6 +209,14 @@ type StaffLoginAttemptsToLocations = {
   referencedColumns: ['location_id'];
 };
 
+type AiUsageToLocations = {
+  foreignKeyName: 'ai_usage_location_id_fkey';
+  columns: ['location_id'];
+  isOneToOne: false;
+  referencedRelation: 'locations';
+  referencedColumns: ['location_id'];
+};
+
 type SyncRunsToLocations = {
   foreignKeyName: 'sync_runs_location_id_fkey';
   columns: ['location_id'];
@@ -215,9 +235,20 @@ export interface Database {
       sync_runs: Table<SyncRunRow, [SyncRunsToLocations]>;
       staff_access: Table<StaffAccessRow, [StaffAccessToLocations]>;
       staff_login_attempts: Table<StaffLoginAttemptRow, [StaffLoginAttemptsToLocations]>;
+      ai_usage: Table<AiUsageRow, [AiUsageToLocations]>;
     };
     Views: {
       review_queue: { Row: ReviewQueueRow; Relationships: [] };
+      ai_usage_current_month: {
+        Row: {
+          location_id: string | null;
+          generations: number;
+          input_tokens: number;
+          output_tokens: number;
+          cost_usd: number;
+        };
+        Relationships: [];
+      };
     };
     Functions: { [_ in never]: never };
     Enums: {
