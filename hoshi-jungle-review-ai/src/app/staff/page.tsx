@@ -5,7 +5,7 @@ import { StaffLoginForm } from '@/components/StaffLoginForm';
 import { UiLangSwitcher } from '@/components/UiLangSwitcher';
 import { t } from '@/lib/i18n';
 import { getSession } from '@/lib/session';
-import { getUiLang } from '@/lib/uiLang';
+import { getFallbackUiLang, getUiLang } from '@/lib/uiLang';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,13 +15,15 @@ export default async function StaffLoginPage() {
   if (session) redirect('/dashboard');
 
   const uiLang = await getUiLang();
+  // 一時的な切り替えが失効したときに戻る言語（共有端末での予告に使う）
+  const fallbackLang = await getFallbackUiLang();
   const d = t(uiLang);
 
   return (
     <main className="flex min-h-screen items-center justify-center px-6 py-16">
       <div className="w-full max-w-sm">
         <div className="mb-6 flex justify-center">
-          <UiLangSwitcher current={uiLang} />
+          <UiLangSwitcher current={uiLang} fallback={fallbackLang} />
         </div>
 
         <div className="mb-8 text-center">

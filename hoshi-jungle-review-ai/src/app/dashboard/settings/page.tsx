@@ -1,7 +1,8 @@
 import { redirect } from 'next/navigation';
 
+import { DefaultLanguageCard } from '@/components/DefaultLanguageCard';
 import { StaffAccessManager } from '@/components/StaffAccessManager';
-import { t } from '@/lib/i18n';
+import { DEFAULT_UI_LANG, isUiLang, t } from '@/lib/i18n';
 import { getSession } from '@/lib/session';
 import { getUiLang } from '@/lib/uiLang';
 import { supabaseAdmin } from '@/lib/supabase/admin';
@@ -21,7 +22,7 @@ export default async function SettingsPage() {
 
   const { data: locations } = await db
     .from('locations')
-    .select('location_id, name')
+    .select('location_id, name, default_ui_lang')
     .eq('user_id', session.userId)
     .eq('setup_complete', true)
     .order('created_at', { ascending: true });
@@ -32,7 +33,7 @@ export default async function SettingsPage() {
     ? await db
         .from('staff_access')
         .select(
-          'staff_access_id, location_id, label, is_active, last_used_at, created_at, rotated_at',
+          'staff_access_id, location_id, label, ui_lang, is_active, last_used_at, created_at, rotated_at',
         )
         .in('location_id', locationIds)
         .order('created_at', { ascending: true })
@@ -56,6 +57,20 @@ export default async function SettingsPage() {
           {d.passcodeLead}
         </p>
       </div>
+
+      {locations?.[0] ? (
+        <div className="mb-4">
+          <DefaultLanguageCard
+            locationId={locations[0].location_id}
+            initial={
+              isUiLang(locations[0].default_ui_lang)
+                ? locations[0].default_ui_lang
+                : DEFAULT_UI_LANG
+            }
+            lang={uiLang}
+          />
+        </div>
+      ) : null}
 
       <StaffAccessManager
         initialItems={items ?? []}

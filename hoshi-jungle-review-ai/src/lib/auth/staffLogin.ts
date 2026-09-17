@@ -2,6 +2,7 @@ import 'server-only';
 
 import { createHash } from 'node:crypto';
 
+import { DEFAULT_UI_LANG, isUiLang, type UiLang } from '@/lib/i18n';
 import { normalizePasscode, verifyPasscode } from '@/lib/passcode';
 import { supabaseAdmin } from '@/lib/supabase/admin';
 
@@ -27,6 +28,20 @@ export type StaffLoginOutcome =
       locationId: string;
       staffAccessId: string;
       staffLabel: string;
+      /**
+       * このセッションの既定表示言語。
+       * パスコードの指定 → ホテルの既定 の順に解決済み。
+       */
+      uiLang: UiLang;
+      /**
+       * パスコード自身に言語が設定されていたか。
+       *
+       * 設定されている（=「フロント日本語用」のように人を特定できる）なら、
+       * ログイン画面で選ばれていた言語は前の人の残りかもしれないので破棄してよい。
+       * 設定されていないなら、いま入った人がログイン画面で選んだ言語こそが
+       * 「誰が座っているか」の唯一の手がかりなので、そのまま引き継ぐ。
+       */
+      uiLangFromPasscode: boolean;
     }
   // 文言ではなく理由を返す。画面の言語（日/英/尼）に合わせて呼び出し側が翻訳する。
   | { ok: false; status: number; reason: 'empty' | 'wrong' | 'rate_limited'; waitMinutes?: number };
@@ -71,8 +86,8 @@ export async function loginWithPasscode(
   const { data: candidates } = await db
     .from('staff_access')
     .select(
-      `staff_access_id, location_id, label, passcode_hash,
-       locations!inner ( user_id, setup_complete )`,
+      `staff_access_id, location_id, label, passcode_hash, ui_lang,
+       locations!inner ( user_id, setup_complete, default_ui_lang )`,
     )
     .eq('is_active', true);
 
@@ -98,6 +113,13 @@ export async function loginWithPasscode(
       locationId: candidate.location_id,
       staffAccessId: candidate.staff_access_id,
       staffLabel: candidate.label,
+      // パスコードの指定 → ホテルの既定 → 日本語 の順に決める
+      uiLang: isUiLang(candidate.ui_lang)
+        ? candidate.ui_lang
+        : isUiLang(location.default_ui_lang)
+          ? location.default_ui_lang
+          : DEFAULT_UI_LANG,
+      uiLangFromPasscode: isUiLang(candidate.ui_lang),
     };
   }
 

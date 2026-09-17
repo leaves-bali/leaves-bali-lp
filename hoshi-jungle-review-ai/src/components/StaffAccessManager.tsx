@@ -3,12 +3,14 @@
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 
-import { t, type UiLang } from '@/lib/i18n';
+import { t, UI_LANGUAGES, UI_LANG_LABELS, type UiLang } from '@/lib/i18n';
 
 interface StaffAccessItem {
   staff_access_id: string;
   location_id: string;
   label: string;
+  /** null = ホテルの既定言語に従う */
+  ui_lang: UiLang | null;
   is_active: boolean;
   last_used_at: string | null;
   created_at: string;
@@ -43,6 +45,8 @@ export function StaffAccessManager({
   const [, startTransition] = useTransition();
   const [items, setItems] = useState(initialItems);
   const [label, setLabel] = useState('');
+  // '' = ホテルの既定言語に従う
+  const [newLang, setNewLang] = useState<UiLang | ''>('');
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [issued, setIssued] = useState<{
@@ -55,7 +59,12 @@ export function StaffAccessManager({
   const staffUrl =
     typeof window !== 'undefined' ? `${window.location.origin}${appUrlHint}` : appUrlHint;
 
-  async function issue(payload: { label?: string; staffAccessId?: string; locationId?: string }) {
+  async function issue(payload: {
+    label?: string;
+    staffAccessId?: string;
+    locationId?: string;
+    uiLang?: UiLang | null;
+  }) {
     setBusy(payload.staffAccessId ?? 'new');
     setError(null);
     setCopied(false);
@@ -72,6 +81,7 @@ export function StaffAccessManager({
       }
       setIssued({ passcode: json.passcode, label: json.label, rotated: json.rotated });
       setLabel('');
+      setNewLang('');
       startTransition(() => router.refresh());
     } catch {
       setError(d.networkError);
@@ -80,14 +90,17 @@ export function StaffAccessManager({
     }
   }
 
-  async function setActive(staffAccessId: string, isActive: boolean) {
+  async function patchItem(
+    staffAccessId: string,
+    body: { isActive?: boolean; uiLang?: UiLang | null },
+  ) {
     setBusy(staffAccessId);
     setError(null);
     try {
       const response = await fetch(`/api/staff-access/${staffAccessId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isActive }),
+        body: JSON.stringify(body),
       });
       const json = await response.json();
       if (!response.ok) {
@@ -184,15 +197,36 @@ export function StaffAccessManager({
             className="min-w-0 flex-1 rounded-lg border border-jungle-200 px-3 py-2 text-sm
                        outline-none focus:border-jungle-500 focus:ring-1 focus:ring-jungle-500"
           />
+          <select
+            value={newLang}
+            onChange={(e) => setNewLang(e.target.value as UiLang | '')}
+            aria-label={d.passcodeLangLabel}
+            className="rounded-lg border border-jungle-200 bg-white px-3 py-2 text-sm
+                       outline-none focus:border-jungle-500 focus:ring-1 focus:ring-jungle-500"
+          >
+            <option value="">{d.passcodeLangInherit}</option>
+            {UI_LANGUAGES.map((l) => (
+              <option key={l} value={l}>
+                {UI_LANG_LABELS[l]}
+              </option>
+            ))}
+          </select>
           <button
             type="button"
-            onClick={() => issue({ label, locationId: locations[0]?.location_id })}
+            onClick={() =>
+              issue({
+                label,
+                locationId: locations[0]?.location_id,
+                uiLang: newLang === '' ? null : newLang,
+              })
+            }
             disabled={busy !== null || locations.length === 0}
             className="btn-primary"
           >
             {busy === 'new' ? d.issuing : d.issue}
           </button>
         </div>
+        <p className="mt-2 text-xs leading-relaxed text-jungle-500">{d.passcodeLangHint}</p>
       </div>
 
       {/* --- 発行済み一覧 --- */}
@@ -223,7 +257,28 @@ export function StaffAccessManager({
                     : ''}
                 </p>
               </div>
-              <div className="flex gap-2">
+              <div className="flex items-center gap-2">
+                <label className="flex items-center gap-1.5 text-xs text-jungle-500">
+                  <span className="sr-only sm:not-sr-only">{d.langColumn}</span>
+                  <select
+                    value={item.ui_lang ?? ''}
+                    onChange={(e) =>
+                      patchItem(item.staff_access_id, {
+                        uiLang: e.target.value === '' ? null : (e.target.value as UiLang),
+                      })
+                    }
+                    disabled={busy !== null}
+                    className="rounded-lg border border-jungle-200 bg-white px-2 py-1.5 text-xs
+                               outline-none focus:border-jungle-500 focus:ring-1 focus:ring-jungle-500"
+                  >
+                    <option value="">{d.passcodeLangInherit}</option>
+                    {UI_LANGUAGES.map((l) => (
+                      <option key={l} value={l}>
+                        {UI_LANG_LABELS[l]}
+                      </option>
+                    ))}
+                  </select>
+                </label>
                 <button
                   type="button"
                   onClick={() => issue({ staffAccessId: item.staff_access_id })}
@@ -234,7 +289,7 @@ export function StaffAccessManager({
                 </button>
                 <button
                   type="button"
-                  onClick={() => setActive(item.staff_access_id, !item.is_active)}
+                  onClick={() => patchItem(item.staff_access_id, { isActive: !item.is_active })}
                   disabled={busy !== null}
                   className="btn-ghost"
                 >

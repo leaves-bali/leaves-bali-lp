@@ -28,6 +28,26 @@ export type ErrorCode =
   | 'empty_reply'
   | 'published_no_edit';
 
+const ERROR_CODES: readonly ErrorCode[] = [
+  'login_required',
+  'owner_only',
+  'not_found',
+  'already_published',
+  'empty_reply',
+  'published_no_edit',
+];
+
+/**
+ * 翻訳できるコードかどうか。
+ *
+ * Node の 'ECONNREFUSED' や Postgres の '23505' のように、まったく無関係な
+ * エラーにも code プロパティは付く。それを translate() に渡すと
+ * どの case にも一致せず undefined が返り、画面にエラーが出なくなる。
+ */
+function isErrorCode(value: unknown): value is ErrorCode {
+  return typeof value === 'string' && (ERROR_CODES as readonly string[]).includes(value);
+}
+
 export class HttpError extends Error {
   readonly status: number;
   readonly code?: ErrorCode;
@@ -109,17 +129,25 @@ export async function errorResponse(err: unknown): Promise<NextResponse> {
     );
   }
 
-  // PublishError など、HttpError 以外でも code を持つものは翻訳する
+  // PublishError など、HttpError 以外でも「翻訳できるコード」を持つものは翻訳する
   const maybe = err as { statusCode?: unknown; code?: unknown };
   const status = typeof maybe?.statusCode === 'number' ? maybe.statusCode : 500;
-  const message =
-    typeof maybe?.code === 'string'
-      ? translate(lang, maybe.code as ErrorCode)
-      : err instanceof Error
-        ? err.message
-        : 'Unexpected error.';
 
   if (status >= 500) console.error('[api]', err);
 
-  return NextResponse.json({ error: message }, { status });
+  if (isErrorCode(maybe?.code)) {
+    return NextResponse.json({ error: translate(lang, maybe.code) }, { status });
+  }
+
+  // 想定外のエラーの本文はそのまま返さない。
+  // 環境変数名・DB のエラー・内部パスなどがそのまま利用者に見えてしまうため、
+  // 詳細はサーバーのログに残し、画面には定型文を出す。
+  if (status >= 500) {
+    return NextResponse.json({ error: t(lang).errUnexpected }, { status });
+  }
+
+  return NextResponse.json(
+    { error: err instanceof Error ? err.message : t(lang).errUnexpected },
+    { status },
+  );
 }

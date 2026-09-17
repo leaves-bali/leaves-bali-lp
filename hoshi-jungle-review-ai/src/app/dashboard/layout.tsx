@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 import { SyncButton } from '@/components/SyncButton';
 import { UiLangSwitcher } from '@/components/UiLangSwitcher';
 import { t } from '@/lib/i18n';
-import { getUiLang } from '@/lib/uiLang';
+import { getFallbackUiLang, getUiLang } from '@/lib/uiLang';
 import { getBudgetState } from '@/lib/ai/budget';
 import { getQueueCounts, getUserLocations } from '@/lib/reviews/queries';
 import { getSession } from '@/lib/session';
@@ -28,6 +28,8 @@ export default async function DashboardLayout({
 
   const counts = await getQueueCounts(session);
   const uiLang = await getUiLang();
+  // 一時的な切り替えが失効したときに戻る言語（共有端末での予告に使う）
+  const fallbackLang = await getFallbackUiLang();
   const d = t(uiLang);
   const budget = await getBudgetState(locations[0]?.location_id);
 
@@ -63,7 +65,7 @@ export default async function DashboardLayout({
             >
               {isOwner ? d.owner : `${d.staff}${session.staffLabel ? ` · ${session.staffLabel}` : ''}`}
             </span>
-            <UiLangSwitcher current={uiLang} />
+            <UiLangSwitcher current={uiLang} fallback={fallbackLang} />
             <SyncButton lang={uiLang} />
             {isOwner ? (
               <Link

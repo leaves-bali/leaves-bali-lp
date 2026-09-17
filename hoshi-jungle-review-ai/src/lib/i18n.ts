@@ -43,6 +43,29 @@ export function pickFromAcceptLanguage(header: string | null): UiLang | null {
   return null;
 }
 
+/**
+ * 表示言語の優先順位を 1 か所で決める。
+ *
+ * 共有端末（フロントの共用 PC）を前提にした順序であることが要点。
+ *
+ *   1. override      … いま座っている人が選んだ言語。30 分で失効する一時的なもの
+ *   2. sessionLang   … この入室の既定言語（パスコードの設定、無ければホテルの既定）
+ *   3. acceptLanguage… ブラウザの言語。未ログインの初回アクセス向け
+ *   4. DEFAULT_UI_LANG
+ *
+ * 1 が失効すると 2 に戻る。これにより「前の人の言語で固まる」事故が起きない。
+ * サーバー側の Cookie/セッション読み取りと分離して、単体でテストできるようにしてある。
+ */
+export function resolveUiLang(input: {
+  override?: unknown;
+  sessionLang?: unknown;
+  acceptLanguage?: string | null;
+}): UiLang {
+  if (isUiLang(input.override)) return input.override;
+  if (isUiLang(input.sessionLang)) return input.sessionLang;
+  return pickFromAcceptLanguage(input.acceptLanguage ?? null) ?? DEFAULT_UI_LANG;
+}
+
 type Dict = {
   // 共通
   appName: string;
@@ -212,6 +235,19 @@ type Dict = {
   updateFailed: string;
   copyFailed: string;
 
+  // 共有端末の表示言語
+  langRevertHint: (lang: string, minutes: number) => string;
+  defaultLangTitle: string;
+  defaultLangLead: string;
+  defaultLangSave: string;
+  defaultLangSaving: string;
+  defaultLangSaved: string;
+  defaultLangFailed: string;
+  passcodeLangLabel: string;
+  passcodeLangInherit: string;
+  passcodeLangHint: string;
+  langColumn: string;
+
   // API のエラー（利用者に見える分だけ）
   errLoginRequired: string;
   errOwnerOnly: string;
@@ -222,6 +258,7 @@ type Dict = {
   errPasscodeWrong: string;
   errTooManyAttempts: (minutes: number) => string;
   errPublishedNoEdit: string;
+  errUnexpected: string;
 };
 
 const ja: Dict = {
@@ -404,6 +441,20 @@ const ja: Dict = {
   updateFailed: '更新に失敗しました。',
   copyFailed: 'コピーできませんでした。手動で控えてください。',
 
+  langRevertHint: (lang, m) => `${m}分操作がないと${lang}に戻ります`,
+  defaultLangTitle: '端末の既定の言語',
+  defaultLangLead:
+    '共用の端末で、誰も言語を選んでいないときに表示する言語です。スタッフがその場で切り替えても、30分操作がないとここで選んだ言語に自動的に戻ります。',
+  defaultLangSave: '保存',
+  defaultLangSaving: '保存中…',
+  defaultLangSaved: '保存しました。',
+  defaultLangFailed: '保存に失敗しました。',
+  passcodeLangLabel: '入室後の言語',
+  passcodeLangInherit: '端末の既定に従う',
+  passcodeLangHint:
+    'パスコードごとに言語を決められます。「フロント（日本語）」「Front Desk (English)」のように分けて発行すると、入室した瞬間にその言語で開きます。',
+  langColumn: '言語',
+
   errLoginRequired: 'ログインが必要です。',
   errOwnerOnly: 'この操作はオーナーアカウントでのみ実行できます。',
   errNotFound: '見つかりません。',
@@ -414,6 +465,7 @@ const ja: Dict = {
   errPasscodeWrong: 'パスコードが違います。',
   errTooManyAttempts: (m) => `試行回数が多すぎます。${m} 分ほど待ってからもう一度お試しください。`,
   errPublishedNoEdit: '公開済みの返信は編集できません。',
+  errUnexpected: 'エラーが発生しました。時間をおいてもう一度お試しください。',
 };
 
 const en: Dict = {
@@ -597,6 +649,20 @@ const en: Dict = {
   updateFailed: 'Could not save the change.',
   copyFailed: 'Could not copy. Please write it down manually.',
 
+  langRevertHint: (lang, m) => `Returns to ${lang} after ${m} min of inactivity`,
+  defaultLangTitle: 'Default language for this device',
+  defaultLangLead:
+    'The language a shared device shows when nobody has picked one. Staff can switch on the spot, but after 30 minutes of inactivity the screen returns to the language you choose here.',
+  defaultLangSave: 'Save',
+  defaultLangSaving: 'Saving…',
+  defaultLangSaved: 'Saved.',
+  defaultLangFailed: 'Could not save.',
+  passcodeLangLabel: 'Language after sign-in',
+  passcodeLangInherit: 'Use the device default',
+  passcodeLangHint:
+    'Each passcode can carry its own language. Issue them separately — "Front (日本語)", "Front Desk (English)", "Resepsionis (Indonesia)" — and the screen opens in that language the moment someone signs in.',
+  langColumn: 'Language',
+
   errLoginRequired: 'Please sign in.',
   errOwnerOnly: 'Only the owner account can do this.',
   errNotFound: 'Not found.',
@@ -607,6 +673,7 @@ const en: Dict = {
   errPasscodeWrong: 'That passcode is not correct.',
   errTooManyAttempts: (m) => `Too many attempts. Please wait about ${m} minutes and try again.`,
   errPublishedNoEdit: 'Published replies cannot be edited.',
+  errUnexpected: 'Something went wrong. Please try again in a moment.',
 };
 
 const id: Dict = {
@@ -791,6 +858,20 @@ const id: Dict = {
   updateFailed: 'Gagal menyimpan perubahan.',
   copyFailed: 'Gagal menyalin. Mohon catat secara manual.',
 
+  langRevertHint: (lang, m) => `Kembali ke ${lang} setelah ${m} menit tanpa aktivitas`,
+  defaultLangTitle: 'Bahasa bawaan perangkat ini',
+  defaultLangLead:
+    'Bahasa yang ditampilkan perangkat bersama saat belum ada yang memilih. Staf boleh menggantinya sesaat, tetapi setelah 30 menit tanpa aktivitas layar kembali ke bahasa yang dipilih di sini.',
+  defaultLangSave: 'Simpan',
+  defaultLangSaving: 'Menyimpan…',
+  defaultLangSaved: 'Tersimpan.',
+  defaultLangFailed: 'Gagal menyimpan.',
+  passcodeLangLabel: 'Bahasa setelah masuk',
+  passcodeLangInherit: 'Ikuti bawaan perangkat',
+  passcodeLangHint:
+    'Setiap kode akses bisa punya bahasanya sendiri. Terbitkan terpisah — "Front (日本語)", "Front Desk (English)", "Resepsionis (Indonesia)" — agar layar langsung terbuka dalam bahasa itu begitu seseorang masuk.',
+  langColumn: 'Bahasa',
+
   errLoginRequired: 'Silakan masuk terlebih dahulu.',
   errOwnerOnly: 'Hanya akun pemilik yang dapat melakukan ini.',
   errNotFound: 'Tidak ditemukan.',
@@ -801,6 +882,7 @@ const id: Dict = {
   errPasscodeWrong: 'Kode akses salah.',
   errTooManyAttempts: (m) => `Terlalu banyak percobaan. Tunggu sekitar ${m} menit lalu coba lagi.`,
   errPublishedNoEdit: 'Balasan yang sudah terbit tidak bisa disunting.',
+  errUnexpected: 'Terjadi kesalahan. Silakan coba lagi sebentar lagi.',
 };
 
 const DICTS: Record<UiLang, Dict> = { ja, en, id };

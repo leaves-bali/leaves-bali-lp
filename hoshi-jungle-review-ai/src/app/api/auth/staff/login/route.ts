@@ -5,7 +5,7 @@ import { hashIp, loginWithPasscode } from '@/lib/auth/staffLogin';
 import { env } from '@/lib/env';
 import { t } from '@/lib/i18n';
 import { createStaffSession } from '@/lib/session';
-import { getUiLang } from '@/lib/uiLang';
+import { getUiLang, UI_LANG_COOKIE } from '@/lib/uiLang';
 
 export const runtime = 'nodejs';
 
@@ -39,9 +39,24 @@ export async function POST(request: NextRequest) {
       locationId: outcome.locationId,
       staffAccessId: outcome.staffAccessId,
       staffLabel: outcome.staffLabel,
+      uiLang: outcome.uiLang,
     });
 
-    return NextResponse.json({ ok: true, label: outcome.staffLabel });
+    const response = NextResponse.json({
+      ok: true,
+      label: outcome.staffLabel,
+      uiLang: outcome.uiLang,
+    });
+
+    // 共有端末対策。
+    // パスコード自身に言語が設定されている場合だけ、ログイン画面に残っていた
+    // 選択を捨てる（前に座っていた人の残りである可能性があるため）。
+    // 設定が無い場合は捨てない。いま入った人がログイン画面でわざわざ切り替えた
+    // 言語を消してしまうと、読めない画面に放り込むことになる。
+    if (outcome.uiLangFromPasscode) {
+      response.cookies.delete(UI_LANG_COOKIE);
+    }
+    return response;
   } catch (err) {
     return await errorResponse(err);
   }

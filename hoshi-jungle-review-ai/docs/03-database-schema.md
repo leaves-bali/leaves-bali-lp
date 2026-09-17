@@ -33,6 +33,7 @@ erDiagram
         text google_location_id "locations/222"
         text name
         boolean setup_complete
+        text default_ui_lang "共有端末が戻る言語"
         timestamptz last_synced_at
         text last_sync_error
         integer consecutive_failures
@@ -70,6 +71,7 @@ erDiagram
         uuid location_id FK
         text label "例: フロントデスク用"
         text passcode_hash "scrypt。平文は保存しない"
+        text ui_lang "入室後の画面の言語。null=ホテルの既定"
         boolean is_active
         timestamptz last_used_at
         timestamptz rotated_at
@@ -215,6 +217,7 @@ UI ごとに JOIN を書き直すと、条件の食い違いで件数バッジ�
 | `staff_access` | ロケーション単位のパスコード。1 ロケーションに複数発行でき、片方だけ停止できる |
 | `staff_login_attempts` | ログイン試行の記録。IP はハッシュ化して保存し、レート制限と不審アクセス検知に使う |
 | `replies.published_by_staff_access_id` | 監査。スタッフが公開した場合、どのパスコード経由かを残す |
+| `staff_access.ui_lang` / `locations.default_ui_lang` | 共有端末の表示言語。詳細は `docs/05-staff-access.md` の「共有端末での表示言語」 |
 
 **`passcode_hash` に平文は入りません。** scrypt (N=32768, r=8, p=1) でハッシュ化し、
 発行直後の 1 回だけ画面に表示します。これは「あとで見返せる」と誤解させないための

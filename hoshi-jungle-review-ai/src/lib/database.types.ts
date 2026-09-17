@@ -31,6 +31,8 @@ export type LocationRow = {
   name: string;
   address: string | null;
   setup_complete: boolean;
+  /** 共有端末が待機状態のときに戻る表示言語 */
+  default_ui_lang: 'ja' | 'en' | 'id';
   last_synced_at: string | null;
   last_sync_error: string | null;
   consecutive_failures: number;
@@ -92,6 +94,8 @@ export type StaffAccessRow = {
   location_id: string;
   label: string;
   passcode_hash: string;
+  /** このパスコードでログインしたときの表示言語。null ならホテルの既定言語 */
+  ui_lang: 'ja' | 'en' | 'id' | null;
   is_active: boolean;
   last_used_at: string | null;
   rotated_at: string | null;

@@ -4,6 +4,7 @@ import { cookies } from 'next/headers';
 import { SignJWT, jwtVerify } from 'jose';
 
 import { env } from '@/lib/env';
+import { isUiLang, type UiLang } from '@/lib/i18n';
 
 /**
  * ログインセッション。役割は 2 つ。
@@ -39,6 +40,14 @@ export interface SessionPayload {
   locationId?: string;
   staffAccessId?: string;
   staffLabel?: string;
+  /**
+   * この入室に紐づく表示言語（パスコードの設定、無ければホテルの既定言語）。
+   *
+   * 共有端末では「いま座っている人が選んだ言語」(Cookie) が失効したあと、
+   * ここへ戻る。DB を引かずに毎描画で決めたいので JWT に焼き込んでいる。
+   * オーナーが既定言語を変えた場合、反映は次回ログイン時（スタッフは最長 12 時間）。
+   */
+  uiLang?: UiLang;
 }
 
 function secretKey(): Uint8Array {
@@ -74,6 +83,7 @@ export async function createStaffSession(payload: {
   locationId: string;
   staffAccessId: string;
   staffLabel: string;
+  uiLang?: UiLang;
 }): Promise<void> {
   await writeSession({ ...payload, role: 'staff' }, STAFF_TTL_SECONDS);
 }
@@ -101,6 +111,7 @@ export async function getSession(): Promise<SessionPayload | null> {
       locationId: str(payload.locationId),
       staffAccessId: str(payload.staffAccessId),
       staffLabel: str(payload.staffLabel),
+      uiLang: isUiLang(payload.uiLang) ? payload.uiLang : undefined,
     };
   } catch {
     // 署名不正 / 期限切れ。どちらも「未ログイン」として扱う。

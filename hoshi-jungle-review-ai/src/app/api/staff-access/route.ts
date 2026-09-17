@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 
 import { errorResponse, HttpError, requireOwner } from '@/lib/api';
+import { isUiLang } from '@/lib/i18n';
 import { generatePasscode, hashPasscode } from '@/lib/passcode';
 import { supabaseAdmin } from '@/lib/supabase/admin';
 
@@ -23,7 +24,9 @@ export async function GET() {
 
     const { data } = await db
       .from('staff_access')
-      .select('staff_access_id, location_id, label, is_active, last_used_at, created_at, rotated_at')
+      .select(
+        'staff_access_id, location_id, label, ui_lang, is_active, last_used_at, created_at, rotated_at',
+      )
       .in('location_id', locationIds)
       .order('created_at', { ascending: true });
 
@@ -46,7 +49,11 @@ export async function POST(request: NextRequest) {
       label?: string;
       locationId?: string;
       staffAccessId?: string; // 指定があれば再発行
+      uiLang?: string | null;  // このパスコードで入室したときの画面の言語
     };
+
+    // null / 未指定 = 「ホテルの既定言語に従う」。空文字も同じ扱いにする。
+    const uiLang = isUiLang(body.uiLang) ? body.uiLang : null;
 
     const db = supabaseAdmin();
     const passcode = generatePasscode();
@@ -101,9 +108,10 @@ export async function POST(request: NextRequest) {
         location_id: location.location_id,
         label,
         passcode_hash: passcodeHash,
+        ui_lang: uiLang,
         created_by: session.userId,
       })
-      .select('staff_access_id, label')
+      .select('staff_access_id, label, ui_lang')
       .single();
 
     if (error || !created) {
@@ -114,6 +122,7 @@ export async function POST(request: NextRequest) {
       passcode,
       staffAccessId: created.staff_access_id,
       label: created.label,
+      uiLang: created.ui_lang,
       rotated: false,
     });
   } catch (err) {
