@@ -33,6 +33,12 @@ const DEMO_IMG = "/tmp/claude-0/slide-demo.png";
 
 // ---------- helpers ----------
 
+/** PNG のヘッダ(IHDR)から実寸を読む。画像ライブラリを足さずに済ませる。 */
+function pngSize(file) {
+  const b = fs.readFileSync(file);
+  return { width: b.readUInt32BE(16), height: b.readUInt32BE(20) };
+}
+
 /** 見出し（明るい地のスライド用） */
 function heading(s, text, sub) {
   s.addText(text, {
@@ -243,9 +249,10 @@ function footer(s, n) {
   });
 
   if (fs.existsSync(DEMO_IMG)) {
-    // 元画像 1000 x 1079
+    // 縦横比は画像の実寸から取る。決め打ちにすると画像を差し替えたときに歪む。
+    const dim = pngSize(DEMO_IMG);
     const h = 6.2;
-    const w = h * (1000 / 1079);
+    const w = h * (dim.width / dim.height);
     s.addImage({ path: DEMO_IMG, x: W - M - w, y: 0.62, w: w, h: h });
   }
 
@@ -269,53 +276,53 @@ function footer(s, n) {
       stars: "★★★★★",
       starColor: BRASS,
       who: "田中 美咲 · 日本語",
-      review: "ジャングルビューのプールが忘れられません。朝は鳥の声で目が覚めて、夜はカエルの合唱。スタッフの皆さんも本当に温かくて、バリで一番好きな場所になりました。",
-      reply: "田中様、こうしてお言葉を残してくださり、ありがとうございます。\n鳥の声で目覚め、カエルの合唱で眠る——私たちがこの谷に宿をつくった理由を、そのまま言葉にしていただいたようです。スタッフにも必ず伝えます。\n次にお越しの際は、霧が谷を渡る早朝の時間もぜひ。",
-      tone: "5つ星 → 感謝と、次回の楽しみを一つだけ",
+      review: "プールからの景色が最高でした。スタッフの方もとても親切です。また行きたいです。",
+      reply: "田中様、ありがとうございます。\nプールからの眺めを気に入っていただけて何よりです。スタッフにも伝えます。\nまたのお越しをお待ちしております。\n\nHoshi Jungle Team",
+      tone: "5つ星 → 何を喜んでくれたかに具体的に触れて感謝する",
     },
     {
       x: M + cw + 0.4,
       stars: "★★",
       starColor: BRASS,
       who: "Michael R. · English",
-      review: "Room wasn't clean on arrival and the AC in the bedroom didn't work for two nights. Staff were apologetic but nothing was actually fixed.",
-      reply: "Michael, thank you for telling us — and I am sorry.\nArriving to a room that had not been properly cleaned, then two nights without working air conditioning, is not a stay we can be satisfied with.\nWe have taken both points to our housekeeping and engineering teams.",
-      tone: "1〜2つ星 → 謝罪・事実の受け止め・具体的な対応",
+      review: "The room wasn't clean when we arrived and the AC didn't work.",
+      reply: "Michael, I am sorry.\nThe room should have been clean, and the air conditioning should have been working. We have raised both with our team.\nPlease contact us at stay@hoshijungle.com so we can put this right.\n\nHoshi Jungle Team",
+      tone: "1〜2つ星 → 言い訳せず謝罪し、対応と連絡先を示す",
     },
   ];
 
   ex.forEach(function (e) {
     // クチコミ
-    card(s, e.x, 2.05, cw, 1.72, WHITE);
+    card(s, e.x, 2.15, cw, 1.30, WHITE);
     s.addText(e.stars, {
-      x: e.x + 0.28, y: 2.18, w: 1.3, h: 0.32,
+      x: e.x + 0.28, y: 2.28, w: 1.3, h: 0.32,
       fontFace: BODY, fontSize: 13, color: e.starColor, isTextBox: true, margin: 0,
     });
     s.addText(e.who, {
-      x: e.x + 1.6, y: 2.2, w: cw - 1.9, h: 0.3,
+      x: e.x + 1.6, y: 2.30, w: cw - 1.9, h: 0.3,
       fontFace: BODY, fontSize: 10.5, bold: true, color: INK3, isTextBox: true, margin: 0,
     });
     s.addText(e.review, {
-      x: e.x + 0.28, y: 2.55, w: cw - 0.56, h: 1.1,
+      x: e.x + 0.28, y: 2.65, w: cw - 0.56, h: 0.7,
       fontFace: BODY, fontSize: 10.5, color: INK, lineSpacing: 16,
       isTextBox: true, margin: 0,
     });
 
     // 矢印
     s.addText("▼", {
-      x: e.x + cw / 2 - 0.3, y: 3.8, w: 0.6, h: 0.3,
+      x: e.x + cw / 2 - 0.3, y: 3.55, w: 0.6, h: 0.3,
       fontFace: BODY, fontSize: 12, color: PINE, align: "center", isTextBox: true, margin: 0,
     });
 
     // 返信案
-    card(s, e.x, 4.14, cw, 2.05, MOSS);
+    card(s, e.x, 3.95, cw, 2.25, MOSS);
     s.addText("AIが作成した返信案", {
-      x: e.x + 0.28, y: 4.26, w: cw - 0.56, h: 0.28,
+      x: e.x + 0.28, y: 4.10, w: cw - 0.56, h: 0.28,
       fontFace: BODY, fontSize: 9.5, bold: true, color: PINE, charSpacing: 1,
       isTextBox: true, margin: 0,
     });
     s.addText(e.reply, {
-      x: e.x + 0.28, y: 4.58, w: cw - 0.56, h: 1.5,
+      x: e.x + 0.28, y: 4.44, w: cw - 0.56, h: 1.65,
       fontFace: BODY, fontSize: 10.5, color: INK, lineSpacing: 16,
       isTextBox: true, margin: 0,
     });

@@ -127,7 +127,7 @@
   /* ---- 実例 ---- */
   .ex { display: flex; gap: 24px; }
   .exc { flex: 1; }
-  .rev { padding: 20px 22px; min-height: 166px; }
+  .rev { padding: 22px 24px; min-height: 112px; }
   .rev .meta { display: flex; align-items: baseline; gap: 12px; margin-bottom: 10px; }
   .stars { color: var(--brass); font-size: 13px; letter-spacing: 1px; }
   .who { font-size: 10.5px; font-weight: 700; color: var(--ink3); }
@@ -135,7 +135,7 @@
   .arrow { text-align: center; color: var(--pine); font-size: 13px; margin: 9px 0; }
   .rep {
     background: var(--moss); border: 1px solid #C6DACD; border-radius: 6px;
-    padding: 19px 22px; min-height: 232px;
+    padding: 22px 24px; min-height: 196px;
   }
   .rep .lbl { font-size: 9.5px; font-weight: 700; color: var(--pine); letter-spacing: .1em; margin-bottom: 8px; }
   .rep .body { font-size: 11.5px; line-height: 1.8; white-space: pre-line; }
@@ -294,36 +294,40 @@
     <h2>AIが書く返信は、こういう文章です</h2>
     <p class="sub">評点に応じて書き分けます。下はデモ用のサンプルで、実際のクチコミではありません</p>
   </div>
-  <div class="pad" style="top:176px;">
+  <div class="pad" style="top:200px;">
     <div class="ex">
       <div class="exc">
         <div class="rev card">
           <div class="meta"><span class="stars">★★★★★</span><span class="who">田中 美咲 · 日本語</span></div>
-          <div class="body">ジャングルビューのプールが忘れられません。朝は鳥の声で目が覚めて、夜はカエルの合唱。スタッフの皆さんも本当に温かくて、バリで一番好きな場所になりました。</div>
+          <div class="body">プールからの景色が最高でした。スタッフの方もとても親切です。また行きたいです。</div>
         </div>
         <div class="arrow">▼</div>
         <div class="rep">
           <div class="lbl">AIが作成した返信案</div>
-          <div class="body">田中様、こうしてお言葉を残してくださり、ありがとうございます。
-鳥の声で目覚め、カエルの合唱で眠る——私たちがこの谷に宿をつくった理由を、そのまま言葉にしていただいたようです。スタッフにも必ず伝えます。
-次にお越しの際は、霧が谷を渡る早朝の時間もぜひ。</div>
+          <div class="body">田中様、ありがとうございます。
+プールからの眺めを気に入っていただけて何よりです。スタッフにも伝えます。
+またのお越しをお待ちしております。
+
+Hoshi Jungle Team</div>
         </div>
-        <div class="tone">5つ星 → 感謝と、次回の楽しみを一つだけ</div>
+        <div class="tone">5つ星 → 何を喜んでくれたかに具体的に触れて感謝する</div>
       </div>
 
       <div class="exc">
         <div class="rev card">
           <div class="meta"><span class="stars">★★</span><span class="who">Michael R. · English</span></div>
-          <div class="body">Room wasn't clean on arrival and the AC in the bedroom didn't work for two nights. Staff were apologetic but nothing was actually fixed.</div>
+          <div class="body">The room wasn't clean when we arrived and the AC didn't work.</div>
         </div>
         <div class="arrow">▼</div>
         <div class="rep">
           <div class="lbl">AIが作成した返信案</div>
-          <div class="body">Michael, thank you for telling us — and I am sorry.
-Arriving to a room that had not been properly cleaned, then two nights without working air conditioning, is not a stay we can be satisfied with.
-We have taken both points to our housekeeping and engineering teams.</div>
+          <div class="body">Michael, I am sorry.
+The room should have been clean, and the air conditioning should have been working. We have raised both with our team.
+Please contact us at stay@hoshijungle.com so we can put this right.
+
+Hoshi Jungle Team</div>
         </div>
-        <div class="tone">1〜2つ星 → 謝罪・事実の受け止め・具体的な対応</div>
+        <div class="tone">1〜2つ星 → 言い訳せず謝罪し、対応と連絡先を示す</div>
       </div>
     </div>
   </div>

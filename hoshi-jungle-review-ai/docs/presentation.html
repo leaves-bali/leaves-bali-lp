@@ -420,8 +420,8 @@
 
     <p class="demo-note">
       ※ 上記はデモ用のサンプルです。実際に投稿されたクチコミではありません。
-      返信案に登場するホテルの魅力（早朝の霧など）は、事前にいただいた情報の範囲だけで書きます。
-      AIが実在しない設備やサービスを書くことはありません。
+      返信案は、事前にいただいた情報の範囲だけで書きます。
+      AIが実在しない設備・サービス・スタッフ名に触れることはありません。
     </p>
   </div>
 </section>
@@ -598,42 +598,42 @@
   var REVIEWS = [
     {
       id: "r1", lang: "ja", rating: 5, who: "田中 美咲", when: "9月12日", flag: null,
-      text: "ジャングルビューのプールが忘れられません。朝は鳥の声で目が覚めて、夜はカエルの合唱。スタッフの皆さんも本当に温かくて、バリで一番好きな場所になりました。",
-      reply: "田中様、こうしてお言葉を残してくださり、ありがとうございます。\n鳥の声で目覚め、カエルの合唱で眠る——私たちがこの谷に宿をつくった理由を、そのまま言葉にしていただいたようです。スタッフにも必ず伝えます。\n次にお越しの際は、霧が谷を渡る早朝の時間もぜひ味わってみてください。またお会いできる日を楽しみにしております。\n\n" + SIGN,
-      alt: "田中様、うれしいお言葉をありがとうございます。\n朝の鳥と夜のカエル——この谷の音を気に入っていただけたことが、何よりの褒め言葉です。スタッフ一同、励みにいたします。\nバリで一番、とまで言っていただけて光栄です。またお帰りをお待ちしております。\n\n" + SIGN
+      text: "プールからの景色が最高でした。スタッフの方もとても親切です。また行きたいです。",
+      reply: "田中様、ありがとうございます。\nプールからの眺めを気に入っていただけて何よりです。スタッフにも伝えます。\nまたのお越しをお待ちしております。\n\n" + SIGN,
+      alt: "田中様、うれしいお言葉をありがとうございます。\nスタッフ一同、励みになります。またお会いできる日を楽しみにしております。\n\n" + SIGN
     },
     {
       id: "r2", lang: "id", rating: 5, who: "Putu Ayu", when: "9月11日",
       flag: { kind: "warn", label: "要確認", why: "インドネシア語のため、現地スタッフによる表現確認をお願いします。自動公開の対象外です。" },
-      text: "Tempatnya luar biasa indah, benar-benar menyatu dengan alam. Pelayanannya ramah sekali dan sarapannya enak. Pasti akan kembali lagi!",
-      reply: "Terima kasih banyak, Putu.\nSenang sekali membaca bahwa Anda merasakan kedekatan dengan alam di sini — itulah hal yang paling kami jaga.\nPujian Anda untuk tim kami akan kami sampaikan langsung kepada mereka. Kami tunggu kedatangan Anda berikutnya.\n\n" + SIGN,
-      alt: "Putu, terima kasih atas ulasan yang hangat ini.\nKami sangat senang mendengar bahwa suasana alam dan keramahan tim kami berkesan untuk Anda.\nSampai jumpa lagi di Hoshi Jungle.\n\n" + SIGN
+      text: "Tempatnya bagus dan pelayanannya ramah. Sarapannya juga enak.",
+      reply: "Terima kasih banyak, Putu.\nSenang mendengar Anda menikmati suasana dan pelayanan kami.\nKami tunggu kedatangan Anda berikutnya.\n\n" + SIGN,
+      alt: "Putu, terima kasih atas ulasannya.\nKami senang Anda menikmati waktu di sini. Sampai jumpa lagi.\n\n" + SIGN
     },
     {
       id: "r3", lang: "en", rating: 2, who: "Michael R.", when: "9月10日",
       flag: { kind: "warn", label: "要確認", why: "低評価（1〜2つ星）です。公開前に必ず内容をご確認ください。" },
-      text: "Room wasn't clean on arrival and the AC in the bedroom didn't work for two nights. Staff were apologetic but nothing was actually fixed.",
-      reply: "Michael, thank you for telling us — and I am sorry.\nArriving to a room that had not been properly cleaned, then two nights without working air conditioning, is not a stay we can be satisfied with. You are right that an apology without a repair is not much of an apology.\nWe have taken both points to our housekeeping and engineering teams. I would like to hear the details directly so we can put this right — please reach us at stay@hoshijungle.com.\n\n" + SIGN,
-      alt: "Michael, I am sorry. Neither the state of the room nor two nights without air conditioning should have happened, and being told sorry without anything being fixed only made it worse.\nWe have raised both with the teams responsible. Please write to us at stay@hoshijungle.com — I would like to hear what happened from you directly.\n\n" + SIGN
+      text: "The room wasn't clean when we arrived and the AC didn't work.",
+      reply: "Michael, I am sorry.\nThe room should have been clean, and the air conditioning should have been working. We have raised both with our team.\nPlease contact us at stay@hoshijungle.com so we can put this right.\n\n" + SIGN,
+      alt: "Michael, I am sorry that the room and the air conditioning were not as they should have been.\nBoth have been passed to the teams responsible. Please write to stay@hoshijungle.com — I would like to hear the details from you.\n\n" + SIGN
     },
     {
       id: "r4", lang: "ja", rating: 4, who: "Yuki", when: "9月8日", flag: null,
-      text: "静かで居心地がよく、ゆっくり過ごせました。朝食のメニューがもう少し種類があると嬉しかったです。",
-      reply: "ご滞在ありがとうございました。静かにお過ごしいただけたようで安心いたしました。\n朝食についての率直なご意見にも感謝いたします。種類の少なさは私たちも気にかけている点で、いただいたお声はキッチンチームと共有いたします。\n次にお越しの際、少しでも良くなったと感じていただけるよう努めます。またのお越しをお待ちしております。\n\n" + SIGN,
-      alt: "ご滞在ありがとうございました。ゆっくりお過ごしいただけたとのこと、うれしく思います。\n朝食のメニューについては、おっしゃる通りです。すぐにすべてを変えるお約束はできませんが、キッチンと相談してまいります。\nまたお越しいただければ幸いです。\n\n" + SIGN
+      text: "静かでゆっくり過ごせました。朝食の種類がもう少しあると嬉しいです。",
+      reply: "ご滞在ありがとうございました。ゆっくりお過ごしいただけて安心いたしました。\n朝食についてのご意見は、キッチンと共有いたします。\nまたお越しください。\n\n" + SIGN,
+      alt: "ご滞在ありがとうございました。\n朝食の種類については、いただいたご意見をキッチンに伝えます。またのお越しをお待ちしております。\n\n" + SIGN
     },
     {
       id: "r5", lang: "en", rating: 1, who: "Sarah L.", when: "9月7日",
       flag: { kind: "crit", label: "要確認", why: "AIが判定: 返金の要求と金銭トラブルの主張があります。事実確認のうえ、必ず内容をご確認ください。AIは返金を約束していません。" },
-      text: "We were charged twice for the airport transfer and no one has responded to my emails for a week. I want a refund.",
-      reply: "Sarah, I am sorry — both for the duplicate charge and for the silence that followed it.\nA week without a reply is not acceptable, and I understand why you are writing here instead of waiting any longer.\nWe are looking into the transfer booking now and will come back to you directly. Please contact us at stay@hoshijungle.com so that we can reach you.\n\n" + SIGN,
-      alt: "Sarah, I am sorry for both the billing problem and for being left without an answer for a week.\nWe are checking the transfer booking now. Please write to stay@hoshijungle.com so we can respond to you directly and resolve this properly.\n\n" + SIGN
+      text: "Charged twice for the airport transfer. No reply to my emails for a week. I want a refund.",
+      reply: "Sarah, I am sorry — for the double charge and for the week of silence.\nWe are checking the booking now.\nPlease write to stay@hoshijungle.com so we can reach you directly.\n\n" + SIGN,
+      alt: "Sarah, I am sorry. A week without a reply is not acceptable.\nWe are looking into the transfer booking now and will come back to you. Please contact stay@hoshijungle.com.\n\n" + SIGN
     },
     {
       id: "r6", lang: "en", rating: 5, who: "James", when: "9月5日", flag: null,
       text: "Perfect stay. The staff made it.",
-      reply: "Thank you, James — that is the compliment our team values most, and we will pass it on to them.\nYou are welcome back any time.\n\n" + SIGN,
-      alt: "Thank you, James. Our team will be glad to hear it — they are the reason people come back.\nWe hope to see you again.\n\n" + SIGN
+      reply: "Thank you, James.\nWe will pass that on to the team. You are welcome back any time.\n\n" + SIGN,
+      alt: "Thank you, James — our team will be glad to hear it.\nWe hope to see you again.\n\n" + SIGN
     }
   ];
 
