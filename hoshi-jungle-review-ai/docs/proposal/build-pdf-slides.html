@@ -141,6 +141,19 @@
   .rep .body { font-size: 11.5px; line-height: 1.8; white-space: pre-line; }
   .tone { font-size: 10.5px; color: var(--ink3); margin-top: 11px; }
 
+  /* ---- 3択 ---- */
+  .opt-h {
+    font-size: 11px; font-weight: 700; color: var(--ink3);
+    letter-spacing: .06em; margin-bottom: 8px;
+  }
+  .opt-h.sel { color: var(--pine); }
+  .opt {
+    background: var(--white); border: 1px solid var(--line); border-radius: 6px;
+    padding: 18px 20px; min-height: 212px;
+    font-size: 11.5px; line-height: 1.8; white-space: pre-line;
+  }
+  .opt.sel { background: var(--moss); border-color: #A9C9B8; }
+
   /* ---- 2x2 ---- */
   .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
   .fact { display: flex; gap: 17px; padding: 30px 26px; }
@@ -162,7 +175,7 @@
   .bignum .u { font-size: 22px; font-weight: 700; margin-top: 14px; }
   .bignum .c { font-size: 11.5px; color: var(--ink3); margin-top: 12px; }
   table { border-collapse: collapse; width: 100%; }
-  th, td { text-align: left; padding: 18px 18px; border-bottom: 1px solid var(--line); font-size: 12px; }
+  th, td { text-align: left; padding: 14px 18px; border-bottom: 1px solid var(--line); font-size: 12px; }
   th { background: #E9EFE8; font-size: 10px; letter-spacing: .08em; color: var(--ink3); font-weight: 700; }
   td.n { text-align: right; font-weight: 700; color: var(--pine); }
   tbody tr:last-child td { border-bottom: none; }
@@ -205,7 +218,7 @@
     <div class="cover-route">LEAVES BALI &nbsp;→&nbsp; HOSHI JUNGLE 御中</div>
     <h1 style="margin-top:34px;">クチコミ返信を、<br><span style="color:var(--pine-l)">取りこぼさない。</span></h1>
     <p class="lead">
-      Googleマップに届く日本語・英語・インドネシア語のクチコミに、AIが返信の下書きを用意します。<br>
+      日本語・英語・インドネシア語・中国語・韓国語のクチコミに、届いた言語のまま返信案を用意します。<br>
       公開するかどうかを決めるのは、いつでもスタッフの方です。
     </p>
     <div class="rule"></div>
@@ -224,7 +237,7 @@
       <div class="row card">
         <div class="chip">1</div>
         <div class="t">言語が混ざる</div>
-        <div class="d">日本語・英語・インドネシア語が同じ画面に並びます。その言語で書ける人が、その日いるとは限りません。</div>
+        <div class="d">日本語・英語・インドネシア語・中国語・韓国語が同じ画面に並びます。その言語で書ける人が、その日いるとは限りません。</div>
       </div>
       <div class="row card">
         <div class="chip">2</div>
@@ -251,18 +264,18 @@
     <div class="cols">
       <div class="col card">
         <div class="n">1</div>
-        <div class="k">届いた言語で、<br>そのまま返す</div>
-        <div class="v">日本語には日本語、英語には英語、インドネシア語にはインドネシア語で返信案を作ります。翻訳の貼り付けではありません。</div>
+        <div class="k">5か国語に、<br>届いた言語で返す</div>
+        <div class="v">日本語・英語・インドネシア語・中国語・韓国語。バリ島の来訪者数の実績にもとづいて選びました。翻訳の貼り付けではありません。</div>
       </div>
       <div class="col card">
         <div class="n">2</div>
-        <div class="k">勝手には<br>公開しない</div>
-        <div class="v">AIが書くのは下書きまで。スタッフが読んで、直して、ボタンを押して初めてGoogleに反映されます。</div>
+        <div class="k">3つの案から<br>選ぶだけ</div>
+        <div class="v">丁寧・標準・簡潔の3案を用意します。書き直すのではなく選ぶだけ。公開はボタンを押したときだけです。</div>
       </div>
       <div class="col card">
         <div class="n brass">3</div>
-        <div class="k">運用費は<br>月額0円</div>
-        <div class="v">サーバー・データベース・Google連携はすべて無料枠で運用します。追加のご負担はありません。</div>
+        <div class="k">管理費は<br>いただきません</div>
+        <div class="v">月額の管理費・保守費はありません。サーバー代もかかりません。ホテル様のご負担は0円です。</div>
       </div>
     </div>
   </div>
@@ -279,58 +292,66 @@
       <div class="bullet"><span class="dot"></span><span>AIの返信案がすでに入っています</span></div>
       <div class="bullet"><span class="dot"></span><span>言語ごとにタブで分けて確認できます</span></div>
       <div class="bullet"><span class="dot"></span><span>低評価とインドネシア語は「要確認」に分けて表示</span></div>
+      <div class="bullet"><span class="dot"></span><span>画面そのものを日本語・英語・インドネシア語で切替</span></div>
     </div>
     <div class="urlbox">
-      <b>この画面は実物です。その場で触っていただけます。</b>
-      文章を書き換える、公開ボタンを押す、AIに作り直させる —— すべて実際に動きます。
+      <b>スタッフの母語で使えます。</b>
+      日本人・インドネシア人・アメリカ人、それぞれが自分の言語で画面を開けます。
+      ボタン一つで切り替わり、次回からはその言語で開きます。
     </div>
   </div>
   <div class="foot"><span>Leaves Bali · Hoshi Jungle Review AI</span><span>4</span></div>
 </section>
 
-<!-- 5 返信の実例 -->
+<!-- 5 返信の実例（3択） -->
 <section class="slide">
-  <div class="pad" style="top:46px;">
-    <h2>AIが書く返信は、こういう文章です</h2>
-    <p class="sub">評点に応じて書き分けます。下はデモ用のサンプルで、実際のクチコミではありません</p>
+  <div class="pad" style="top:44px;">
+    <h2>1件につき、3つの案が用意されます</h2>
+    <p class="sub">温度感と言い回しを変えた3案。書き直すのではなく、選ぶだけです（下はデモ用のサンプル）</p>
   </div>
-  <div class="pad" style="top:200px;">
-    <div class="ex">
-      <div class="exc">
-        <div class="rev card">
-          <div class="meta"><span class="stars">★★★★★</span><span class="who">田中 美咲 · 日本語</span></div>
-          <div class="body">プールからの景色が最高でした。スタッフの方もとても親切です。また行きたいです。</div>
-        </div>
-        <div class="arrow">▼</div>
-        <div class="rep">
-          <div class="lbl">AIが作成した返信案</div>
-          <div class="body">田中様、ありがとうございます。
-プールからの眺めを気に入っていただけて何よりです。スタッフにも伝えます。
+
+  <div class="pad" style="top:158px;">
+    <div class="card" style="padding:20px 24px;">
+      <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:9px;">
+        <span class="stars">★★★★★</span>
+        <span class="who">田中 美咲 · 日本語</span>
+      </div>
+      <div style="font-size:13px;line-height:1.75;">プールからの景色が最高でした。スタッフの方もとても親切です。また行きたいです。</div>
+    </div>
+  </div>
+
+  <div class="pad" style="top:274px;">
+    <div style="display:flex;gap:20px;">
+      <div style="flex:1;">
+        <div class="opt-h">丁寧</div>
+        <div class="opt">田中様、うれしいお言葉をありがとうございます。
+プールからの景色を気に入っていただけたこと、応対を「親切」と言っていただけたことが、何よりの励みになります。
+またお会いできる日を楽しみにお待ちしております。
+
+Hoshi Jungle Team</div>
+      </div>
+      <div style="flex:1;">
+        <div class="opt-h sel">標準 &nbsp;— 既定で選ばれます</div>
+        <div class="opt sel">田中様、ありがとうございます。
+プールからの眺めを気に入っていただけて、私たちもうれしく思います。
 またのお越しをお待ちしております。
 
 Hoshi Jungle Team</div>
-        </div>
-        <div class="tone">5つ星 → 何を喜んでくれたかに具体的に触れて感謝する</div>
       </div>
-
-      <div class="exc">
-        <div class="rev card">
-          <div class="meta"><span class="stars">★★</span><span class="who">Michael R. · English</span></div>
-          <div class="body">The room wasn't clean when we arrived and the AC didn't work.</div>
-        </div>
-        <div class="arrow">▼</div>
-        <div class="rep">
-          <div class="lbl">AIが作成した返信案</div>
-          <div class="body">Michael, I am sorry.
-The room should have been clean, and the air conditioning should have been working. We have raised both with our team.
-Please contact us at stay@hoshijungle.com so we can put this right.
+      <div style="flex:1;">
+        <div class="opt-h">簡潔</div>
+        <div class="opt">田中様、ありがとうございます。
+またお越しいただける日を楽しみにしております。
 
 Hoshi Jungle Team</div>
-        </div>
-        <div class="tone">1〜2つ星 → 言い訳せず謝罪し、対応と連絡先を示す</div>
       </div>
     </div>
+    <p class="note" style="margin-top:22px;">
+      返信は「私たち」の言葉で書きます。スタッフを他人のように扱う言い方（「スタッフに伝えておきます」）はしません。
+      ホテルそのものとして答えます。
+    </p>
   </div>
+
   <div class="foot"><span>Leaves Bali · Hoshi Jungle Review AI</span><span>5</span></div>
 </section>
 
@@ -393,7 +414,7 @@ Hoshi Jungle Team</div>
         <div><div class="ft">事実を作らない</div><div class="fd">いただいた情報にない設備・サービス・スタッフ名には触れません。</div></div>
       </div>
     </div>
-    <p class="note" style="margin-top:26px;">インドネシア語は現地の言い回しをAIに任せきれないため、自動公開の対象から外しています。</p>
+    <p class="note" style="margin-top:26px;">インドネシア語は現地の言い回しをAIに任せきれないため、自動公開の対象から外しています。対応5言語以外のクチコミも「要確認」に回ります。</p>
   </div>
   <div class="foot"><span>Leaves Bali · Hoshi Jungle Review AI</span><span>7</span></div>
 </section>
@@ -401,26 +422,27 @@ Hoshi Jungle Team</div>
 <!-- 8 費用 -->
 <section class="slide">
   <div class="pad" style="top:46px;">
-    <h2>運用費は月額0円です</h2>
-    <p class="sub">すべて無料枠に収まるよう設計しました。従量課金で青天井になる部分はありません</p>
+    <h2>管理費はいただきません</h2>
+    <p class="sub">月額の管理費・保守費はありません。サーバー代もすべて無料枠に収まるよう設計しました</p>
   </div>
   <div class="pad" style="top:186px;">
     <div class="cost">
       <div class="bignum card">
         <div class="n">0</div>
         <div class="u">円 / 月</div>
-        <div class="c">ホテル様のご負担はありません</div>
+        <div class="c">毎月かかる費用はありません</div>
       </div>
       <div style="flex:1;">
         <div class="card" style="overflow:hidden;">
           <table>
             <thead><tr><th>内訳</th><th>役割</th><th style="text-align:right;">月額</th></tr></thead>
             <tbody>
+              <tr><td>管理費・保守費</td><td>毎月の運用サポート</td><td class="n">0円</td></tr>
               <tr><td>サーバー</td><td>画面の表示</td><td class="n">0円</td></tr>
               <tr><td>データベース</td><td>クチコミと返信の保存</td><td class="n">0円</td></tr>
               <tr><td>定期取得</td><td>毎時間の自動チェック</td><td class="n">0円</td></tr>
               <tr><td>Google連携</td><td>クチコミの取得・返信の投稿</td><td class="n">0円</td></tr>
-              <tr><td>AI（返信案の作成）</td><td>月71件まで</td><td class="n">0円</td></tr>
+              <tr><td>AI（3案の作成）</td><td>月43件まで</td><td class="n">0円</td></tr>
             </tbody>
           </table>
         </div>

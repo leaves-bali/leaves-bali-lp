@@ -231,6 +231,18 @@
   .alert b { font-weight: 700; }
   .alert.crit { background: var(--crit-bg); border-color: var(--crit); color: var(--crit); }
 
+  .picker { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 9px; }
+  .picker button {
+    appearance: none; cursor: pointer; font: inherit;
+    font-size: 12px; font-weight: 600; padding: 4px 12px; border-radius: 999px;
+    border: 1px solid var(--line); background: var(--surface); color: var(--ink-2);
+  }
+  .picker button:hover { background: var(--surface-2); color: var(--ink); }
+  .picker button[aria-pressed="true"] {
+    background: var(--pine); border-color: var(--pine); color: var(--on-pine);
+  }
+  .picker .hint { font-size: 11px; color: var(--ink-3); padding-left: 4px; }
+
   .reply { margin-top: 16px; }
   .reply-head {
     display: flex; align-items: baseline; gap: 10px; margin-bottom: 7px;
@@ -400,10 +412,12 @@
       </div>
 
       <nav class="app-nav" id="tabs" role="tablist" aria-label="言語で絞り込む">
-        <button role="tab" data-lang="all" aria-selected="true">すべて <span class="n">6</span></button>
-        <button role="tab" data-lang="ja" aria-selected="false">日本語 <span class="n">2</span></button>
-        <button role="tab" data-lang="en" aria-selected="false">English <span class="n">3</span></button>
-        <button role="tab" data-lang="id" aria-selected="false">Bahasa Indonesia <span class="n">1</span></button>
+        <button role="tab" data-lang="all" aria-selected="true">すべて <span class="n"></span></button>
+        <button role="tab" data-lang="ja" aria-selected="false">日本語 <span class="n"></span></button>
+        <button role="tab" data-lang="en" aria-selected="false">English <span class="n"></span></button>
+        <button role="tab" data-lang="id" aria-selected="false">Bahasa Indonesia <span class="n"></span></button>
+        <button role="tab" data-lang="zh" aria-selected="false">中文 <span class="n"></span></button>
+        <button role="tab" data-lang="ko" aria-selected="false">한국어 <span class="n"></span></button>
       </nav>
 
       <div class="app-tools">
@@ -599,45 +613,87 @@
     {
       id: "r1", lang: "ja", rating: 5, who: "田中 美咲", when: "9月12日", flag: null,
       text: "プールからの景色が最高でした。スタッフの方もとても親切です。また行きたいです。",
-      reply: "田中様、ありがとうございます。\nプールからの眺めを気に入っていただけて何よりです。スタッフにも伝えます。\nまたのお越しをお待ちしております。\n\n" + SIGN,
-      alt: "田中様、うれしいお言葉をありがとうございます。\nスタッフ一同、励みになります。またお会いできる日を楽しみにしております。\n\n" + SIGN
+      options: [
+        { style: "warm", text: "田中様、うれしいお言葉をありがとうございます。\nプールからの景色を気に入っていただけたこと、そして応対を「親切」と言っていただけたことが、何よりの励みになります。\nまたお会いできる日を楽しみにお待ちしております。\n\n" + SIGN },
+        { style: "standard", text: "田中様、ありがとうございます。\nプールからの眺めを気に入っていただけて、私たちもうれしく思います。\nまたのお越しをお待ちしております。\n\n" + SIGN },
+        { style: "concise", text: "田中様、ありがとうございます。\nまたお越しいただける日を楽しみにしております。\n\n" + SIGN }
+      ]
     },
     {
       id: "r2", lang: "id", rating: 5, who: "Putu Ayu", when: "9月11日",
       flag: { kind: "warn", label: "要確認", why: "インドネシア語のため、現地スタッフによる表現確認をお願いします。自動公開の対象外です。" },
       text: "Tempatnya bagus dan pelayanannya ramah. Sarapannya juga enak.",
-      reply: "Terima kasih banyak, Putu.\nSenang mendengar Anda menikmati suasana dan pelayanan kami.\nKami tunggu kedatangan Anda berikutnya.\n\n" + SIGN,
-      alt: "Putu, terima kasih atas ulasannya.\nKami senang Anda menikmati waktu di sini. Sampai jumpa lagi.\n\n" + SIGN
+      options: [
+        { style: "warm", text: "Terima kasih banyak, Putu.\nSenang sekali mendengar bahwa suasana, pelayanan, dan sarapan kami berkesan untuk Anda. Itulah yang paling kami jaga di sini.\nKami tunggu kedatangan Anda berikutnya.\n\n" + SIGN },
+        { style: "standard", text: "Terima kasih banyak, Putu.\nSenang mendengar Anda menikmati suasana dan pelayanan kami.\nKami tunggu kedatangan Anda berikutnya.\n\n" + SIGN },
+        { style: "concise", text: "Terima kasih, Putu.\nSampai jumpa lagi di Hoshi Jungle.\n\n" + SIGN }
+      ]
     },
     {
       id: "r3", lang: "en", rating: 2, who: "Michael R.", when: "9月10日",
       flag: { kind: "warn", label: "要確認", why: "低評価（1〜2つ星）です。公開前に必ず内容をご確認ください。" },
       text: "The room wasn't clean when we arrived and the AC didn't work.",
-      reply: "Michael, I am sorry.\nThe room should have been clean, and the air conditioning should have been working. We have raised both with our team.\nPlease contact us at stay@hoshijungle.com so we can put this right.\n\n" + SIGN,
-      alt: "Michael, I am sorry that the room and the air conditioning were not as they should have been.\nBoth have been passed to the teams responsible. Please write to stay@hoshijungle.com — I would like to hear the details from you.\n\n" + SIGN
+      options: [
+        { style: "warm", text: "Michael, I am sorry.\nThe room should have been clean, and the air conditioning should have been working. Neither was, and that is on us — not on the day you arrived, and not on any day.\nWe are putting both right. Please write to stay@hoshijungle.com; we would like to hear the details from you.\n\n" + SIGN },
+        { style: "standard", text: "Michael, I am sorry.\nThe room should have been clean and the air conditioning should have been working. We are putting both right.\nPlease contact us at stay@hoshijungle.com.\n\n" + SIGN },
+        { style: "concise", text: "Michael, I am sorry — that should not have happened.\nWe are putting it right. Please contact us at stay@hoshijungle.com.\n\n" + SIGN }
+      ]
     },
     {
-      id: "r4", lang: "ja", rating: 4, who: "Yuki", when: "9月8日", flag: null,
-      text: "静かでゆっくり過ごせました。朝食の種類がもう少しあると嬉しいです。",
-      reply: "ご滞在ありがとうございました。ゆっくりお過ごしいただけて安心いたしました。\n朝食についてのご意見は、キッチンと共有いたします。\nまたお越しください。\n\n" + SIGN,
-      alt: "ご滞在ありがとうございました。\n朝食の種類については、いただいたご意見をキッチンに伝えます。またのお越しをお待ちしております。\n\n" + SIGN
+      id: "r4", lang: "zh", rating: 4, who: "王 小美", when: "9月9日", flag: null,
+      text: "位置很好，早餐也不错。房间的隔音可以再好一点。",
+      options: [
+        { style: "warm", text: "王女士，感謝您抽空留下評價。\n很高興位置與早餐讓您滿意。關於房間隔音，您說得對，這是我們仍在改善的地方，會認真對待。\n期待再次為您服務。\n\n" + SIGN },
+        { style: "standard", text: "王女士，感謝您的評價。\n很高興位置與早餐讓您滿意。房間隔音的部分，我們會繼續改善。\n期待再次見到您。\n\n" + SIGN },
+        { style: "concise", text: "王女士，感謝您的評價。\n隔音的問題我們會改善。期待您再次光臨。\n\n" + SIGN }
+      ]
     },
     {
-      id: "r5", lang: "en", rating: 1, who: "Sarah L.", when: "9月7日",
+      id: "r5", lang: "ko", rating: 5, who: "김민준", when: "9月8日", flag: null,
+      text: "직원분들이 정말 친절했어요. 수영장 전망이 최고입니다.",
+      options: [
+        { style: "warm", text: "민준님, 따뜻한 후기 감사합니다.\n친절했다는 말씀, 그리고 수영장에서 본 풍경을 좋아해 주셨다는 말씀이 저희에게 큰 힘이 됩니다.\n다시 뵐 수 있기를 기다리겠습니다.\n\n" + SIGN },
+        { style: "standard", text: "민준님, 감사합니다.\n수영장 전망을 마음에 들어 하셨다니 저희도 기쁩니다.\n다시 찾아주시기를 기다리겠습니다.\n\n" + SIGN },
+        { style: "concise", text: "민준님, 감사합니다.\n다시 뵙기를 기다리겠습니다.\n\n" + SIGN }
+      ]
+    },
+    {
+      id: "r6", lang: "en", rating: 1, who: "Sarah L.", when: "9月7日",
       flag: { kind: "crit", label: "要確認", why: "AIが判定: 返金の要求と金銭トラブルの主張があります。事実確認のうえ、必ず内容をご確認ください。AIは返金を約束していません。" },
       text: "Charged twice for the airport transfer. No reply to my emails for a week. I want a refund.",
-      reply: "Sarah, I am sorry — for the double charge and for the week of silence.\nWe are checking the booking now.\nPlease write to stay@hoshijungle.com so we can reach you directly.\n\n" + SIGN,
-      alt: "Sarah, I am sorry. A week without a reply is not acceptable.\nWe are looking into the transfer booking now and will come back to you. Please contact stay@hoshijungle.com.\n\n" + SIGN
+      options: [
+        { style: "warm", text: "Sarah, I am sorry — for the double charge, and for leaving you without an answer for a week. Waiting that long for a reply is not something we can defend.\nWe are checking the transfer booking now and will come back to you.\nPlease write to stay@hoshijungle.com so we can reach you directly.\n\n" + SIGN },
+        { style: "standard", text: "Sarah, I am sorry — for the double charge and for the week of silence.\nWe are checking the booking now.\nPlease write to stay@hoshijungle.com so we can reach you directly.\n\n" + SIGN },
+        { style: "concise", text: "Sarah, I am sorry. A week without a reply is not acceptable.\nWe are checking the booking now — please write to stay@hoshijungle.com.\n\n" + SIGN }
+      ]
     },
     {
-      id: "r6", lang: "en", rating: 5, who: "James", when: "9月5日", flag: null,
+      id: "r7", lang: "en", rating: 5, who: "James", when: "9月5日", flag: null,
       text: "Perfect stay. The staff made it.",
-      reply: "Thank you, James.\nWe will pass that on to the team. You are welcome back any time.\n\n" + SIGN,
-      alt: "Thank you, James — our team will be glad to hear it.\nWe hope to see you again.\n\n" + SIGN
+      options: [
+        { style: "warm", text: "Thank you, James.\nBeing told that the people are what made the stay is the best thing anyone can say about us.\nYou are welcome back any time.\n\n" + SIGN },
+        { style: "standard", text: "Thank you, James.\nThat is the compliment we value most. You are welcome back any time.\n\n" + SIGN },
+        { style: "concise", text: "Thank you, James. You are welcome back any time.\n\n" + SIGN }
+      ]
     }
   ];
 
-  var LANG_LABEL = { ja: "日本語", en: "English", id: "Bahasa Indonesia" };
+  // 既定は standard（多くの場合これが選ばれる想定）
+  REVIEWS.forEach(function (r) {
+    r.selected = "standard";
+    r.reply = r.options.filter(function (o) { return o.style === "standard"; })[0].text;
+  });
+
+  var STYLE_LABELS = { warm: "丁寧", standard: "標準", concise: "簡潔" };
+  var STYLE_HINTS = {
+    warm: "気持ちを込めた、いちばん厚い言い方",
+    standard: "丁寧さと簡潔さのバランス型",
+    concise: "短く要点だけ。忙しい日向け"
+  };
+
+  var LANG_LABEL = {
+    ja: "日本語", en: "English", id: "Bahasa Indonesia", zh: "中文", ko: "한국어"
+  };
   var MAX = 4096;
   var state = { lang: "all", onlyFlag: false, published: {}, skipped: {}, quota: 64 };
 
@@ -669,6 +725,23 @@
       if (state.onlyFlag && !r.flag) return false;
       return true;
     });
+  }
+
+  /** 3択の切り替えボタン。押すとその案が本文に入る。 */
+  function pickerHtml(r) {
+    var buttons = r.options
+      .map(function (o) {
+        return (
+          '<button type="button" data-pick="' + o.style + '" data-id="' + r.id + '"' +
+          ' aria-pressed="' + (r.selected === o.style) + '"' +
+          ' title="' + STYLE_HINTS[o.style] + '">' + STYLE_LABELS[o.style] + "</button>"
+        );
+      })
+      .join("");
+    var hint = r.selected
+      ? STYLE_HINTS[r.selected]
+      : "編集済み（どの案にも一致しません）";
+    return '<div class="picker">' + buttons + '<span class="hint">' + hint + "</span></div>";
   }
 
   function render() {
@@ -707,6 +780,7 @@
               "<span>" + (done ? "公開した返信" : "AIが作成した返信案") + "</span>" +
               '<span class="count" data-count="' + r.id + '">' + body.length + " / " + MAX + "</span>" +
             "</div>" +
+            (done ? "" : pickerHtml(r)) +
             '<textarea id="ta-' + r.id + '" data-id="' + r.id + '"' + (done ? " readonly" : "") +
               ' aria-label="返信案">' + esc(body) + "</textarea>" +
             (done
@@ -764,7 +838,12 @@
     var ta = e.target.closest("textarea[data-id]");
     if (!ta) return;
     var rec = REVIEWS.find(function (r) { return r.id === ta.dataset.id; });
-    if (rec) rec.current = ta.value;
+    if (rec) {
+      rec.current = ta.value;
+      // 手を入れた時点で、どの案でもなくなる
+      var match = rec.options.find(function (o) { return o.text === ta.value; });
+      rec.selected = match ? match.style : null;
+    }
     var c = cardsEl.querySelector('[data-count="' + ta.dataset.id + '"]');
     if (c) c.textContent = ta.value.length + " / " + MAX;
     ta.style.height = "auto";
@@ -772,6 +851,22 @@
   });
 
   cardsEl.addEventListener("click", function (e) {
+    // --- 3択の切り替え ---
+    var pick = e.target.closest("button[data-pick]");
+    if (pick) {
+      var pr = REVIEWS.find(function (x) { return x.id === pick.dataset.id; });
+      var opt = pr.options.find(function (o) { return o.style === pick.dataset.pick; });
+      if (!opt) return;
+      var ta = document.getElementById("ta-" + pr.id);
+      if (ta && ta.value !== (pr.current || pr.reply) ) {
+        // 触っていない場合のみ黙って入れ替える
+      }
+      pr.current = opt.text;
+      pr.selected = opt.style;
+      render();
+      return;
+    }
+
     var btn = e.target.closest("button[data-do]");
     if (!btn) return;
     var id = btn.dataset.id;
@@ -790,11 +885,12 @@
       btn.disabled = true;
       btn.textContent = "生成中…";
       setTimeout(function () {
-        var next = (rec.current || rec.reply) === rec.reply ? rec.alt : rec.reply;
-        rec.current = next;
+        // 実物も3案まとめて作り直す（1回の呼び出しで3案）
+        rec.selected = "standard";
+        rec.current = rec.options.find(function (o) { return o.style === "standard"; }).text;
         state.quota = Math.max(0, state.quota - 1);
         quotaEl.textContent = state.quota;
-        toast("返信案を作り直しました");
+        toast("3つの返信案を作り直しました");
         render();
       }, 700);
     }
@@ -804,6 +900,15 @@
       toast("このクチコミには返信しない設定にしました");
       render();
     }
+  });
+
+  // タブの件数は実データから埋める（手書きだとサンプルを足したときにずれる）
+  Array.prototype.forEach.call(document.querySelectorAll("#tabs button"), function (b) {
+    var key = b.dataset.lang;
+    var n = key === "all"
+      ? REVIEWS.length
+      : REVIEWS.filter(function (r) { return r.lang === key; }).length;
+    b.querySelector(".n").textContent = n;
   });
 
   render();
