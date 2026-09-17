@@ -1,0 +1,498 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>Hoshi Jungle Review AI</title>
+<style>
+  /* 13.333in x 7.5in = 1280 x 720 px @96dpi（16:9） */
+  @page { size: 13.333in 7.5in; margin: 0; }
+
+  :root {
+    --pine:   #1F5C47;
+    --pine-l: #6FC7A1;
+    --dark:   #111C16;
+    --moss:   #DDEAE2;
+    --surf:   #F2F6F1;
+    --white:  #FFFFFF;
+    --ink:    #16221A;
+    --ink2:   #44584B;
+    --ink3:   #72877A;
+    --brass:  #9A7A32;
+    --warn:   #8A5A11;
+    --warnbg: #FAEFD9;
+    --line:   #D8E0D5;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    font-family: "IPAPGothic", "IPAGothic", "Hiragino Sans", "Noto Sans JP", sans-serif;
+    color: var(--ink);
+  }
+
+  .slide {
+    position: relative;
+    width: 1280px;
+    height: 720px;
+    overflow: hidden;
+    background: var(--surf);
+    page-break-after: always;
+    break-after: page;
+  }
+  .slide:last-child { page-break-after: auto; break-after: auto; }
+  .slide.dark { background: var(--dark); color: var(--white); }
+
+  .pad { position: absolute; left: 72px; right: 72px; }
+
+  h1 { font-size: 44px; font-weight: 700; line-height: 1.32; letter-spacing: .01em; }
+  h2 { font-size: 31px; font-weight: 700; line-height: 1.34; }
+  h3 { font-size: 17px; font-weight: 700; line-height: 1.4; }
+
+  .eyebrow {
+    font-size: 11px; font-weight: 700; letter-spacing: .18em;
+    color: var(--ink3);
+  }
+  .sub { font-size: 13px; color: var(--ink3); margin-top: 11px; line-height: 1.6; }
+
+  .card {
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+  }
+
+  .chip {
+    width: 40px; height: 40px; border-radius: 10px;
+    background: var(--pine); color: var(--white);
+    font-size: 15px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex: 0 0 auto;
+  }
+  .chip.brass { background: var(--brass); }
+
+  .foot {
+    position: absolute; left: 72px; right: 72px; bottom: 34px;
+    display: flex; justify-content: space-between;
+    font-size: 9.5px; color: var(--ink3);
+  }
+  .dark .foot { color: #6B7E71; }
+
+  /* ---- 1 表紙 ---- */
+  .cover-route { font-size: 11px; font-weight: 700; letter-spacing: .2em; color: #7C9187; }
+  .cover h1 { font-size: 52px; }
+  .cover .lead {
+    margin-top: 26px; font-size: 14.5px; line-height: 1.95; color: #AFC2B4; max-width: 720px;
+  }
+  .rule { height: 1px; background: #2E4638; margin-top: 34px; width: 300px; }
+
+  /* ---- 汎用リスト ---- */
+  .rows { display: flex; flex-direction: column; gap: 19px; }
+  .row {
+    display: flex; align-items: center; gap: 22px;
+    padding: 24px 28px; min-height: 126px;
+  }
+  .row .t { font-size: 18px; font-weight: 700; width: 260px; flex: 0 0 auto; }
+  .row .d { font-size: 12.5px; color: var(--ink2); line-height: 1.75; }
+
+  /* ---- 3カラム ---- */
+  .cols { display: flex; gap: 22px; }
+  .col { flex: 1; padding: 38px 30px; }
+  .col .n {
+    width: 44px; height: 44px; border-radius: 11px; background: var(--pine);
+    color: #fff; font-size: 16px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .col .n.brass { background: var(--brass); }
+  .col .k { font-size: 20px; font-weight: 700; line-height: 1.45; margin-top: 22px; }
+  .col .v { font-size: 12px; color: var(--ink2); line-height: 1.8; margin-top: 14px; }
+
+  /* ---- 画面スライド ---- */
+  .bullets { display: flex; flex-direction: column; gap: 15px; margin-top: 30px; }
+  .bullet { display: flex; align-items: flex-start; gap: 13px; font-size: 13.5px; color: var(--ink2); }
+  .bullet .dot {
+    width: 9px; height: 9px; border-radius: 3px; background: var(--pine);
+    margin-top: 7px; flex: 0 0 auto;
+  }
+  .shot {
+    position: absolute; right: 72px; top: 56px;
+    height: 608px; border-radius: 7px; border: 1px solid var(--line);
+  }
+  .urlbox {
+    margin-top: 26px; padding: 13px 16px; background: var(--moss);
+    border-radius: 5px; font-size: 11.5px; color: var(--pine); line-height: 1.6;
+  }
+  .urlbox b { display: block; font-size: 12.5px; margin-bottom: 3px; }
+
+  /* ---- 実例 ---- */
+  .ex { display: flex; gap: 24px; }
+  .exc { flex: 1; }
+  .rev { padding: 20px 22px; min-height: 166px; }
+  .rev .meta { display: flex; align-items: baseline; gap: 12px; margin-bottom: 10px; }
+  .stars { color: var(--brass); font-size: 13px; letter-spacing: 1px; }
+  .who { font-size: 10.5px; font-weight: 700; color: var(--ink3); }
+  .rev .body { font-size: 11.5px; line-height: 1.75; }
+  .arrow { text-align: center; color: var(--pine); font-size: 13px; margin: 9px 0; }
+  .rep {
+    background: var(--moss); border: 1px solid #C6DACD; border-radius: 6px;
+    padding: 19px 22px; min-height: 232px;
+  }
+  .rep .lbl { font-size: 9.5px; font-weight: 700; color: var(--pine); letter-spacing: .1em; margin-bottom: 8px; }
+  .rep .body { font-size: 11.5px; line-height: 1.8; white-space: pre-line; }
+  .tone { font-size: 10.5px; color: var(--ink3); margin-top: 11px; }
+
+  /* ---- 2x2 ---- */
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .fact { display: flex; gap: 17px; padding: 30px 26px; }
+  .tick {
+    width: 30px; height: 30px; border-radius: 8px; background: var(--pine); color: #fff;
+    display: flex; align-items: center; justify-content: center; font-size: 14px;
+    flex: 0 0 auto;
+  }
+  .fact .ft { font-size: 15px; font-weight: 700; }
+  .fact .fd { font-size: 11.5px; color: var(--ink2); line-height: 1.75; margin-top: 7px; }
+
+  /* ---- 費用 ---- */
+  .cost { display: flex; gap: 26px; }
+  .bignum {
+    width: 400px; flex: 0 0 auto; padding: 96px 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+  }
+  .bignum .n { font-size: 108px; font-weight: 700; color: var(--pine); line-height: 1; }
+  .bignum .u { font-size: 22px; font-weight: 700; margin-top: 14px; }
+  .bignum .c { font-size: 11.5px; color: var(--ink3); margin-top: 12px; }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { text-align: left; padding: 18px 18px; border-bottom: 1px solid var(--line); font-size: 12px; }
+  th { background: #E9EFE8; font-size: 10px; letter-spacing: .08em; color: var(--ink3); font-weight: 700; }
+  td.n { text-align: right; font-weight: 700; color: var(--pine); }
+  tbody tr:last-child td { border-bottom: none; }
+  .note { font-size: 10.5px; color: var(--ink3); line-height: 1.75; margin-top: 16px; }
+
+  /* ---- タイムライン ---- */
+  .tl { display: flex; flex-direction: column; }
+  .tlr { display: flex; align-items: flex-start; gap: 22px; padding: 26px 0; border-bottom: 1px solid var(--line); }
+  .tlr:last-child { border-bottom: none; }
+  .when {
+    width: 150px; flex: 0 0 auto; text-align: center;
+    padding: 7px 0; border-radius: 6px;
+    font-size: 11px; font-weight: 700; color: #fff; background: var(--pine);
+  }
+  .when.grey { background: #E7ECE6; color: var(--ink2); border: 1px solid var(--line); }
+  .when.brass { background: var(--brass); }
+  .tlt { width: 300px; flex: 0 0 auto; font-size: 16px; font-weight: 700; padding-top: 4px; }
+  .tld { font-size: 11.5px; color: var(--ink2); line-height: 1.75; padding-top: 5px; }
+
+  /* ---- お願い ---- */
+  .ask { display: flex; align-items: flex-start; gap: 20px; padding: 26px 0; }
+  .ask .n {
+    width: 42px; height: 42px; border-radius: 11px; background: var(--pine-l); color: var(--dark);
+    font-size: 15px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center; flex: 0 0 auto;
+  }
+  .ask .t { width: 300px; flex: 0 0 auto; font-size: 17px; font-weight: 700; padding-top: 8px; }
+  .ask .d { font-size: 12px; color: #AFC2B4; line-height: 1.8; padding-top: 9px; }
+  .mailcode {
+    font-family: ui-monospace, monospace; color: var(--pine-l);
+    background: #1B2C23; padding: 2px 7px; border-radius: 4px; font-size: 11.5px;
+  }
+</style>
+</head>
+<body>
+
+<!-- 1 表紙 -->
+<section class="slide dark cover">
+  <div class="pad" style="top:196px;">
+    <div class="cover-route">LEAVES BALI &nbsp;→&nbsp; HOSHI JUNGLE 御中</div>
+    <h1 style="margin-top:34px;">クチコミ返信を、<br><span style="color:var(--pine-l)">取りこぼさない。</span></h1>
+    <p class="lead">
+      Googleマップに届く日本語・英語・インドネシア語のクチコミに、AIが返信の下書きを用意します。<br>
+      公開するかどうかを決めるのは、いつでもスタッフの方です。
+    </p>
+    <div class="rule"></div>
+    <div style="margin-top:20px;font-size:11px;color:#7C9187;">Hoshi Jungle Review AI &nbsp;&nbsp; ご提案 · 2026年9月</div>
+  </div>
+</section>
+
+<!-- 2 課題 -->
+<section class="slide">
+  <div class="pad" style="top:52px;">
+    <h2>返信が止まるのは、書けないからではありません</h2>
+    <p class="sub">宿泊施設のクチコミ運用でよく起きている状態</p>
+  </div>
+  <div class="pad" style="top:190px;">
+    <div class="rows">
+      <div class="row card">
+        <div class="chip">1</div>
+        <div class="t">言語が混ざる</div>
+        <div class="d">日本語・英語・インドネシア語が同じ画面に並びます。その言語で書ける人が、その日いるとは限りません。</div>
+      </div>
+      <div class="row card">
+        <div class="chip">2</div>
+        <div class="t">文面を考える時間が要る</div>
+        <div class="d">1件あたり数分でも、積み重なると手が回りません。「あとで」が積み上がっていきます。</div>
+      </div>
+      <div class="row card">
+        <div class="chip">3</div>
+        <div class="t">低評価ほど後回しになる</div>
+        <div class="d">本当は真っ先に返したい低評価ほど、文面に悩んで時間がかかります。その間も、検討中の方が読んでいます。</div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>Leaves Bali · Hoshi Jungle Review AI</span><span>2</span></div>
+</section>
+
+<!-- 3 3本柱 -->
+<section class="slide">
+  <div class="pad" style="top:52px;">
+    <h2>このシステムがすること</h2>
+    <p class="sub">できることは3つだけです</p>
+  </div>
+  <div class="pad" style="top:196px;">
+    <div class="cols">
+      <div class="col card">
+        <div class="n">1</div>
+        <div class="k">届いた言語で、<br>そのまま返す</div>
+        <div class="v">日本語には日本語、英語には英語、インドネシア語にはインドネシア語で返信案を作ります。翻訳の貼り付けではありません。</div>
+      </div>
+      <div class="col card">
+        <div class="n">2</div>
+        <div class="k">勝手には<br>公開しない</div>
+        <div class="v">AIが書くのは下書きまで。スタッフが読んで、直して、ボタンを押して初めてGoogleに反映されます。</div>
+      </div>
+      <div class="col card">
+        <div class="n brass">3</div>
+        <div class="k">運用費は<br>月額0円</div>
+        <div class="v">サーバー・データベース・Google連携はすべて無料枠で運用します。追加のご負担はありません。</div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>Leaves Bali · Hoshi Jungle Review AI</span><span>3</span></div>
+</section>
+
+<!-- 4 実際の画面 -->
+<section class="slide">
+  <img class="shot" src="DEMO_IMG_SRC" alt="ダッシュボード">
+  <div style="position:absolute;left:72px;top:60px;width:560px;">
+    <h2>スタッフが毎朝ひらく画面です</h2>
+    <div class="bullets">
+      <div class="bullet"><span class="dot"></span><span>新しいクチコミは毎時間、自動で集まります</span></div>
+      <div class="bullet"><span class="dot"></span><span>AIの返信案がすでに入っています</span></div>
+      <div class="bullet"><span class="dot"></span><span>言語ごとにタブで分けて確認できます</span></div>
+      <div class="bullet"><span class="dot"></span><span>低評価とインドネシア語は「要確認」に分けて表示</span></div>
+    </div>
+    <div class="urlbox">
+      <b>この画面は実物です。その場で触っていただけます。</b>
+      文章を書き換える、公開ボタンを押す、AIに作り直させる —— すべて実際に動きます。
+    </div>
+  </div>
+  <div class="foot"><span>Leaves Bali · Hoshi Jungle Review AI</span><span>4</span></div>
+</section>
+
+<!-- 5 返信の実例 -->
+<section class="slide">
+  <div class="pad" style="top:46px;">
+    <h2>AIが書く返信は、こういう文章です</h2>
+    <p class="sub">評点に応じて書き分けます。下はデモ用のサンプルで、実際のクチコミではありません</p>
+  </div>
+  <div class="pad" style="top:176px;">
+    <div class="ex">
+      <div class="exc">
+        <div class="rev card">
+          <div class="meta"><span class="stars">★★★★★</span><span class="who">田中 美咲 · 日本語</span></div>
+          <div class="body">ジャングルビューのプールが忘れられません。朝は鳥の声で目が覚めて、夜はカエルの合唱。スタッフの皆さんも本当に温かくて、バリで一番好きな場所になりました。</div>
+        </div>
+        <div class="arrow">▼</div>
+        <div class="rep">
+          <div class="lbl">AIが作成した返信案</div>
+          <div class="body">田中様、こうしてお言葉を残してくださり、ありがとうございます。
+鳥の声で目覚め、カエルの合唱で眠る——私たちがこの谷に宿をつくった理由を、そのまま言葉にしていただいたようです。スタッフにも必ず伝えます。
+次にお越しの際は、霧が谷を渡る早朝の時間もぜひ。</div>
+        </div>
+        <div class="tone">5つ星 → 感謝と、次回の楽しみを一つだけ</div>
+      </div>
+
+      <div class="exc">
+        <div class="rev card">
+          <div class="meta"><span class="stars">★★</span><span class="who">Michael R. · English</span></div>
+          <div class="body">Room wasn't clean on arrival and the AC in the bedroom didn't work for two nights. Staff were apologetic but nothing was actually fixed.</div>
+        </div>
+        <div class="arrow">▼</div>
+        <div class="rep">
+          <div class="lbl">AIが作成した返信案</div>
+          <div class="body">Michael, thank you for telling us — and I am sorry.
+Arriving to a room that had not been properly cleaned, then two nights without working air conditioning, is not a stay we can be satisfied with.
+We have taken both points to our housekeeping and engineering teams.</div>
+        </div>
+        <div class="tone">1〜2つ星 → 謝罪・事実の受け止め・具体的な対応</div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>Leaves Bali · Hoshi Jungle Review AI</span><span>5</span></div>
+</section>
+
+<!-- 6 使い方 -->
+<section class="slide">
+  <div class="pad" style="top:52px;">
+    <h2>読む、直す、押す。それだけです</h2>
+    <p class="sub">専門知識は要りません。パソコンでもスマートフォンでも同じように使えます</p>
+  </div>
+  <div class="pad" style="top:200px;">
+    <div class="cols">
+      <div class="col card" style="padding:28px 26px;">
+        <div class="n">1</div>
+        <div class="k" style="font-size:19px;">開く</div>
+        <div class="v">配られたURLを開き、パスコードを入力します。Googleアカウントは必要ありません。</div>
+      </div>
+      <div class="col card" style="padding:28px 26px;">
+        <div class="n">2</div>
+        <div class="k" style="font-size:19px;">読んで、必要なら直す</div>
+        <div class="v">AIの返信案がすでに入っています。そのままでよければ何もしません。書き換えもその場でできます。</div>
+      </div>
+      <div class="col card" style="padding:28px 26px;">
+        <div class="n">3</div>
+        <div class="k" style="font-size:19px;">公開する</div>
+        <div class="v">ボタンを押すとGoogleマップに反映されます。返信しないクチコミは片付けられます。</div>
+      </div>
+    </div>
+  </div>
+  <div class="pad" style="top:508px;">
+    <div style="background:var(--warnbg);border:1px solid #E8D3A6;border-radius:6px;padding:20px 26px;font-size:12.5px;color:var(--warn);line-height:1.8;">
+      スタッフの方はGoogleアカウント不要です。配布するパスコードだけで使えます。<br>
+      退職時はパスコードを作り直すだけで、その方は入れなくなります。
+    </div>
+  </div>
+  <div class="foot"><span>Leaves Bali · Hoshi Jungle Review AI</span><span>6</span></div>
+</section>
+
+<!-- 7 安全設計 -->
+<section class="slide">
+  <div class="pad" style="top:46px;">
+    <h2>「AIが勝手なことを書く」が起きない理由</h2>
+    <p class="sub">返信はGoogleマップに残り続けます。取り返しがつかないからこそ、止まる仕組みを先に入れてあります</p>
+  </div>
+  <div class="pad" style="top:186px;">
+    <div class="grid2">
+      <div class="fact card">
+        <div class="tick">✓</div>
+        <div><div class="ft">全件が下書きで止まる</div><div class="fd">自動公開は既定で切ってあります。人が押さないかぎり1件もGoogleには出ません。</div></div>
+      </div>
+      <div class="fact card">
+        <div class="tick">✓</div>
+        <div><div class="ft">返金や補償を約束しない</div><div class="fd">金銭の判断はホテル様のものです。AIには書かせない制約を入れています。</div></div>
+      </div>
+      <div class="fact card">
+        <div class="tick">✓</div>
+        <div><div class="ft">危ないクチコミは隔離する</div><div class="fd">低評価、衛生・盗難・法的措置の主張、返金要求は「要確認」に分けます。</div></div>
+      </div>
+      <div class="fact card">
+        <div class="tick">✓</div>
+        <div><div class="ft">事実を作らない</div><div class="fd">いただいた情報にない設備・サービス・スタッフ名には触れません。</div></div>
+      </div>
+    </div>
+    <p class="note" style="margin-top:26px;">インドネシア語は現地の言い回しをAIに任せきれないため、自動公開の対象から外しています。</p>
+  </div>
+  <div class="foot"><span>Leaves Bali · Hoshi Jungle Review AI</span><span>7</span></div>
+</section>
+
+<!-- 8 費用 -->
+<section class="slide">
+  <div class="pad" style="top:46px;">
+    <h2>運用費は月額0円です</h2>
+    <p class="sub">すべて無料枠に収まるよう設計しました。従量課金で青天井になる部分はありません</p>
+  </div>
+  <div class="pad" style="top:186px;">
+    <div class="cost">
+      <div class="bignum card">
+        <div class="n">0</div>
+        <div class="u">円 / 月</div>
+        <div class="c">ホテル様のご負担はありません</div>
+      </div>
+      <div style="flex:1;">
+        <div class="card" style="overflow:hidden;">
+          <table>
+            <thead><tr><th>内訳</th><th>役割</th><th style="text-align:right;">月額</th></tr></thead>
+            <tbody>
+              <tr><td>サーバー</td><td>画面の表示</td><td class="n">0円</td></tr>
+              <tr><td>データベース</td><td>クチコミと返信の保存</td><td class="n">0円</td></tr>
+              <tr><td>定期取得</td><td>毎時間の自動チェック</td><td class="n">0円</td></tr>
+              <tr><td>Google連携</td><td>クチコミの取得・返信の投稿</td><td class="n">0円</td></tr>
+              <tr><td>AI（返信案の作成）</td><td>月71件まで</td><td class="n">0円</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="note">
+          AIの利用分は無料枠の範囲で自動的に停止します。上限に達してもクチコミの取得は続き、手動での返信は可能です。<br>
+          上限は毎月1日にリセットされます。返信量を増やしたい場合は、月数百円程度で拡張できます。
+        </p>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>Leaves Bali · Hoshi Jungle Review AI</span><span>8</span></div>
+</section>
+
+<!-- 9 スケジュール -->
+<section class="slide">
+  <div class="pad" style="top:46px;">
+    <h2>ご承認をいただいてから、約1か月</h2>
+    <p class="sub">システムはすでに完成しています。待ち時間のほとんどはGoogle社の審査です</p>
+  </div>
+  <div class="pad" style="top:190px;">
+    <div class="tl">
+      <div class="tlr">
+        <div class="when">完了済み</div>
+        <div class="tlt">システムの開発・検証</div>
+        <div class="tld">画面、AIの返信生成、データベース、セキュリティまで構築と動作確認を終えています。</div>
+      </div>
+      <div class="tlr">
+        <div class="when">1日目</div>
+        <div class="tlt">Google社へ利用申請</div>
+        <div class="tld">クチコミの取得・返信にはGoogle社の承認が必要です。申請はこちらで行います。</div>
+      </div>
+      <div class="tlr">
+        <div class="when grey">数日〜数週間</div>
+        <div class="tlt">審査待ち</div>
+        <div class="tld">Google社の審査期間です。この間、ホテル様にしていただくことはありません。</div>
+      </div>
+      <div class="tlr">
+        <div class="when brass">承認後 30分</div>
+        <div class="tlt">接続とお引き渡し</div>
+        <div class="tld">Hoshi Jungle様のアカウントで接続し、スタッフ用パスコードをお渡しします。当日から使えます。</div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>Leaves Bali · Hoshi Jungle Review AI</span><span>9</span></div>
+</section>
+
+<!-- 10 お願い -->
+<section class="slide dark">
+  <div class="pad" style="top:74px;">
+    <h2 style="color:#fff;">ご承認いただけましたら、3点だけお願いします</h2>
+  </div>
+  <div class="pad" style="top:186px;">
+    <div class="ask">
+      <div class="n">1</div>
+      <div class="t" style="color:#fff;">Googleアカウントの確認</div>
+      <div class="d">ビジネスプロフィールを管理しているアカウントのメールアドレス。システムはHoshi Jungle様のアカウントで動かします。担当者が変わっても止まらない形にするためです。</div>
+    </div>
+    <div class="ask">
+      <div class="n">2</div>
+      <div class="t" style="color:#fff;">設定作業の代行可否</div>
+      <div class="d">ご希望の場合は <span class="mailcode">leavesbali@gmail.com</span> を管理者として追加していただきます。パスワードをお伺いすることはありません。いつでも解除できます。</div>
+    </div>
+    <div class="ask">
+      <div class="n">3</div>
+      <div class="t" style="color:#fff;">返信に使う情報</div>
+      <div class="d">署名の名前、低評価時のご連絡先、お客様に伝えたい魅力を2〜3つ。これがAIの書ける範囲になります。</div>
+    </div>
+  </div>
+  <div class="pad" style="top:600px;">
+    <div style="height:1px;background:#2E4638;"></div>
+    <div style="display:flex;justify-content:space-between;margin-top:20px;">
+      <span style="font-size:12px;font-weight:700;color:var(--pine-l);">Leaves Bali</span>
+      <span style="font-size:11px;color:#6B7E71;">Hoshi Jungle Review AI — ご提案資料</span>
+    </div>
+  </div>
+</section>
+
+</body>
+</html>
