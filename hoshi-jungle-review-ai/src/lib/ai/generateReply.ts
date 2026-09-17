@@ -16,10 +16,30 @@ import type { ReviewLanguage } from '@/lib/database.types';
  * 自由文で返させて正規表現で切り出す実装は、言語が 3 つに増えた時点で必ず壊れる。
  */
 
+export const REPLY_STYLES = ['warm', 'standard', 'concise'] as const;
+export type ReplyStyle = (typeof REPLY_STYLES)[number];
+
+/** 画面に出す日本語ラベル。順番もこの通りに表示する。 */
+export const STYLE_LABELS: Record<ReplyStyle, string> = {
+  warm: '丁寧',
+  standard: '標準',
+  concise: '簡潔',
+};
+
 const ReplyDraftSchema = z.object({
-  reply_text: z
-    .string()
-    .describe('Google に投稿する返信本文。クチコミと同じ言語。署名を最終行に含める。'),
+  options: z
+    .array(
+      z.object({
+        style: z
+          .enum(REPLY_STYLES)
+          .describe('warm=丁寧・厚め / standard=標準 / concise=簡潔'),
+        text: z
+          .string()
+          .describe('Google に投稿する返信本文。クチコミと同じ言語。署名を最終行に含める。'),
+      }),
+    )
+    .length(3)
+    .describe('温度感と言い回しを変えた3案。warm / standard / concise を各1つずつ。'),
   detected_language: z
     .enum(['ja', 'en', 'id', 'other'])
     .describe('クチコミ本文の実際の言語'),
@@ -30,11 +50,19 @@ const ReplyDraftSchema = z.object({
     .boolean()
     .describe('公開前に人間の確認が必須かどうか'),
   attention_reason: z
-    .string()
-    .describe('needs_human_attention が true の理由（日本語）。false の場合は空文字。'),
+    .object({
+      ja: z.string().describe('日本語'),
+      en: z.string().describe('English'),
+      id: z.string().describe('Bahasa Indonesia'),
+    })
+    .describe(
+      'needs_human_attention が true の理由を、画面を使うスタッフの3言語すべてで。' +
+        'false の場合は3つとも空文字。1文で簡潔に。',
+    ),
 });
 
 export type ReplyDraft = z.infer<typeof ReplyDraftSchema>;
+export type ReplyOption = ReplyDraft['options'][number];
 
 export interface GenerateReplyResult {
   draft: ReplyDraft;
@@ -72,8 +100,8 @@ export async function generateReply(
   try {
     response = await anthropic().messages.parse({
       model: env.anthropicModel,
-      // 返信は短文だが、adaptive thinking の思考トークンも max_tokens に含まれるため余裕を持たせる。
-      max_tokens: 4000,
+      // 3案ぶんの本文 + adaptive thinking の思考トークンが max_tokens に含まれる。
+      max_tokens: 6000,
       system: buildSystemPrompt(),
       // クチコミ返信は難問ではないので effort は low 既定。品質不足なら env で上げられる。
       thinking: { type: 'adaptive' },
@@ -111,19 +139,34 @@ export async function generateReply(
     throw new ReplyGenerationError('Claude の応答を JSON として解釈できませんでした。', true);
   }
 
-  const replyText = draft.reply_text.trim();
-  if (!replyText) {
-    throw new ReplyGenerationError('生成された返信本文が空です。', true);
-  }
-  if (replyText.length > REPLY_MAX_LENGTH) {
+  // 3案すべてを検証する。1案でも壊れていれば再生成させる
+  // （壊れた案を画面に出すと、スタッフがそれを選んでしまう）。
+  const options = draft.options.map((o) => ({ ...o, text: o.text.trim() }));
+
+  if (options.length !== 3) {
     throw new ReplyGenerationError(
-      `生成された返信が Google の上限 ${REPLY_MAX_LENGTH} 文字を超えました。`,
+      `返信案が3つ生成されませんでした（${options.length}件）。`,
       true,
     );
   }
+  const styles = new Set(options.map((o) => o.style));
+  if (styles.size !== 3) {
+    throw new ReplyGenerationError('返信案の3つのトーンが重複しています。', true);
+  }
+  for (const option of options) {
+    if (!option.text) {
+      throw new ReplyGenerationError(`返信案（${option.style}）が空です。`, true);
+    }
+    if (option.text.length > REPLY_MAX_LENGTH) {
+      throw new ReplyGenerationError(
+        `返信案（${option.style}）が Google の上限 ${REPLY_MAX_LENGTH} 文字を超えました。`,
+        true,
+      );
+    }
+  }
 
   return {
-    draft: { ...draft, reply_text: replyText },
+    draft: { ...draft, options: sortByStyle(options) },
     meta: {
       model: response.model,
       effort: env.anthropicEffort,
@@ -133,6 +176,18 @@ export async function generateReply(
       generated_at: new Date().toISOString(),
     },
   };
+}
+
+/** 画面表示の順（丁寧 → 標準 → 簡潔）に揃える。モデルの出力順に依存させない。 */
+function sortByStyle(options: ReplyOption[]): ReplyOption[] {
+  return [...options].sort(
+    (a, b) => REPLY_STYLES.indexOf(a.style) - REPLY_STYLES.indexOf(b.style),
+  );
+}
+
+/** 既定で採用する案。多くの場合これが選ばれる想定。 */
+export function defaultOption(options: ReplyOption[]): ReplyOption {
+  return options.find((o) => o.style === 'standard') ?? options[0];
 }
 
 export function claudeLanguageToReviewLanguage(

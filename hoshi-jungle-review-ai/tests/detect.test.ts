@@ -12,18 +12,34 @@ test('長い日本語を ja と判定する', () => {
   assert.equal(r.needsConfirmation, false);
 });
 
-test('短い日本語（tinyld が判定不能な長さ）も文字種で ja と判定する', () => {
-  // この入力は tinyld 単体では候補ゼロを返す。文字種チェックの存在意義そのもの。
-  const r = detectLanguage('最高！');
+test('かなを含む短い日本語は tinyld が判定不能でも ja と確定する', () => {
+  // この長さは tinyld 単体では候補ゼロを返す。文字種チェックの存在意義そのもの。
+  const r = detectLanguage('さいこう！');
   assert.equal(r.language, 'ja');
   assert.equal(r.source, 'script');
+  assert.equal(r.needsConfirmation, false);
 });
 
-test('漢字のみの入力は ja だが要確認フラグを立てる', () => {
-  const r = detectLanguage('最高');
-  assert.equal(r.language, 'ja');
+test('漢字のみの入力は日中の区別がつかないため、必ず要確認にする', () => {
+  // 「最高」は日本語にも中国語にも存在する。どちらに倒しても誤りうるので、
+  // ここで確定させず Claude の判断に委ねる契約になっている。
+  for (const text of ['最高', '很好', '服務不錯']) {
+    const r = detectLanguage(text);
+    assert.ok(['ja', 'zh'].includes(r.language), `想定外の判定: ${r.language}`);
+    assert.equal(r.source, 'script');
+    assert.equal(r.needsConfirmation, true, '要確認フラグが立っていない');
+  }
+});
+
+test('ハングルは ko と確定する', () => {
+  const r = detectLanguage('직원분들이 정말 친절했어요. 다시 오고 싶습니다.');
+  assert.equal(r.language, 'ko');
   assert.equal(r.source, 'script');
-  assert.equal(r.needsConfirmation, true);
+  assert.equal(r.needsConfirmation, false);
+});
+
+test('短いハングルでも ko と確定する', () => {
+  assert.equal(detectLanguage('최고!').language, 'ko');
 });
 
 test('英語を en と判定する', () => {
@@ -38,6 +54,11 @@ test('インドネシア語を id と判定する', () => {
     'Tempatnya sangat bagus dan pelayanannya ramah sekali. Sarapannya enak, saya pasti akan kembali lagi.',
   );
   assert.equal(r.language, 'id');
+});
+
+test('中国語の長文を zh と判定する', () => {
+  const r = detectLanguage('酒店位置很好，服务人员非常热情，早餐也很丰富。下次还会再来。');
+  assert.ok(['zh', 'ja'].includes(r.language));
 });
 
 test('本文なしは other + 要確認', () => {

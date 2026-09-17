@@ -5,7 +5,7 @@
  * Supabase CLI がある環境なら `supabase gen types typescript` で再生成してもよい。
  */
 
-export type ReviewLanguage = 'ja' | 'en' | 'id' | 'other';
+export type ReviewLanguage = 'ja' | 'en' | 'id' | 'zh' | 'ko' | 'other';
 export type ReplyStatus = 'draft' | 'edited' | 'published' | 'failed' | 'skipped';
 export type LanguageSource = 'script' | 'tinyld' | 'claude' | 'manual';
 
@@ -65,8 +65,16 @@ export type ReplyRow = {
   ai_generated_text: string | null;
   edited_text: string | null;
   final_text: string | null;
+  /** [{ style: 'warm'|'standard'|'concise', text: string }] の3案 */
+  options: Array<{ style: string; text: string }>;
+  selected_style: string | null;
   status: ReplyStatus;
   needs_human_attention: boolean;
+  /** 言語非依存の理由コード。表示時に翻訳する。 */
+  attention_codes: string[];
+  /** AI が書いた理由の3言語版 { ja, en, id } */
+  attention_reason_i18n: Record<string, string>;
+  /** 旧列。コード化以前のデータのみ入っている */
   attention_reason: string | null;
   model: string | null;
   generation_meta: Record<string, unknown>;
@@ -141,8 +149,13 @@ export type ReviewQueueRow = {
   ai_generated_text: string | null;
   edited_text: string | null;
   final_text: string | null;
+  /** [{ style: 'warm'|'standard'|'concise', text: string }] の3案 */
+  options: Array<{ style: string; text: string }>;
+  selected_style: string | null;
   status: ReplyStatus | null;
   needs_human_attention: boolean | null;
+  attention_codes: string[] | null;
+  attention_reason_i18n: Record<string, string> | null;
   attention_reason: string | null;
   published_at: string | null;
   publish_error: string | null;

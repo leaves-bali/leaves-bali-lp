@@ -58,12 +58,14 @@ test('超過しても残額はマイナスにならない', () => {
   assert.equal(state.exhausted, true);
 });
 
+// 3案生成に変更したため、1件あたりの出力トークンが約3倍になっている。
+// ドキュメントに書いた件数と実装がずれないよう、ここで固定する。
 test('無料クレジット $5 の想定件数（ドキュメント記載値の回帰テスト）', () => {
-  assert.equal(repliesPerBudget('claude-haiku-4-5', 5), 892);
-  assert.equal(repliesPerBudget('claude-sonnet-5', 5), 446);
-  assert.equal(repliesPerBudget('claude-opus-5', 5), 178);
+  assert.equal(repliesPerBudget('claude-haiku-4-5', 5), 549);
+  assert.equal(repliesPerBudget('claude-sonnet-5', 5), 274);
+  assert.equal(repliesPerBudget('claude-opus-5', 5), 109);
 });
 
-test('月 $0.40 で haiku なら 71 件（ドキュメント記載値の回帰テスト）', () => {
-  assert.equal(repliesPerBudget('claude-haiku-4-5', 0.4), 71);
+test('月 $0.40 で haiku なら 43 件（ドキュメント記載値の回帰テスト）', () => {
+  assert.equal(repliesPerBudget('claude-haiku-4-5', 0.4), 43);
 });

@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 
 import { errorResponse, HttpError, requireSession } from '@/lib/api';
-import { generateReply } from '@/lib/ai/generateReply';
+import { defaultOption, generateReply } from '@/lib/ai/generateReply';
 import { evaluateAttention } from '@/lib/reviews/policy';
 import { loadReplyContext } from '@/lib/reviews/publish';
 import { supabaseAdmin } from '@/lib/supabase/admin';
@@ -55,23 +55,28 @@ export async function POST(
       language: review.language,
       languageIsUncertain,
       aiFlagged: draft.needs_human_attention,
-      aiReason: draft.attention_reason || null,
     });
+
+    const chosen = defaultOption(draft.options);
 
     const { data: updated, error: updateError } = await db
       .from('replies')
       .update({
-        ai_generated_text: draft.reply_text,
+        ai_generated_text: chosen.text,
+        options: draft.options,
+        selected_style: chosen.style,
         status: 'draft',
         needs_human_attention: attention.needsAttention,
-        attention_reason: attention.reasons.join(' / ') || null,
+        attention_codes: attention.codes,
+        attention_reason_i18n: draft.needs_human_attention ? draft.attention_reason : {},
+        attention_reason: null,
         model: meta.model,
         generation_meta: { ...meta, tone_used: draft.tone_used },
         regenerated_count: (reply.regenerated_count ?? 0) + 1,
         publish_error: null,
       })
       .eq('reply_id', replyId)
-      .select('reply_id, ai_generated_text, edited_text, final_text, status, regenerated_count')
+      .select('reply_id, ai_generated_text, edited_text, final_text, status, regenerated_count, options, selected_style')
       .single();
 
     if (updateError) throw new HttpError(`再生成結果の保存に失敗: ${updateError.message}`, 500);

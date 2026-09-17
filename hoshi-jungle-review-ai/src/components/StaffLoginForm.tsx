@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
+import { t, type UiLang } from '@/lib/i18n';
+
 /**
  * パスコード入力フォーム。
  *
@@ -11,7 +13,8 @@ import { useRouter } from 'next/navigation';
  *   - 小文字で打っても通る（サーバー側で正規化）
  *   - 「表示」トグルで打ち間違いを確認できる
  */
-export function StaffLoginForm() {
+export function StaffLoginForm({ lang }: { lang: UiLang }) {
+  const d = t(lang);
   const router = useRouter();
   const [passcode, setPasscode] = useState('');
   const [reveal, setReveal] = useState(false);
@@ -38,13 +41,13 @@ export function StaffLoginForm() {
       });
       const json = await response.json();
       if (!response.ok) {
-        setError(json.error ?? 'ログインに失敗しました。');
+        setError(json.error ?? d.networkError);
         return;
       }
       router.push('/dashboard');
       router.refresh();
     } catch {
-      setError('ネットワークエラーが発生しました。');
+      setError(d.networkError);
     } finally {
       setSubmitting(false);
     }
@@ -53,7 +56,7 @@ export function StaffLoginForm() {
   return (
     <form onSubmit={handleSubmit} className="card p-6">
       <label htmlFor="passcode" className="block text-xs font-medium text-jungle-600">
-        パスコード
+        {d.passcode}
       </label>
       <input
         id="passcode"
@@ -76,7 +79,7 @@ export function StaffLoginForm() {
         onClick={() => setReveal((v) => !v)}
         className="mt-2 text-xs text-jungle-400 hover:text-jungle-600"
       >
-        {reveal ? 'パスコードを隠す' : 'パスコードを表示'}
+        {reveal ? d.hidePasscode : d.showPasscode}
       </button>
 
       {error ? (
@@ -88,7 +91,7 @@ export function StaffLoginForm() {
         disabled={submitting || passcode.length < 6}
         className="btn-primary mt-4 w-full"
       >
-        {submitting ? '確認しています…' : '入室する'}
+        {submitting ? d.checking : d.enter}
       </button>
     </form>
   );

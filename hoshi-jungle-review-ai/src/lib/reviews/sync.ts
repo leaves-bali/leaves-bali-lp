@@ -2,7 +2,7 @@ import 'server-only';
 
 import { getBudgetState, recordUsage } from '@/lib/ai/budget';
 import { estimateCostUsd } from '@/lib/ai/pricing';
-import { generateReply, ReplyGenerationError } from '@/lib/ai/generateReply';
+import { defaultOption, generateReply, ReplyGenerationError } from '@/lib/ai/generateReply';
 import type { ReviewLanguage } from '@/lib/database.types';
 import { env } from '@/lib/env';
 import { getAccessTokenForUser } from '@/lib/google/accessToken';
@@ -366,7 +366,6 @@ async function generateMissingReplies(
         language: reconciled.language,
         languageIsUncertain: reconciled.needsConfirmation,
         aiFlagged: draft.needs_human_attention,
-        aiReason: draft.attention_reason || null,
       });
 
       if (reconciled.source === 'claude') {
@@ -395,12 +394,20 @@ async function generateMissingReplies(
       // 次のループで使う残額を更新する
       budget = await getBudgetState(locationId);
 
+      // 3案すべてを保存し、既定は standard を採用する。
+      // スタッフは画面でワンクリックで他の案に切り替えられる。
+      const chosen = defaultOption(draft.options);
+
       const { error: insertError } = await db.from('replies').insert({
         review_id: review.review_id,
-        ai_generated_text: draft.reply_text,
+        ai_generated_text: chosen.text,
+        options: draft.options,
+        selected_style: chosen.style,
         status: 'draft',
         needs_human_attention: attention.needsAttention,
-        attention_reason: attention.reasons.join(' / ') || null,
+        attention_codes: attention.codes,
+        attention_reason_i18n: draft.needs_human_attention ? draft.attention_reason : {},
+        attention_reason: null,
         model: meta.model,
         generation_meta: { ...meta, tone_used: draft.tone_used, cost_usd: costUsd },
       });

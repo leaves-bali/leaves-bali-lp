@@ -2,6 +2,9 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
 import { SyncButton } from '@/components/SyncButton';
+import { UiLangSwitcher } from '@/components/UiLangSwitcher';
+import { t } from '@/lib/i18n';
+import { getUiLang } from '@/lib/uiLang';
 import { getBudgetState } from '@/lib/ai/budget';
 import { getQueueCounts, getUserLocations } from '@/lib/reviews/queries';
 import { getSession } from '@/lib/session';
@@ -24,6 +27,8 @@ export default async function DashboardLayout({
   }
 
   const counts = await getQueueCounts(session);
+  const uiLang = await getUiLang();
+  const d = t(uiLang);
   const budget = await getBudgetState(locations[0]?.location_id);
 
   const isOwner = session.role === 'owner';
@@ -45,7 +50,7 @@ export default async function DashboardLayout({
         <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-4 px-6 py-4">
           <div className="min-w-0">
             <p className="text-[11px] font-medium tracking-widest text-jungle-400">
-              HOSHI JUNGLE REVIEW AI
+              {d.appName}
             </p>
             <h1 className="truncate text-lg font-bold text-jungle-800">{location.name}</h1>
           </div>
@@ -54,17 +59,18 @@ export default async function DashboardLayout({
               className={`badge ${
                 isOwner ? 'bg-jungle-100 text-jungle-700' : 'bg-sand-200 text-jungle-700'
               }`}
-              title={isOwner ? 'Google 連携とパスコード発行が行えます' : 'クチコミの確認・編集・公開が行えます'}
+
             >
-              {isOwner ? 'オーナー' : `スタッフ${session.staffLabel ? `・${session.staffLabel}` : ''}`}
+              {isOwner ? d.owner : `${d.staff}${session.staffLabel ? ` · ${session.staffLabel}` : ''}`}
             </span>
-            <SyncButton />
+            <UiLangSwitcher current={uiLang} />
+            <SyncButton lang={uiLang} />
             {isOwner ? (
               <Link
                 href="/dashboard/settings"
                 className="text-xs text-jungle-500 hover:text-jungle-700"
               >
-                パスコード管理
+                {d.passcodeAdmin}
               </Link>
             ) : null}
             <Link
@@ -72,30 +78,30 @@ export default async function DashboardLayout({
               className="text-xs text-jungle-400 hover:text-jungle-600"
               prefetch={false}
             >
-              ログアウト
+              {d.logout}
             </Link>
           </div>
         </div>
 
         <nav className="mx-auto flex max-w-5xl gap-1 px-6">
-          <NavLink href="/dashboard" label="未返信" count={counts.inbox} />
-          <NavLink href="/dashboard/pending" label="要確認" count={counts.attention} highlight />
-          <NavLink href="/dashboard/archive" label="履歴" count={counts.archive} />
+          <NavLink href="/dashboard" label={d.navInbox} count={counts.inbox} />
+          <NavLink href="/dashboard/pending" label={d.navAttention} count={counts.attention} highlight />
+          <NavLink href="/dashboard/archive" label={d.navArchive} count={counts.archive} />
         </nav>
       </header>
 
       {user?.token_revoked_at ? (
         <div className="border-b border-red-200 bg-red-50 px-6 py-3 text-center text-sm text-red-800">
-          Google のアクセス権が失効しています。クチコミの取得と公開ができません。
+          {d.reauthNeeded}
           <Link href="/api/auth/google?returnTo=/dashboard" className="ml-2 font-medium underline" prefetch={false}>
-            再認証する
+            {d.reauthLink}
           </Link>
         </div>
       ) : null}
 
       {location.last_sync_error ? (
         <div className="border-b border-amber-200 bg-amber-50 px-6 py-3 text-center text-xs text-amber-900">
-          直近の自動同期でエラーが発生しました: {location.last_sync_error}
+          {d.syncErrorPrefix} {location.last_sync_error}
         </div>
       ) : null}
 
@@ -104,26 +110,23 @@ export default async function DashboardLayout({
       <footer className="mx-auto max-w-5xl px-6 pb-10">
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-jungle-400">
           <span>
-            最終同期:{' '}
+            {d.lastSync}:{' '}
             {location.last_synced_at
-              ? new Date(location.last_synced_at).toLocaleString('ja-JP')
-              : '未実行'}
+              ? new Date(location.last_synced_at).toLocaleString()
+              : d.neverSynced}
           </span>
-          <span>毎時自動で取得しています</span>
+          <span>{d.autoHourly}</span>
           <span
             className={budget.exhausted ? 'font-medium text-amber-700' : ''}
             title={`今月の AI 生成コスト $${budget.spentUsd.toFixed(4)} / 上限 $${budget.budgetUsd}`}
           >
-            今月の AI 返信案: 残りおよそ {budget.remainingReplies} 件
+            {d.remainingThisMonth} {budget.remainingReplies}
           </span>
         </div>
 
         {budget.exhausted ? (
           <p className="mt-2 rounded-lg bg-amber-50 px-3 py-2 text-xs leading-relaxed text-amber-900">
-            今月の AI 生成上限に達しました。クチコミの取得は続いていますが、
-            新しい返信案は作成されません。返信は手動で書いていただくか、
-            来月 1 日のリセットをお待ちください
-            {isOwner ? '（上限はオーナーが環境変数で変更できます）' : ''}。
+            {d.budgetExhausted}
           </p>
         ) : null}
       </footer>

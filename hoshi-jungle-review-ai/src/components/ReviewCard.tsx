@@ -8,10 +8,11 @@ import {
   LANGUAGE_LABELS,
   REPLY_MAX_LENGTH,
   REPLY_RECOMMENDED_LENGTH,
-  STATUS_LABELS,
+  REPLY_STYLE_ORDER,
   STATUS_STYLES,
 } from '@/lib/constants';
 import type { ReplyStatus, ReviewQueueRow } from '@/lib/database.types';
+import { attentionText, t, type UiLang } from '@/lib/i18n';
 
 /**
  * 1 件のクチコミと、その AI 返信案を扱うカード。
@@ -21,19 +22,57 @@ import type { ReplyStatus, ReviewQueueRow } from '@/lib/database.types';
  *  - 公開ボタンは「今まさに公開される文面」を対象にする。編集中の未保存テキストで公開する
  *    ことは許さず、保存 → 公開の順を強制して事故を防ぐ
  */
-export function ReviewCard({ row, readOnly = false }: { row: ReviewQueueRow; readOnly?: boolean }) {
+export function ReviewCard({
+  row,
+  lang,
+  readOnly = false,
+}: {
+  row: ReviewQueueRow;
+  lang: UiLang;
+  readOnly?: boolean;
+}) {
+  const d = t(lang);
   const router = useRouter();
   const [, startTransition] = useTransition();
 
   const initialText = row.final_text ?? '';
   const [text, setText] = useState(initialText);
   const [savedText, setSavedText] = useState(initialText);
+  const [options, setOptions] = useState(row.options ?? []);
+  const [style, setStyle] = useState<string | null>(
+    // 人が編集済みならどの案でもないので、選択状態にしない
+    row.edited_text ? null : (row.selected_style ?? null),
+  );
   const [status, setStatus] = useState<ReplyStatus | null>(row.status);
   const [busy, setBusy] = useState<null | 'save' | 'publish' | 'regenerate' | 'skip'>(null);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 
+  const styleLabel = (key: string) =>
+    key === 'warm' ? d.styleWarm : key === 'concise' ? d.styleConcise : d.styleStandard;
+  const styleHint = (key: string) =>
+    key === 'warm' ? d.styleWarmHint : key === 'concise' ? d.styleConciseHint : d.styleStandardHint;
+
   const isDirty = text !== savedText;
+  // 3案が揃っていて、まだ公開していないときだけ切り替えを出す
+  const showPicker =
+    options.length > 1 && status !== 'published' && status !== 'skipped' && !readOnly;
+
+  /** 別の案に切り替える。編集済みの内容を黙って捨てないよう確認する。 */
+  function pickStyle(key: string) {
+    const option = options.find((o) => o.style === key);
+    if (!option || option.text === text) return;
+    if (isDirty) {
+      const ok = window.confirm(
+        d.switchConfirm,
+      );
+      if (!ok) return;
+    }
+    setText(option.text);
+    setStyle(key);
+    setError(null);
+    setNotice(null);
+  }
   const isPriorityLanguage = row.language === 'id';
   const hasReply = Boolean(row.reply_id);
 
@@ -48,13 +87,13 @@ export function ReviewCard({ row, readOnly = false }: { row: ReviewQueueRow; rea
       const response = await request();
       const json = await response.json();
       if (!response.ok) {
-        setError(json.error ?? '操作に失敗しました。');
+        setError(json.error ?? d.networkError);
         return null;
       }
       startTransition(() => router.refresh());
       return json;
     } catch {
-      setError('ネットワークエラーが発生しました。');
+      setError(d.networkError);
       return null;
     } finally {
       setBusy(null);
@@ -66,19 +105,19 @@ export function ReviewCard({ row, readOnly = false }: { row: ReviewQueueRow; rea
       fetch(`/api/replies/${row.reply_id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ editedText: text }),
+        body: JSON.stringify({ editedText: text, selectedStyle: style }),
       }),
     );
     if (json) {
       setSavedText(text);
       setStatus('edited');
-      setNotice('下書きを保存しました。');
+      setNotice(d.savedNotice);
     }
   }
 
   async function handlePublish() {
     if (isDirty) {
-      setError('先に「保存」を押してから公開してください。');
+      setError(d.saveFirst);
       return;
     }
     const json = await call('publish', () =>
@@ -86,7 +125,7 @@ export function ReviewCard({ row, readOnly = false }: { row: ReviewQueueRow; rea
     );
     if (json) {
       setStatus('published');
-      setNotice('Google に公開しました。');
+      setNotice(d.publishedNotice);
     }
   }
 
@@ -98,8 +137,10 @@ export function ReviewCard({ row, readOnly = false }: { row: ReviewQueueRow; rea
       const next = json.reply.final_text ?? json.reply.ai_generated_text ?? '';
       setText(next);
       setSavedText(next);
+      setOptions(json.reply.options ?? []);
+      setStyle(json.reply.selected_style ?? null);
       setStatus('draft');
-      setNotice('返信案を作り直しました。');
+      setNotice(d.regeneratedNotice);
     }
   }
 
@@ -113,7 +154,7 @@ export function ReviewCard({ row, readOnly = false }: { row: ReviewQueueRow; rea
     );
     if (json) {
       setStatus('skipped');
-      setNotice('このクチコミには返信しない設定にしました。');
+      setNotice(d.skippedNotice);
     }
   }
 
@@ -128,46 +169,48 @@ export function ReviewCard({ row, readOnly = false }: { row: ReviewQueueRow; rea
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
           <StarRating rating={row.rating} />
           <span className="text-sm font-medium text-jungle-800">
-            {row.reviewer_display_name ?? '匿名'}
+            {row.reviewer_display_name ?? d.anonymous}
           </span>
           <span
             className={`badge ${
               isPriorityLanguage ? 'bg-amber-100 text-amber-800' : 'bg-jungle-100 text-jungle-600'
             }`}
           >
-            {LANGUAGE_LABELS[row.language]}
+            {row.language === 'other' ? d.reviewLang.other : LANGUAGE_LABELS[row.language]}
           </span>
           {status ? (
-            <span className={`badge ${STATUS_STYLES[status]}`}>{STATUS_LABELS[status]}</span>
+            <span className={`badge ${STATUS_STYLES[status]}`}>{d.status[status]}</span>
           ) : (
-            <span className="badge bg-jungle-50 text-jungle-400">返信案なし</span>
+            <span className="badge bg-jungle-50 text-jungle-400">{d.noReplyYet}</span>
           )}
           {row.google_create_time ? (
             <time className="ml-auto text-xs text-jungle-400">
-              {new Date(row.google_create_time).toLocaleDateString('ja-JP')}
+              {new Date(row.google_create_time).toLocaleDateString()}
             </time>
           ) : null}
         </div>
 
         <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-jungle-700">
-          {row.text?.trim() || <span className="italic text-jungle-400">（本文なし・星評価のみ）</span>}
+          {row.text?.trim() || <span className="italic text-jungle-400">{d.noReviewText}</span>}
         </p>
       </header>
 
       {/* --- 要確認アラート --- */}
-      {row.needs_human_attention && row.attention_reason ? (
+      {row.needs_human_attention ? (
         <div className="border-b border-amber-200 bg-amber-50 px-5 py-3 text-xs leading-relaxed text-amber-900">
-          <span className="font-semibold">要確認: </span>
-          {row.attention_reason}
+          <span className="font-semibold">{d.needsCheck}: </span>
+          {/* 理由は言語非依存のコードで保存されているので、画面の言語に翻訳して出す */}
+          {(row.attention_codes ?? []).map((code) => attentionText(lang, code)).join(' / ')}
+          {row.attention_reason_i18n?.[lang] ? (
+            <span className="block pt-1">{row.attention_reason_i18n[lang]}</span>
+          ) : null}
         </div>
       ) : null}
 
       {/* --- 返信案 --- */}
       <div className="px-5 py-4">
         {!hasReply ? (
-          <p className="text-sm text-jungle-500">
-            返信案がまだありません。次回の同期で自動生成されます。
-          </p>
+          <p className="text-sm text-jungle-500">{d.noReplyYet}</p>
         ) : (
           <>
             <div className="mb-2 flex items-center justify-between">
@@ -175,9 +218,13 @@ export function ReviewCard({ row, readOnly = false }: { row: ReviewQueueRow; rea
                 htmlFor={`reply-${row.reply_id}`}
                 className="text-xs font-medium text-jungle-600"
               >
-                返信案{row.edited_text ? '（編集済み）' : '（AI生成）'}
+                {status === 'published'
+                  ? d.replyPublished
+                  : style === null
+                    ? d.replyEdited
+                    : d.replyDraft}
                 {row.regenerated_count ? (
-                  <span className="ml-1 text-jungle-400">・{row.regenerated_count}回再生成</span>
+                  <span className="ml-1 text-jungle-400">· {row.regenerated_count}×</span>
                 ) : null}
               </label>
               <span
@@ -193,10 +240,43 @@ export function ReviewCard({ row, readOnly = false }: { row: ReviewQueueRow; rea
               </span>
             </div>
 
+            {showPicker ? (
+              <div className="mb-2.5 flex flex-wrap gap-1.5" role="group" aria-label={d.pickStyle}>
+                {REPLY_STYLE_ORDER.filter((k) =>
+                  options.some((o) => o.style === k),
+                ).map((key) => {
+                  const active = style === key;
+                  return (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => pickStyle(key)}
+                      title={styleHint(key)}
+                      aria-pressed={active}
+                      className={[
+                        'rounded-full border px-3 py-1 text-xs font-medium transition',
+                        active
+                          ? 'border-jungle-600 bg-jungle-600 text-white'
+                          : 'border-jungle-200 bg-white text-jungle-600 hover:bg-jungle-50',
+                      ].join(' ')}
+                    >
+                      {styleLabel(key)}
+                    </button>
+                  );
+                })}
+                <span className="self-center pl-1 text-[11px] text-jungle-400">
+                  {style ? styleHint(style) : d.edited}
+                </span>
+              </div>
+            ) : null}
+
             <textarea
               id={`reply-${row.reply_id}`}
               value={text}
-              onChange={(e) => setText(e.target.value)}
+              onChange={(e) => {
+                setText(e.target.value);
+                setStyle(null); // 手を入れた時点でどの案でもなくなる
+              }}
               readOnly={readOnly || status === 'published'}
               rows={6}
               className="w-full resize-y rounded-lg border border-jungle-200 bg-white p-3 text-sm leading-relaxed
@@ -206,7 +286,7 @@ export function ReviewCard({ row, readOnly = false }: { row: ReviewQueueRow; rea
 
             {row.publish_error ? (
               <p className="mt-2 rounded bg-red-50 px-3 py-2 text-xs text-red-800">
-                前回の公開失敗: {row.publish_error}
+                {d.publishFailed}: {row.publish_error}
               </p>
             ) : null}
             {error ? (
@@ -225,7 +305,7 @@ export function ReviewCard({ row, readOnly = false }: { row: ReviewQueueRow; rea
                   onClick={handlePublish}
                   disabled={busy !== null || isDirty || text.trim().length === 0}
                   className="btn-primary"
-                  title={isDirty ? '先に保存してください' : 'Google に公開します'}
+                  title={isDirty ? d.saveFirst : d.publish}
                 >
                   {busy === 'publish' ? '公開中…' : 'Google に公開'}
                 </button>
@@ -235,7 +315,7 @@ export function ReviewCard({ row, readOnly = false }: { row: ReviewQueueRow; rea
                   disabled={busy !== null || !isDirty}
                   className="btn-secondary"
                 >
-                  {busy === 'save' ? '保存中…' : '下書きを保存'}
+                  {busy === 'save' ? d.saving : d.saveDraft}
                 </button>
                 <button
                   type="button"
@@ -243,7 +323,7 @@ export function ReviewCard({ row, readOnly = false }: { row: ReviewQueueRow; rea
                   disabled={busy !== null}
                   className="btn-ghost"
                 >
-                  {busy === 'regenerate' ? '生成中…' : 'AIで作り直す'}
+                  {busy === 'regenerate' ? d.regenerating : d.regenerate}
                 </button>
                 <button
                   type="button"
@@ -251,14 +331,14 @@ export function ReviewCard({ row, readOnly = false }: { row: ReviewQueueRow; rea
                   disabled={busy !== null}
                   className="btn-ghost ml-auto text-jungle-400"
                 >
-                  返信しない
+                  {d.skip}
                 </button>
               </div>
             ) : null}
 
             {status === 'published' && row.published_at ? (
               <p className="mt-3 text-xs text-jungle-500">
-                {new Date(row.published_at).toLocaleString('ja-JP')} に公開済み
+                {d.publishedAt}: {new Date(row.published_at).toLocaleString()}
               </p>
             ) : null}
           </>

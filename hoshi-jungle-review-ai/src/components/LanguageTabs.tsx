@@ -1,32 +1,41 @@
 import Link from 'next/link';
 
-import type { ReviewLanguage } from '@/lib/database.types';
 import { LANGUAGE_LABELS } from '@/lib/constants';
+import type { ReviewLanguage } from '@/lib/database.types';
+import { t, type UiLang } from '@/lib/i18n';
 
-const TABS: Array<{ key: ReviewLanguage | 'all'; label: string }> = [
-  { key: 'all', label: 'すべて' },
-  { key: 'ja', label: LANGUAGE_LABELS.ja },
-  { key: 'en', label: LANGUAGE_LABELS.en },
-  { key: 'id', label: LANGUAGE_LABELS.id },
-  { key: 'other', label: LANGUAGE_LABELS.other },
-];
+const TAB_ORDER: ReviewLanguage[] = ['ja', 'en', 'id', 'zh', 'ko', 'other'];
 
 /**
- * 言語別タブ。
+ * クチコミの言語で絞り込むタブ。
+ *
+ * 言語名は原語表記（日本語 / English / 中文 …）のままにしている。
+ * 画面の言語が何であれ、その言語の話者が自分のタブを見つけられるようにするため。
  * インドネシア語は「優先チェック対象」なので、他と色分けして視線を集める。
  */
 export function LanguageTabs({
   basePath,
   active,
   counts,
+  uiLang,
 }: {
   basePath: string;
   active: ReviewLanguage | 'all';
   counts: Record<ReviewLanguage, number>;
+  uiLang: UiLang;
 }) {
+  const d = t(uiLang);
+  const tabs: Array<{ key: ReviewLanguage | 'all'; label: string }> = [
+    { key: 'all', label: d.allLanguages },
+    ...TAB_ORDER.map((key) => ({
+      key,
+      label: key === 'other' ? d.reviewLang.other : LANGUAGE_LABELS[key],
+    })),
+  ];
+
   return (
-    <nav className="flex flex-wrap gap-2" aria-label="言語フィルター">
-      {TABS.map((tab) => {
+    <nav className="flex flex-wrap gap-2" aria-label={d.languageFilter}>
+      {tabs.map((tab) => {
         const isActive = tab.key === active;
         const count =
           tab.key === 'all'

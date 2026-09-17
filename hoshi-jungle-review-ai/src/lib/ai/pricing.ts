@@ -49,11 +49,15 @@ export function estimateCostUsd(
  * 1 件の返信生成にかかる概算コスト。
  * 予算判定で「次の 1 件を生成する余地があるか」を見るために使う。
  *
- * 実測の目安: 入力 約1,300 tok（システムプロンプト+クチコミ）/ 出力 約600 tok
- * （返信本文 + adaptive thinking）。安全側に少し多めに見積もる。
+ * 1 回の呼び出しで**温度感を変えた 3 案**を生成するため、出力トークンは
+ * 単一案のおよそ 3 倍になる。見積もりは安全側（多め）に倒している。
+ * 予算を超えさせないことが目的なので、少なめに見積もるより早めに止まる方がよい。
+ *
+ * 実績は ai_usage テーブルに実トークン数で記録されるので、
+ * 運用後はそちらの平均に合わせて調整できる。
  */
 const TYPICAL_INPUT_TOKENS = 1_600;
-const TYPICAL_OUTPUT_TOKENS = 800;
+const TYPICAL_OUTPUT_TOKENS = 1_500;
 
 export function estimatedCostPerReply(model: string): number {
   return estimateCostUsd(model, TYPICAL_INPUT_TOKENS, TYPICAL_OUTPUT_TOKENS);

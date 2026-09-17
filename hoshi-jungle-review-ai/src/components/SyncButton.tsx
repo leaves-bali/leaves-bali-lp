@@ -3,6 +3,8 @@
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 
+import { t, type UiLang } from '@/lib/i18n';
+
 interface SyncResponse {
   results: Array<{ reviewsNew: number; repliesGenerated: number; errors: string[] }>;
   hasMore: boolean;
@@ -19,7 +21,8 @@ interface SyncResponse {
  */
 const MAX_ROUNDS = 40; // 暴走防止。7秒 × 40 = 最大およそ 5 分
 
-export function SyncButton() {
+export function SyncButton({ lang }: { lang: UiLang }) {
+  const d = t(lang);
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [running, setRunning] = useState(false);
@@ -46,7 +49,7 @@ export function SyncButton() {
         const json = (await response.json()) as SyncResponse & { error?: string };
 
         if (!response.ok) {
-          setMessage(json.error ?? '同期に失敗しました。');
+          setMessage(json.error ?? d.networkError);
           return;
         }
 
@@ -59,21 +62,17 @@ export function SyncButton() {
 
         if (!json.hasMore) break;
 
-        setProgress(
-          `処理中… 新着 ${totalNew} 件 / 返信案 ${totalGenerated} 件（続きを取得しています）`,
-        );
+        setProgress(`${d.syncing} ${totalNew} / ${totalGenerated}`);
       }
 
-      const parts = [`新着 ${totalNew} 件 / 返信案 ${totalGenerated} 件を作成しました。`];
-      if (budgetExhausted) {
-        parts.push('今月の AI 生成上限に達したため、以降は手動での返信をお願いします。');
-      }
-      if (errors.length) parts.push(`（一部エラー: ${errors[0]}）`);
-      setMessage(parts.join(' '));
+      const parts = [`+${totalNew} / ${totalGenerated}`];
+      if (budgetExhausted) parts.push(d.budgetExhausted);
+      if (errors.length) parts.push(errors[0]);
+      setMessage(parts.join(' · '));
 
       startTransition(() => router.refresh());
     } catch {
-      setMessage('ネットワークエラーが発生しました。');
+      setMessage(d.networkError);
     } finally {
       setRunning(false);
       setProgress(null);
@@ -90,7 +89,7 @@ export function SyncButton() {
         disabled={running || isPending}
         className="btn-secondary"
       >
-        {running ? '同期中…' : '今すぐ同期'}
+        {running ? d.syncing : d.syncNow}
       </button>
     </div>
   );

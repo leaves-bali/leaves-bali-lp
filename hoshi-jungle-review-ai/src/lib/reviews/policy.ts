@@ -1,11 +1,17 @@
 import { env } from '@/lib/env';
 import type { ReviewLanguage } from '@/lib/database.types';
+import type { AttentionCode } from '@/lib/i18n';
 
 /**
  * 品質管理ポリシー。
  *
  * 「どのクチコミを人間が必ず見るか」「どの返信なら自動公開してよいか」を 1 箇所に集約する。
  * この判断がコードのあちこちに散ると、仕様変更のたびに抜け漏れが出る。
+ *
+ * 【理由を文言ではなくコードで返す理由】
+ * 画面を使うスタッフは日本人・インドネシア人・アメリカ人の 3 通りいる。
+ * 日本語の文言を DB に保存してしまうと、英語話者の画面にも日本語が出てしまう。
+ * ここでは言語に依存しないコードだけを返し、表示するときに翻訳する。
  */
 
 export interface AttentionInput {
@@ -13,37 +19,34 @@ export interface AttentionInput {
   language: ReviewLanguage;
   languageIsUncertain: boolean;
   aiFlagged: boolean;
-  aiReason: string | null;
 }
 
 export interface AttentionResult {
   needsAttention: boolean;
-  reasons: string[];
+  codes: AttentionCode[];
 }
 
 export function evaluateAttention(input: AttentionInput): AttentionResult {
-  const reasons: string[] = [];
+  const codes: AttentionCode[] = [];
 
   if (input.rating <= 2) {
-    reasons.push('低評価（1〜2つ星）のため、公開前に必ず内容を確認してください');
+    codes.push('low_rating');
   }
   if (input.language === 'id') {
     // 仕様上の制約: インドネシア語は現地スタッフによるニュアンス確認を必須とする。
-    reasons.push('インドネシア語のため、現地スタッフによる表現確認が必要です');
+    codes.push('indonesian');
   }
   if (input.language === 'other') {
-    reasons.push('対応言語（日本語/英語/インドネシア語）以外の可能性があります');
+    codes.push('unsupported_language');
   }
   if (input.languageIsUncertain) {
-    reasons.push('言語の自動判定が低信頼です');
+    codes.push('low_confidence');
   }
-  if (input.aiFlagged && input.aiReason) {
-    reasons.push(`AI が要確認と判定: ${input.aiReason}`);
-  } else if (input.aiFlagged) {
-    reasons.push('AI が要確認と判定しました');
+  if (input.aiFlagged) {
+    codes.push('ai_flagged');
   }
 
-  return { needsAttention: reasons.length > 0, reasons };
+  return { needsAttention: codes.length > 0, codes };
 }
 
 /**

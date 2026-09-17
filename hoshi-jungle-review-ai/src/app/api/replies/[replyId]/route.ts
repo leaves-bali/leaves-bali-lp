@@ -21,6 +21,8 @@ export async function PATCH(
     const body = (await request.json()) as {
       editedText?: string;
       status?: ReplyStatus;
+      /** 3案のどれを採用したか。手で書き換えた場合は null を送る。 */
+      selectedStyle?: string | null;
     };
 
     const update: Partial<ReplyRow> = {};
@@ -41,6 +43,10 @@ export async function PATCH(
       update.status = 'edited';
     }
 
+    if (body.selectedStyle !== undefined) {
+      update.selected_style = body.selectedStyle;
+    }
+
     if (body.status !== undefined) {
       const allowed: ReplyStatus[] = ['draft', 'edited', 'skipped'];
       if (!allowed.includes(body.status)) {
@@ -59,7 +65,7 @@ export async function PATCH(
       .from('replies')
       .update(update)
       .eq('reply_id', replyId)
-      .select('reply_id, edited_text, final_text, status, updated_at')
+      .select('reply_id, edited_text, final_text, status, selected_style, updated_at')
       .single();
 
     if (error) throw new HttpError(`更新に失敗しました: ${error.message}`, 500);

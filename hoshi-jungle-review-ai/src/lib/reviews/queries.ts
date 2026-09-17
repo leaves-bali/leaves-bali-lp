@@ -96,7 +96,7 @@ export async function getQueueCounts(session: SessionPayload): Promise<QueueCoun
     inbox: 0,
     attention: 0,
     archive: 0,
-    byLanguage: { ja: 0, en: 0, id: 0, other: 0 },
+    byLanguage: { ja: 0, en: 0, id: 0, zh: 0, ko: 0, other: 0 },
   };
   if (locations.length === 0) return empty;
 
