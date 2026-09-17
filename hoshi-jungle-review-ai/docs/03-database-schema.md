@@ -1,6 +1,8 @@
 # 03. Supabase テーブル設計
 
-定義ファイル: `supabase/migrations/0001_init.sql` / `0002_rls.sql` / `0003_staff_access.sql`
+定義ファイル: `supabase/migrations/` 配下の 0001〜0004
+**適用状況: Supabase プロジェクト `iwwddgqbollzzmzjrvak`（Free プラン）に適用・検証済み**
+（検証結果は [docs/04 §2.1](04-runbook.md)）
 TypeScript 型: `src/lib/database.types.ts`
 
 ## 1. ER 図

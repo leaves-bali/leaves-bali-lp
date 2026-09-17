@@ -15,6 +15,9 @@ gantt
     本番での初回同期・返信品質の調整           :a5, 20, 26
 ```
 
+**費用の前提**: 運用には Vercel Pro（$20/月）と Claude API の従量課金（月 $2〜3）が
+必要です。合計で月あたり約 $22〜23。詳細は §6。
+
 **最優先タスクは Google の API アクセス申請です。** 承認が下りるまでレビューを 1 件も取得できません。
 コードの完成を待たずに、今日中に申請を出してください（手順は `docs/02-google-oauth-flow.md` §3）。
 
@@ -22,16 +25,67 @@ gantt
 
 ## 2. セットアップ
 
-### 2.1 Supabase
+> **⚠️ 先に決めること: どの Google アカウントを使うか**
+>
+> アプリにログインする Google アカウントは、**必ず Hoshi Jungle のアカウント**を使ってください。
+> そのアカウントの権限でクチコミの取得と返信の投稿が行われるためです。
+> 代行者個人のアカウントでログインすると、その人がホテルのビジネスプロフィールへの
+> アクセスを失った時点でシステム全体が停止します。
+> 詳細と、Google Cloud プロジェクトの名義をどうするかは [docs/06](06-google-account-ownership.md)。
+
+### 2.1 Supabase — ✅ 作成・適用済み
+
+**このステップは完了しています。** 以下のプロジェクトが作成され、
+マイグレーション 4 本の適用と動作検証まで済んでいます。
+
+| 項目 | 値 |
+|---|---|
+| プロジェクト名 | `hoshi-jungle-review-ai` |
+| プロジェクト ref | `iwwddgqbollzzmzjrvak` |
+| API URL | `https://iwwddgqbollzzmzjrvak.supabase.co` |
+| リージョン | ap-southeast-1（シンガポール／バリから最も近い） |
+| プラン | **Free（$0）** |
+
+環境変数に設定する値:
+
+```
+SUPABASE_URL=https://iwwddgqbollzzmzjrvak.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=（下記の手順で取得）
+```
+
+`service_role` キーは **RLS をバイパスする最重要の秘密**のため、ここには記載しません。
+[Supabase Dashboard](https://supabase.com/dashboard/project/iwwddgqbollzzmzjrvak/settings/api-keys)
+→ Project Settings → API Keys → `service_role` からコピーしてください。
+Vercel には必ず Encrypted で登録し、リポジトリにはコミットしないこと。
+
+#### 適用済みの内容と検証結果
+
+| マイグレーション | 内容 |
+|---|---|
+| `0001_init` | ENUM 3種・テーブル5つ・インデックス・ビュー `review_queue` |
+| `0002_rls` | 全テーブルで RLS 有効化＋`anon`/`authenticated` 全拒否 |
+| `0003_staff_access` | スタッフ用パスコードと監査ログ |
+| `0004_harden_function_search_path` | トリガ関数の `search_path` 固定（セキュリティリンタ対応） |
+
+実 DB に対して以下を検証済みです。
+
+- 生成列 `final_text` が編集の有無に応じて正しく切り替わる
+- `published` なのに `published_at` が無い更新は制約で拒否される
+- 星 6、同一 `google_review_id` の重複、1 レビュー 2 返信はすべて拒否される
+- `updated_at` トリガが `search_path` 固定後も正しく発火する
+- **`anon` ロールでは全テーブル・ビューが 0 行、INSERT は RLS が拒否**
+  （＝ anon キーが漏れても 1 行も読めず、書き込みもできない）
+- Supabase セキュリティアドバイザの警告 **0 件**
+
+#### 自分で作り直す場合
 
 ```bash
-# Supabase でプロジェクトを作成後
 supabase link --project-ref <project-ref>
 supabase db push
 ```
 
 CLI を使わない場合は Dashboard → SQL Editor で
-`supabase/migrations/0001_init.sql` → `0002_rls.sql` の順に実行します。
+`0001` → `0002` → `0003` → `0004` の順に実行します。
 
 ### 2.2 秘密鍵の生成
 
@@ -101,15 +155,25 @@ npm run build       # 本番ビルド
 `vercel.json` の `crons` により、デプロイと同時に毎時 0 分のバッチが登録されます
 （ただし後述のプラン制約に注意）。
 
-> **⚠️ プラン制約: Vercel の Hobby プランは Cron の最小間隔が「1 日 1 回」です。**
-> `0 * * * *`（毎時）はデプロイ時にエラーになります。毎時実行には **Pro プラン（$20/月〜）** が必要です。
-> Hobby のまま運用する場合の選択肢:
-> - `vercel.json` を `"schedule": "0 1 * * *"` 等に変更して 1 日 1 回にする
-> - 外部スケジューラ（GitHub Actions の `schedule` など）から
->   `GET /api/cron/fetch-reviews` を `Authorization: Bearer $CRON_SECRET` 付きで叩く
+> **⚠️ Vercel は Pro プラン（$20/月）が必須です。Hobby では運用できません。**
 >
-> ホテル運営としては「クチコミ投稿から返信まで 24 時間以内」なら実害は小さいため、
-> **まず 1 日 1 回で始め、返信速度を上げたくなった時点で Pro に上げる**のが費用対効果の高い順序です。
+> 理由は 2 つあり、**1 つ目が決定的**です。
+>
+> 1. **Hobby プランは非商用の個人利用に限定されている。**
+>    Vercel は商用利用を「プロジェクトの制作に関わる誰かの金銭的利益を目的とした
+>    デプロイ」と定義しており、有償の従業員や受託開発者がコードを書いた場合も含まれます。
+>    ホテルの業務ツールはこれに該当するため、Hobby では利用規約違反となり、
+>    Vercel は予告なくプロジェクトを停止・削除する権利を留保しています。
+> 2. Hobby の Cron は最小間隔が 1 日 1 回で、`0 * * * *`（毎時）はデプロイ時にエラーになります。
+>
+> 2 番目だけなら「1 日 1 回にして Hobby で始める」という回避策が成立しますが、
+> **1 番目がある以上その選択肢はありません。** 最初から Pro で契約してください。
+>
+> なお Pro にすれば毎時 Cron がそのまま使えるため、`vercel.json` の変更は不要です。
+> どうしても自前のサーバーで動かしたい場合は、Next.js を Docker などで
+> セルフホストし、外部スケジューラ（cron / GitHub Actions）から
+> `GET /api/cron/fetch-reviews` を `Authorization: Bearer $CRON_SECRET` 付きで
+> 叩く構成でも動きます。
 
 ---
 
@@ -287,15 +351,24 @@ AUTO_PUBLISH_MIN_RATING=5      # まず 5 つ星だけ
 
 ### 6.2 インフラ
 
-| サービス | プラン | 月額 | 備考 |
-|---|---|---|---|
-| Vercel | Hobby | $0 | Cron は 1 日 1 回まで |
-| Vercel | Pro | $20〜 | 毎時 Cron に必要 |
-| Supabase | Free | $0 | 500MB DB。単独ホテルなら数年分の余裕がある |
-| Google Business Profile API | — | $0 | 利用申請の承認が必要 |
+| サービス | プラン | 月額 | 必須か | 備考 |
+|---|---|---|---|---|
+| Vercel | **Pro** | **$20** | **必須** | Hobby は非商用限定のため使えない（上記 §2.5 参照） |
+| Supabase | Free | $0 | — | 500MB DB。単独ホテルなら数年分の余裕がある |
+| Google Business Profile API | — | $0 | — | 利用申請の承認が必要 |
+| Claude API | 従量課金 | 約 $2〜3 | **必須** | 月 100 件想定。Claude の月額プランとは別課金 |
+| 独自ドメイン | — | 年 $10〜15 | 任意 | `review.hoshijungle.com` のようにしたい場合のみ |
 
-**最小構成の月額: 約 $2〜3（Claude API のみ）。**
-毎時同期が必要なら Vercel Pro を加えて約 $22〜23。
+**現実的な月額: 約 $22〜23（約 3,300〜3,500 円）。**
+
+> **Supabase の Free プランは「1 週間アクティビティがないと自動停止」します。**
+> ただし本システムは Cron が毎時 DB にアクセスするため、この条件には該当しません。
+> 停止の心配なく Free のまま運用できます（停止する場合は事前に警告メールが届きます）。
+
+> **Claude API は Claude の月額プラン（Pro / Max）とは完全に別の課金です。**
+> [console.anthropic.com](https://console.anthropic.com) でアカウントを作り、
+> 前払いのクレジットを購入する必要があります。新規アカウントには $5 の無料クレジットが
+> 付与されるため、月 100 件想定なら**最初の 2 か月程度は追加課金なしで試せます。**
 
 ---
 
