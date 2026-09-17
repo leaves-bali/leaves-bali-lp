@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 
 import { SetupWizard } from '@/components/SetupWizard';
 import { getSession } from '@/lib/session';
@@ -13,6 +14,9 @@ export const dynamic = 'force-dynamic';
 export default async function OnboardingPage() {
   const session = await getSession();
 
+  // 初期設定はオーナーの作業。スタッフが URL を直接開いてもダッシュボードへ戻す。
+  if (session?.role === 'staff') redirect('/dashboard');
+
   return (
     <main className="mx-auto min-h-screen w-full max-w-2xl px-6 py-12">
       <header className="mb-10">
@@ -23,7 +27,7 @@ export default async function OnboardingPage() {
       </header>
 
       {session ? (
-        <SetupWizard userEmail={session.email} />
+        <SetupWizard userEmail={session.email ?? ''} />
       ) : (
         <div className="card p-6">
           <StepHeader step={1} total={3} title="Google アカウントでログイン" active />

@@ -13,7 +13,7 @@ export async function POST(
   try {
     const session = await requireSession();
     const { replyId } = await params;
-    const result = await publishReply(replyId, session.userId);
+    const result = await publishReply(replyId, session);
     return NextResponse.json({ ok: true, ...result });
   } catch (err) {
     return errorResponse(err);

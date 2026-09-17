@@ -1,9 +1,16 @@
 import 'server-only';
 
 import type { ReviewLanguage, ReviewQueueRow } from '@/lib/database.types';
+import type { SessionPayload } from '@/lib/session';
 import { supabaseAdmin } from '@/lib/supabase/admin';
 
-/** ダッシュボード用の読み取りクエリ。 */
+/**
+ * ダッシュボード用の読み取りクエリ。
+ *
+ * すべての入口で `SessionPayload` を受け取り、staff セッションなら
+ * そのロケーション 1 件だけに絞り込む。UI 側の出し分けに頼らず、
+ * データ取得の時点でスコープを閉じるのが要点。
+ */
 
 export interface LocationSummary {
   location_id: string;
@@ -13,13 +20,21 @@ export interface LocationSummary {
   last_sync_error: string | null;
 }
 
-export async function getUserLocations(userId: string): Promise<LocationSummary[]> {
-  const { data } = await supabaseAdmin()
+export async function getUserLocations(
+  session: SessionPayload,
+): Promise<LocationSummary[]> {
+  const query = supabaseAdmin()
     .from('locations')
     .select('location_id, name, address, last_synced_at, last_sync_error')
-    .eq('user_id', userId)
-    .eq('setup_complete', true)
-    .order('created_at', { ascending: true });
+    .eq('user_id', session.userId)
+    .eq('setup_complete', true);
+
+  // staff は自分のロケーション以外を一切見られない
+  if (session.role === 'staff' && session.locationId) {
+    query.eq('location_id', session.locationId);
+  }
+
+  const { data } = await query.order('created_at', { ascending: true });
   return data ?? [];
 }
 
@@ -31,10 +46,10 @@ export interface QueueFilters {
 }
 
 export async function getReviewQueue(
-  userId: string,
+  session: SessionPayload,
   filters: QueueFilters,
 ): Promise<ReviewQueueRow[]> {
-  const locations = await getUserLocations(userId);
+  const locations = await getUserLocations(session);
   if (locations.length === 0) return [];
 
   const query = supabaseAdmin()
@@ -75,8 +90,8 @@ export interface QueueCounts {
   byLanguage: Record<ReviewLanguage, number>;
 }
 
-export async function getQueueCounts(userId: string): Promise<QueueCounts> {
-  const locations = await getUserLocations(userId);
+export async function getQueueCounts(session: SessionPayload): Promise<QueueCounts> {
+  const locations = await getUserLocations(session);
   const empty: QueueCounts = {
     inbox: 0,
     attention: 0,

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-import { errorResponse, requireSession } from '@/lib/api';
+import { errorResponse, requireOwner } from '@/lib/api';
 import { getAccessTokenForUser } from '@/lib/google/accessToken';
 import { formatAddress, listAccounts, listLocations } from '@/lib/google/businessProfile';
 import { supabaseAdmin } from '@/lib/supabase/admin';
@@ -14,7 +14,7 @@ export const dynamic = 'force-dynamic';
  */
 export async function GET() {
   try {
-    const session = await requireSession();
+    const session = await requireOwner();
     const accessToken = await getAccessTokenForUser(session.userId);
 
     const accounts = await listAccounts(accessToken);

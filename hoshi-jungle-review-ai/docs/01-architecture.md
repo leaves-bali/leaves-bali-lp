@@ -55,15 +55,18 @@ hoshi-jungle-review-ai/
 │   ├── 01-architecture.md        # 本ドキュメント
 │   ├── 02-google-oauth-flow.md   # 認証フローと Google Cloud 側の設定
 │   ├── 03-database-schema.md     # テーブル設計と設計判断
-│   └── 04-runbook.md             # セットアップ・運用・コスト
+│   ├── 04-runbook.md             # セットアップ・デプロイ・運用・コスト
+│   └── 05-staff-access.md        # スタッフ引き渡しと権限設計
 │
 ├── supabase/
 │   └── migrations/
 │       ├── 0001_init.sql         # ENUM / テーブル / インデックス / ビュー
-│       └── 0002_rls.sql          # Row Level Security（多層防御）
+│       ├── 0002_rls.sql          # Row Level Security（多層防御）
+│       └── 0003_staff_access.sql # スタッフ用パスコードと監査ログ
 │
 ├── tests/                        # node:test + tsx（npm test）
 │   ├── crypto.test.ts            # トークン暗号化の往復・改ざん検出
+│   ├── passcode.test.ts          # パスコード生成・ハッシュ・検証
 │   ├── detect.test.ts            # 言語判定（短文日本語の回帰テスト含む）
 │   ├── policy.test.ts            # 自動公開ポリシーのガード
 │   └── prompt.test.ts            # プロンプトの必須要素
@@ -104,9 +107,13 @@ hoshi-jungle-review-ai/
         ├── env.ts                # 環境変数の遅延読み取り + 型付け
         ├── constants.ts          # サーバー/クライアント共用の定数
         ├── crypto.ts             # refresh_token の AES-256-GCM 暗号化
-        ├── session.ts            # 署名付き Cookie セッション + OAuth state
-        ├── api.ts                # API 共通の認証ガード / エラー整形
+        ├── passcode.ts           # パスコード生成 / scrypt ハッシュ / 検証
+        ├── session.ts            # 役割付きセッション（owner / staff）
+        ├── api.ts                # requireSession / requireOwner / スコープ
         ├── database.types.ts     # Supabase のスキーマ型（FK 定義含む）
+        │
+        ├── auth/
+        │   └── staffLogin.ts     # パスコード照合 + IP レート制限
         │
         ├── supabase/
         │   └── admin.ts          # service_role クライアント（server-only）
@@ -196,3 +203,4 @@ Cron の再実行・手動同期の同時押し・デプロイ直後の重複起
 | 言語検出（補強） | ライブラリ単体 | 文字種チェック → tinyld → Claude | 実測で「最高！」のような短い日本語を tinyld が判定不能（候補ゼロ）で返した。クチコミは短文比率が高いため、決定的に判別できる文字種チェックを前段に置いた |
 | 認証基盤 | Supabase + Google OAuth | Google OAuth のみ（自前の署名付き Cookie） | 認証の主目的が Business Profile API の操作権限取得であり、Supabase Auth を併用すると refresh_token の所在が分散して事故りやすい |
 | replies.status | `draft` / `published` | `draft` / `edited` / `published` / `failed` / `skipped` | 「AI 生成のまま」と「人間が編集済み」を区別しないと、承認待ちリストで何を見ればよいか分からなくなる。`failed` / `skipped` は運用上必須 |
+| スタッフのログイン | 記載なし | パスコード認証を追加（`owner` / `staff` の 2 役割） | `business.manage` はビジネスプロフィール全体を操作できる権限。フロントスタッフ全員に Google アカウントを共有させるのは過剰で、退職時の権限剥奪も煩雑。詳細は [docs/05](05-staff-access.md) |

@@ -1,13 +1,16 @@
 import { NextResponse, type NextRequest } from 'next/server';
 
-import { errorResponse, HttpError, requireSession } from '@/lib/api';
+import { errorResponse, HttpError, requireSession, scopedLocationId } from '@/lib/api';
 import { syncLocation } from '@/lib/reviews/sync';
 import { supabaseAdmin } from '@/lib/supabase/admin';
 
 export const runtime = 'nodejs';
 export const maxDuration = 300;
 
-/** ダッシュボードの「今すぐ同期」ボタン。 */
+/**
+ * ダッシュボードの「今すぐ同期」ボタン。
+ * スタッフも実行できるが、対象は自分のロケーションに限定される。
+ */
 export async function POST(request: NextRequest) {
   try {
     const session = await requireSession();
@@ -20,7 +23,11 @@ export async function POST(request: NextRequest) {
       .eq('user_id', session.userId)
       .eq('setup_complete', true);
 
-    if (body.locationId) query.eq('location_id', body.locationId);
+    // staff セッションは自分のロケーションに強制的に固定する。
+    // リクエストボディの locationId は staff の場合は無視する。
+    const forcedLocationId = scopedLocationId(session);
+    const targetLocationId = forcedLocationId ?? body.locationId;
+    if (targetLocationId) query.eq('location_id', targetLocationId);
 
     const { data: locations, error } = await query;
     if (error) throw new HttpError(`ロケーションの取得に失敗: ${error.message}`, 500);

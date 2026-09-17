@@ -16,16 +16,24 @@ export default async function DashboardLayout({
   const session = await getSession();
   if (!session) redirect('/');
 
-  const locations = await getUserLocations(session.userId);
-  if (locations.length === 0) redirect('/onboarding');
+  const locations = await getUserLocations(session);
+  if (locations.length === 0) {
+    // オーナーは初期設定へ。スタッフはロケーションが停止/削除された状態なので入口へ戻す。
+    redirect(session.role === 'owner' ? '/onboarding' : '/');
+  }
 
-  const counts = await getQueueCounts(session.userId);
+  const counts = await getQueueCounts(session);
 
-  const { data: user } = await supabaseAdmin()
-    .from('users')
-    .select('token_revoked_at')
-    .eq('user_id', session.userId)
-    .single();
+  const isOwner = session.role === 'owner';
+
+  // 再認証バナーはオーナーにだけ意味がある（スタッフは Google 連携を直せない）。
+  const { data: user } = isOwner
+    ? await supabaseAdmin()
+        .from('users')
+        .select('token_revoked_at')
+        .eq('user_id', session.userId)
+        .single()
+    : { data: null };
 
   const location = locations[0];
 
@@ -40,8 +48,28 @@ export default async function DashboardLayout({
             <h1 className="truncate text-lg font-bold text-jungle-800">{location.name}</h1>
           </div>
           <div className="ml-auto flex items-center gap-3">
+            <span
+              className={`badge ${
+                isOwner ? 'bg-jungle-100 text-jungle-700' : 'bg-sand-200 text-jungle-700'
+              }`}
+              title={isOwner ? 'Google 連携とパスコード発行が行えます' : 'クチコミの確認・編集・公開が行えます'}
+            >
+              {isOwner ? 'オーナー' : `スタッフ${session.staffLabel ? `・${session.staffLabel}` : ''}`}
+            </span>
             <SyncButton />
-            <Link href="/api/auth/logout" className="text-xs text-jungle-400 hover:text-jungle-600" prefetch={false}>
+            {isOwner ? (
+              <Link
+                href="/dashboard/settings"
+                className="text-xs text-jungle-500 hover:text-jungle-700"
+              >
+                パスコード管理
+              </Link>
+            ) : null}
+            <Link
+              href="/api/auth/logout"
+              className="text-xs text-jungle-400 hover:text-jungle-600"
+              prefetch={false}
+            >
               ログアウト
             </Link>
           </div>

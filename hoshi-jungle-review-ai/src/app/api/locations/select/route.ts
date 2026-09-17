@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 
-import { errorResponse, HttpError, requireSession } from '@/lib/api';
+import { errorResponse, HttpError, requireOwner } from '@/lib/api';
 import { syncLocation } from '@/lib/reviews/sync';
 import { supabaseAdmin } from '@/lib/supabase/admin';
 
@@ -13,7 +13,7 @@ export const maxDuration = 300;
  */
 export async function POST(request: NextRequest) {
   try {
-    const session = await requireSession();
+    const session = await requireOwner();
     const body = (await request.json()) as {
       googleAccountName?: string;
       googleLocationId?: string;

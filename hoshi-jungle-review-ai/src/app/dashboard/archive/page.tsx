@@ -9,7 +9,7 @@ export default async function ArchivePage() {
   const session = await getSession();
   if (!session) return null;
 
-  const rows = await getReviewQueue(session.userId, { view: 'archive' });
+  const rows = await getReviewQueue(session, { view: 'archive' });
 
   return (
     <section>

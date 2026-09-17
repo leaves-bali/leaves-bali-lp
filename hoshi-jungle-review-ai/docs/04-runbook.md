@@ -61,14 +61,45 @@ npm test            # ロジックのユニットテスト（24 件）
 npm run build       # 本番ビルド
 ```
 
-### 2.5 Vercel デプロイ
+### 2.5 Vercel デプロイ — ここで初めて URL が発行される
 
-1. リポジトリを Vercel にインポートし、**Root Directory を `hoshi-jungle-review-ai` に設定**する
-   （このリポジトリはルートに静的 LP があるため、指定しないとビルドが失敗します）。
-2. `.env.example` の全キーを Environment Variables に登録する（`NEXT_PUBLIC_` 以外は Encrypted）。
-3. `NEXT_PUBLIC_APP_URL` と `GOOGLE_REDIRECT_URI` を本番ドメインに合わせる。
-4. Google Cloud Console の「承認済みのリダイレクト URI」に本番 URL を追加する。
-5. デプロイ。`vercel.json` の `crons` により毎時 0 分のバッチが自動登録されます。
+**スタッフに渡す URL は、このデプロイ作業をするまで存在しません。**
+現時点ではコードが GitHub にあるだけで、動くサーバーがないためです。
+
+1. [vercel.com](https://vercel.com) にログインし、**Add New → Project** からこのリポジトリを選ぶ。
+2. **Root Directory に `hoshi-jungle-review-ai` を指定する**（重要）。
+   このリポジトリはルートに静的 LP があるため、指定しないとビルドが失敗します。
+3. `.env.example` の全キーを Environment Variables に登録する
+   （`NEXT_PUBLIC_` 以外は Encrypted を選択）。
+4. **Deploy** を押す。数分で完了し、**`https://<プロジェクト名>.vercel.app` が発行されます。**
+   これが URL です。以降の作業でこの URL を使います。
+5. 発行された URL を `NEXT_PUBLIC_APP_URL` に設定し、
+   `GOOGLE_REDIRECT_URI` を `https://<発行されたURL>/api/auth/google/callback` に設定して再デプロイ。
+6. Google Cloud Console の「承認済みのリダイレクト URI」に
+   `https://<発行されたURL>/api/auth/google/callback` を追加する（完全一致が必要）。
+
+デプロイが完了すると、3 つの入口が使えるようになります。
+
+| URL | 用途 |
+|---|---|
+| `https://<発行されたURL>/` | 入口（スタッフ / オーナーの選択） |
+| `https://<発行されたURL>/staff` | **スタッフに渡す URL** |
+| `https://<発行されたURL>/dashboard` | ダッシュボード（要ログイン） |
+
+### 2.6 独自ドメインにする（任意）
+
+`hoshi-jungle-review-ai.vercel.app` のままでも動きますが、
+スタッフに伝えやすくするなら独自ドメインを割り当てられます。
+
+1. Vercel の Project → Settings → Domains でドメインを追加
+2. DNS に表示された CNAME レコードを設定
+3. `NEXT_PUBLIC_APP_URL` と `GOOGLE_REDIRECT_URI`、Google Cloud Console 側の
+   リダイレクト URI をすべて新ドメインに更新
+
+例: `https://review.hoshijungle.com/staff`
+
+`vercel.json` の `crons` により、デプロイと同時に毎時 0 分のバッチが登録されます
+（ただし後述のプラン制約に注意）。
 
 > **⚠️ プラン制約: Vercel の Hobby プランは Cron の最小間隔が「1 日 1 回」です。**
 > `0 * * * *`（毎時）はデプロイ時にエラーになります。毎時実行には **Pro プラン（$20/月〜）** が必要です。
@@ -91,6 +122,31 @@ npm run build       # 本番ビルド
 | 3 | `/onboarding` | 「設定を完了する」→ その場で初回同期が走り、取得件数と生成件数を表示 |
 
 初回同期はクチコミ件数に応じて 1〜2 分かかります（`maxDuration = 300` 秒を確保済み）。
+
+---
+
+## 3.5 スタッフへの引き渡し
+
+オーナーの初期設定が終わったら、スタッフに渡すパスコードを発行します。
+
+1. ダッシュボード右上の **「パスコード管理」** を開く（オーナーのみ表示されます）
+2. 用途名（例:「フロントデスク用」）を入れて **「発行する」**
+3. 表示された URL とパスコードを **「URL とパスコードをコピー」** で控える
+4. スタッフに伝える
+
+渡す内容はこの 2 行だけです。
+
+```
+URL:        https://<発行されたURL>/staff
+パスコード: HJ-XXXX-XXXX
+```
+
+> **⚠️ パスコードはこの画面で 1 度しか表示されません。**
+> DB にはハッシュしか保存していないため、後から見返すことはできません。
+> 紛失したら「再発行」してください（古いパスコードは即座に無効になります）。
+
+スタッフは Google アカウントを持つ必要も、作る必要もありません。
+権限の詳細とセキュリティ設計は [docs/05](05-staff-access.md) を参照してください。
 
 ---
 
@@ -131,6 +187,7 @@ flowchart LR
 | 同期エラーバナーが出ている | ダッシュボード上部（オレンジ） | メッセージを確認。クォータ超過なら時間をおく |
 | 最終同期時刻が古い | ダッシュボード下部 | Cron が動いているか Vercel のログで確認 |
 | 要確認件数が増え続ける | ナビの「要確認」バッジ | スタッフの処理が追いついていない。運用体制の見直し |
+| ログイン失敗が多発 | パスコード管理 → セキュリティの状況 | 24時間で20回超なら総当たりの可能性。パスコードを再発行 |
 
 ### 4.3 障害調査 SQL
 
@@ -150,6 +207,23 @@ where p.status = 'failed';
 -- 言語判定の内訳（しきい値の妥当性チェック）
 select language, language_source, count(*), round(avg(language_confidence)::numeric, 3)
 from reviews group by 1, 2 order by 1, 2;
+
+-- スタッフのログイン状況（直近7日）
+select date_trunc('day', attempted_at) as day,
+       count(*) filter (where succeeded)     as 成功,
+       count(*) filter (where not succeeded) as 失敗
+from staff_login_attempts
+where attempted_at > now() - interval '7 days'
+group by 1 order by 1 desc;
+
+-- 誰が公開したか（監査）
+select p.published_at, sa.label as スタッフ, u.email as オーナー, r.rating
+from replies p
+left join staff_access sa on sa.staff_access_id = p.published_by_staff_access_id
+left join users u on u.user_id = p.published_by
+join reviews r using (review_id)
+where p.status = 'published'
+order by p.published_at desc limit 50;
 
 -- モデルごとのトークン消費（コスト分析）
 select model,
@@ -236,7 +310,11 @@ AUTO_PUBLISH_MIN_RATING=5      # まず 5 つ星だけ
 | Cron エンドポイント | `Authorization: Bearer $CRON_SECRET` が一致しなければ 401 |
 | Supabase | `service_role` キーはサーバー側のみ（`server-only` でビルド時に強制） |
 | DB | 全テーブルで RLS 有効 + `anon`/`authenticated` 全拒否ポリシー |
-| 所有権チェック | 返信の編集/公開/再生成はすべて「そのユーザーのロケーションか」を DB で検証 |
+| 所有権チェック | 返信の編集/公開/再生成はすべて「そのセッションが触ってよいロケーションか」を DB で検証 |
+| スタッフのパスコード | scrypt (N=32768) でハッシュ化。平文は発行時に 1 度表示するのみ |
+| スタッフのブルートフォース対策 | 照合 1 回あたり約 93ms（実測）+ 同一 IP から 15 分 10 回失敗で遮断 |
+| 権限分離 | スタッフは Google の認証情報に触れない。オーナー専用 API は `requireOwner()` で 403 |
+| セッション有効期限 | オーナー 7 日 / スタッフ 12 時間（共用端末を想定して短くしている） |
 
 ---
 

@@ -73,10 +73,32 @@ export type ReplyRow = {
   regenerated_count: number;
   published_at: string | null;
   published_by: string | null;
+  published_by_staff_access_id: string | null;
   publish_error: string | null;
   created_at: string;
   updated_at: string;
 }
+
+export type StaffAccessRow = {
+  staff_access_id: string;
+  location_id: string;
+  label: string;
+  passcode_hash: string;
+  is_active: boolean;
+  last_used_at: string | null;
+  rotated_at: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type StaffLoginAttemptRow = {
+  attempt_id: string;
+  location_id: string | null;
+  ip_hash: string;
+  succeeded: boolean;
+  attempted_at: string;
+};
 
 export type SyncRunRow = {
   sync_run_id: string;
@@ -159,6 +181,22 @@ type RepliesToUsers = {
   referencedColumns: ['user_id'];
 };
 
+type StaffAccessToLocations = {
+  foreignKeyName: 'staff_access_location_id_fkey';
+  columns: ['location_id'];
+  isOneToOne: false;
+  referencedRelation: 'locations';
+  referencedColumns: ['location_id'];
+};
+
+type StaffLoginAttemptsToLocations = {
+  foreignKeyName: 'staff_login_attempts_location_id_fkey';
+  columns: ['location_id'];
+  isOneToOne: false;
+  referencedRelation: 'locations';
+  referencedColumns: ['location_id'];
+};
+
 type SyncRunsToLocations = {
   foreignKeyName: 'sync_runs_location_id_fkey';
   columns: ['location_id'];
@@ -175,6 +213,8 @@ export interface Database {
       reviews: Table<ReviewRow, [ReviewsToLocations]>;
       replies: Table<ReplyRow, [RepliesToReviews, RepliesToUsers]>;
       sync_runs: Table<SyncRunRow, [SyncRunsToLocations]>;
+      staff_access: Table<StaffAccessRow, [StaffAccessToLocations]>;
+      staff_login_attempts: Table<StaffLoginAttemptRow, [StaffLoginAttemptsToLocations]>;
     };
     Views: {
       review_queue: { Row: ReviewQueueRow; Relationships: [] };

@@ -16,7 +16,7 @@ export async function PATCH(
   try {
     const session = await requireSession();
     const { replyId } = await params;
-    const context = await loadReplyContext(replyId, session.userId);
+    const context = await loadReplyContext(replyId, session);
 
     const body = (await request.json()) as {
       editedText?: string;

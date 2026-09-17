@@ -1,6 +1,6 @@
 # 03. Supabase テーブル設計
 
-定義ファイル: `supabase/migrations/0001_init.sql` / `0002_rls.sql`
+定義ファイル: `supabase/migrations/0001_init.sql` / `0002_rls.sql` / `0003_staff_access.sql`
 TypeScript 型: `src/lib/database.types.ts`
 
 ## 1. ER 図
@@ -11,7 +11,9 @@ erDiagram
     locations ||--o{ reviews : "紐づく"
     reviews ||--o| replies : "1対1"
     locations ||--o{ sync_runs : "実行履歴"
+    locations ||--o{ staff_access : "パスコード"
     users ||--o{ replies : "published_by"
+    staff_access ||--o{ replies : "published_by_staff"
 
     users {
         uuid user_id PK
@@ -59,6 +61,16 @@ erDiagram
         text model
         jsonb generation_meta
         timestamptz published_at
+    }
+
+    staff_access {
+        uuid staff_access_id PK
+        uuid location_id FK
+        text label "例: フロントデスク用"
+        text passcode_hash "scrypt。平文は保存しない"
+        boolean is_active
+        timestamptz last_used_at
+        timestamptz rotated_at
     }
 
     sync_runs {
@@ -194,7 +206,26 @@ UI ごとに JOIN を書き直すと、条件の食い違いで件数バッジ�
 
 ---
 
-## 8. 適用方法
+## 8. スタッフ用パスコード（0003）
+
+| テーブル | 役割 |
+|---|---|
+| `staff_access` | ロケーション単位のパスコード。1 ロケーションに複数発行でき、片方だけ停止できる |
+| `staff_login_attempts` | ログイン試行の記録。IP はハッシュ化して保存し、レート制限と不審アクセス検知に使う |
+| `replies.published_by_staff_access_id` | 監査。スタッフが公開した場合、どのパスコード経由かを残す |
+
+**`passcode_hash` に平文は入りません。** scrypt (N=32768, r=8, p=1) でハッシュ化し、
+発行直後の 1 回だけ画面に表示します。これは「あとで見返せる」と誤解させないための
+意図的な制約です。紛失時は再発行してもらいます。
+
+`failed_attempts` / `locked_until` のようなレコード単位のロック列は**意図的に持っていません。**
+ハッシュ保存では不一致時に「どのレコードが狙われたか」を特定できず、特定できる形にすると
+他人のパスコードを故意にロックする嫌がらせが成立するためです（詳細は
+[docs/05 §5](05-staff-access.md)）。
+
+---
+
+## 9. 適用方法
 
 ```bash
 # Supabase CLI を使う場合
@@ -202,7 +233,7 @@ supabase link --project-ref <project-ref>
 supabase db push
 
 # CLI を使わない場合
-# Supabase Dashboard → SQL Editor に 0001 → 0002 の順で貼り付けて実行
+# Supabase Dashboard → SQL Editor に 0001 → 0002 → 0003 の順で貼り付けて実行
 ```
 
 スキーマを変更したら `src/lib/database.types.ts` も手で同期してください

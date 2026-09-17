@@ -6,13 +6,15 @@ import {
   reviewParentPath,
   updateReviewReply,
 } from '@/lib/google/businessProfile';
+import type { SessionPayload } from '@/lib/session';
 import { supabaseAdmin } from '@/lib/supabase/admin';
 
 /**
  * ダッシュボードからのワンクリック公開。
  *
  * 所有権チェックを含む。reply_id だけを受け取り、それが本当に
- * 「そのログインユーザーのロケーションのレビュー」に属するかを DB 側で確認する。
+ * 「そのセッションが触ってよいロケーションのレビュー」に属するかを DB 側で確認する。
+ * staff セッションの場合は、さらにセッションに紐づく 1 ロケーションに限定する。
  */
 
 export class PublishError extends Error {
@@ -38,7 +40,7 @@ interface ReplyContext {
 
 export async function loadReplyContext(
   replyId: string,
-  userId: string,
+  session: SessionPayload,
 ): Promise<ReplyContext> {
   const db = supabaseAdmin();
 
@@ -48,6 +50,7 @@ export async function loadReplyContext(
       `reply_id, review_id, final_text, status,
        reviews!inner (
          google_review_id,
+         location_id,
          locations!inner ( user_id, google_account_name, google_location_id )
        )`,
     )
@@ -65,8 +68,11 @@ export async function loadReplyContext(
   if (!review || !location) {
     throw new PublishError('返信に紐づくレビュー情報を取得できませんでした。', 500);
   }
-  if (location.user_id !== userId) {
-    // 存在を漏らさないよう 404 を返す。
+  // 存在を漏らさないよう、権限不足はすべて 404 で返す。
+  if (location.user_id !== session.userId) {
+    throw new PublishError('返信が見つかりません。', 404);
+  }
+  if (session.role === 'staff' && review.location_id !== session.locationId) {
     throw new PublishError('返信が見つかりません。', 404);
   }
 
@@ -89,10 +95,10 @@ function normalizeRelation<T>(value: T | T[] | null): T | null {
 
 export async function publishReply(
   replyId: string,
-  userId: string,
+  session: SessionPayload,
 ): Promise<{ publishedAt: string; text: string }> {
   const db = supabaseAdmin();
-  const context = await loadReplyContext(replyId, userId);
+  const context = await loadReplyContext(replyId, session);
 
   if (context.status === 'published') {
     throw new PublishError('この返信は既に公開されています。', 409);
@@ -107,7 +113,9 @@ export async function publishReply(
     );
   }
 
-  const accessToken = await getAccessTokenForUser(userId);
+  // staff が公開する場合も、Google への投稿はオーナーのトークンで行う。
+  // スタッフは Google の認証情報に一切触れない。
+  const accessToken = await getAccessTokenForUser(context.user_id);
   const parentPath = reviewParentPath(
     context.google_account_name,
     context.google_location_id,
@@ -131,7 +139,10 @@ export async function publishReply(
     .update({
       status: 'published',
       published_at: publishedAt,
-      published_by: userId,
+      // 監査: オーナーなら user_id、スタッフならどのパスコード経由かを残す
+      published_by: session.role === 'owner' ? session.userId : null,
+      published_by_staff_access_id:
+        session.role === 'staff' ? (session.staffAccessId ?? null) : null,
       publish_error: null,
       needs_human_attention: false,
     })

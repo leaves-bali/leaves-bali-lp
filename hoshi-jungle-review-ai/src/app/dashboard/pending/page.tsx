@@ -22,8 +22,8 @@ export default async function PendingPage({
   const language = normalizeLanguage(lang);
 
   const [rows, counts] = await Promise.all([
-    getReviewQueue(session.userId, { view: 'attention', language }),
-    getQueueCounts(session.userId),
+    getReviewQueue(session, { view: 'attention', language }),
+    getQueueCounts(session),
   ]);
 
   return (

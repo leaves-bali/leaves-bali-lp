@@ -19,8 +19,8 @@ export default async function InboxPage({
   const language = normalizeLanguage(lang);
 
   const [rows, counts] = await Promise.all([
-    getReviewQueue(session.userId, { view: 'inbox', language }),
-    getQueueCounts(session.userId),
+    getReviewQueue(session, { view: 'inbox', language }),
+    getQueueCounts(session),
   ]);
 
   return (

@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { encryptToken } from '@/lib/crypto';
 import { env } from '@/lib/env';
 import { exchangeCodeForTokens, parseIdentity } from '@/lib/google/oauth';
-import { consumeOAuthState, createSessionCookie } from '@/lib/session';
+import { consumeOAuthState, createOwnerSession } from '@/lib/session';
 import { supabaseAdmin } from '@/lib/supabase/admin';
 
 export const runtime = 'nodejs';
@@ -95,7 +95,7 @@ export async function GET(request: NextRequest) {
       throw new Error(upsertError?.message ?? 'ユーザーの保存に失敗しました。');
     }
 
-    await createSessionCookie({
+    await createOwnerSession({
       userId: user.user_id,
       email: identity.email,
       displayName: identity.name,

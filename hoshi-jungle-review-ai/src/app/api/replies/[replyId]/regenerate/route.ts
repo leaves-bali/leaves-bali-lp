@@ -21,7 +21,7 @@ export async function POST(
   try {
     const session = await requireSession();
     const { replyId } = await params;
-    await loadReplyContext(replyId, session.userId); // 所有権チェック
+    await loadReplyContext(replyId, session); // 所有権チェック
 
     const db = supabaseAdmin();
     const { data: reply, error } = await db
