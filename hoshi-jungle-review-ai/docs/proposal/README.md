@@ -6,7 +6,7 @@
 |---|---|
 | `hoshi-jungle-proposal.pdf` | **プレゼン本番用。** 10ページ・16:9。全画面表示して1枚ずつ送る |
 | `hoshi-jungle-proposal.pptx` | 相手が編集したい場合・PowerPointで見たい場合 |
-| `../presentation.html` | Webデモ（実際に操作できる）。打ち合わせ中に開く |
+| `/hoshi-jungle/index.html`（リポジトリ直下） | Webデモ（実際に操作できる）。打ち合わせ中に開く。<br>公開サイトから配信するため、あえて `docs/` ではなくリポジトリ直下に置いている |
 
 ## 作り直し方
 
@@ -42,4 +42,4 @@ node build-deck.js      # pptxgenjs で .pptx を生成
 ```
 
 ## 素材
-- `slide-demo.png` — ダッシュボードの実画面キャプチャ（`../presentation.html` から取得）
+- `slide-demo.png` — ダッシュボードの実画面キャプチャ（`/hoshi-jungle/index.html` から取得）
