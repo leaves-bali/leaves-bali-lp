@@ -1,0 +1,483 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>クチコミ返信AI ご提案</title>
+<style>
+  /* 13.333in x 7.5in = 1280 x 720 px @96dpi（16:9） */
+  @page { size: 13.333in 7.5in; margin: 0; }
+
+  :root {
+    --pine:   #1F5C47;
+    --pine-l: #6FC7A1;
+    --dark:   #111C16;
+    --moss:   #DDEAE2;
+    --surf:   #F2F6F1;
+    --white:  #FFFFFF;
+    --ink:    #16221A;
+    --ink2:   #44584B;
+    --ink3:   #72877A;
+    --brass:  #9A7A32;
+    --warn:   #8A5A11;
+    --warnbg: #FAEFD9;
+    --warnln: #E5D2A6;
+    --crit:   #9B3730;
+    --critbg: #FAE8E5;
+    --line:   #D8E0D5;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    font-family: "IPAPGothic", "IPAGothic", "Hiragino Sans", "Noto Sans JP", sans-serif;
+    color: var(--ink);
+  }
+
+  .slide {
+    position: relative;
+    width: 1280px; height: 720px;
+    overflow: hidden;
+    background: var(--surf);
+    page-break-after: always; break-after: page;
+  }
+  .slide:last-child { page-break-after: auto; break-after: auto; }
+  .slide.dark { background: var(--dark); color: var(--white); }
+
+  .pad { position: absolute; left: 72px; right: 72px; }
+
+  h1 { font-size: 44px; font-weight: 700; line-height: 1.32; }
+  h2 { font-size: 31px; font-weight: 700; line-height: 1.34; }
+  .eyebrow { font-size: 11px; font-weight: 700; letter-spacing: .18em; color: var(--ink3); }
+  .sub { font-size: 13px; color: var(--ink3); margin-top: 11px; line-height: 1.6; }
+
+  .card { background: var(--white); border: 1px solid var(--line); border-radius: 6px; }
+
+  .foot {
+    position: absolute; left: 72px; right: 72px; bottom: 34px;
+    display: flex; justify-content: space-between;
+    font-size: 9.5px; color: var(--ink3);
+  }
+  .dark .foot { color: #6B7E71; }
+
+  /* ---- 表紙 ---- */
+  .cover-route { font-size: 11px; font-weight: 700; letter-spacing: .2em; color: #7C9187; }
+  .cover h1 { font-size: 50px; }
+  .cover .lead { margin-top: 26px; font-size: 14.5px; line-height: 1.95; color: #AFC2B4; max-width: 740px; }
+  .rule { height: 1px; background: #2E4638; margin-top: 34px; width: 300px; }
+
+  /* ---- 数字を並べる ---- */
+  .stats { display: flex; gap: 22px; }
+  .stat { flex: 1; padding: 30px 26px; }
+  .stat .n { font-size: 52px; font-weight: 700; color: var(--pine); line-height: 1; }
+  .stat .n small { font-size: 22px; font-weight: 700; }
+  .stat .k { font-size: 14px; font-weight: 700; margin-top: 14px; line-height: 1.5; }
+  .stat .v { font-size: 11.5px; color: var(--ink2); line-height: 1.75; margin-top: 9px; }
+  .stat.hi .n { color: var(--brass); }
+
+  /* ---- 横棒グラフ ---- */
+  .bars { display: flex; flex-direction: column; gap: 15px; }
+  .bar { display: flex; align-items: center; gap: 16px; }
+  .bar .lbl { width: 300px; flex: 0 0 auto; font-size: 13.5px; font-weight: 700; text-align: right; }
+  .bar .track { flex: 1; height: 30px; background: var(--white); border: 1px solid var(--line); border-radius: 4px; overflow: hidden; }
+  .bar .fill { height: 100%; background: var(--pine); }
+  .bar .fill.b2 { background: #4E8A72; }
+  .bar .fill.b3 { background: #7FAE99; }
+  .bar .pct { width: 62px; flex: 0 0 auto; font-size: 15px; font-weight: 700; color: var(--pine); }
+
+  /* ---- 課題の行 ---- */
+  .rows { display: flex; flex-direction: column; gap: 16px; }
+  .row { display: flex; align-items: center; gap: 22px; padding: 22px 26px; }
+  .row .chip {
+    width: 40px; height: 40px; border-radius: 10px; flex: 0 0 auto;
+    background: var(--pine); color: #fff; font-size: 15px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .row .t { font-size: 17px; font-weight: 700; width: 280px; flex: 0 0 auto; }
+  .row .d { font-size: 12.5px; color: var(--ink2); line-height: 1.75; }
+
+  /* ---- 対応範囲の表 ---- */
+  table { border-collapse: collapse; width: 100%; }
+  th, td { text-align: left; padding: 8px 16px; border-bottom: 1px solid var(--line); font-size: 12.5px; }
+  th { background: #E9EFE8; font-size: 10px; letter-spacing: .08em; color: var(--ink3); font-weight: 700; }
+  tbody tr:last-child td { border-bottom: none; }
+  td.mark { text-align: center; font-size: 16px; font-weight: 700; width: 96px; }
+  .ok { color: var(--pine); }
+  .part { color: var(--brass); }
+  .no { color: var(--crit); }
+  .note { font-size: 10.5px; color: var(--ink3); line-height: 1.75; margin-top: 14px; }
+
+  /* ---- 3案 ---- */
+  .opts { display: flex; gap: 18px; }
+  .opt { flex: 1; padding: 18px 20px; }
+  .opt .h { font-size: 12px; font-weight: 700; color: var(--ink3); letter-spacing: .05em; margin-bottom: 4px; }
+  .opt.sel { background: var(--moss); border-color: #A9C9B8; }
+  .opt.sel .h { color: var(--pine); }
+  .opt .b { font-size: 11.5px; line-height: 1.8; white-space: pre-line; }
+  .opt .m { font-size: 10px; color: var(--ink3); margin-top: 10px; }
+
+  /* ---- 安全設計 2x3 ---- */
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; }
+  .fact { padding: 22px 20px; }
+  .fact .ft { font-size: 14.5px; font-weight: 700; }
+  .fact .fd { font-size: 11.5px; color: var(--ink2); line-height: 1.75; margin-top: 8px; }
+
+  /* ---- 手順 ---- */
+  .steps { display: flex; gap: 16px; }
+  .step { flex: 1; padding: 24px 20px; }
+  .step .n {
+    width: 34px; height: 34px; border-radius: 50%; background: var(--moss); color: var(--pine);
+    font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center;
+  }
+  .step .k { font-size: 15px; font-weight: 700; margin-top: 16px; }
+  .step .v { font-size: 11.5px; color: var(--ink2); line-height: 1.75; margin-top: 9px; }
+
+  /* ---- 注意書き ---- */
+  .callout {
+    background: var(--warnbg); border: 1px solid var(--warnln); border-radius: 6px;
+    padding: 16px 20px; font-size: 12.5px; color: var(--warn); line-height: 1.75;
+  }
+  .callout b { font-weight: 700; }
+
+  /* ---- 最終ページ ---- */
+  .ask { border-left: 3px solid var(--pine-l); padding-left: 22px; }
+  .ask li { font-size: 14.5px; color: #C6D6CC; line-height: 1.8; margin-bottom: 14px; }
+  .ask li b { color: #fff; }
+</style>
+</head>
+<body>
+
+<!-- 1 表紙 -->
+<section class="slide dark cover">
+  <div class="pad" style="top:206px;">
+    <div class="cover-route">LEAVES BALI</div>
+    <h1 style="margin-top:32px;">クチコミ返信AI<br><span style="color:var(--pine-l)">ご提案</span></h1>
+    <p class="lead">
+      Googleに届くクチコミに、AIが返信案を3つ用意します。日本語・英語・中国語・韓国語・インドネシア語。<br>
+      公開するかどうかを決めるのは、いつでもお店の方です。
+    </p>
+    <div class="rule"></div>
+    <div style="margin-top:20px;font-size:11px;color:#7C9187;">飲食店・ホテル向け &nbsp;&nbsp; 2026年9月</div>
+  </div>
+</section>
+
+<!-- 2 なぜ今か -->
+<section class="slide">
+  <div class="pad" style="top:52px;">
+    <div class="eyebrow">なぜ今か</div>
+    <h2 style="margin-top:8px;">AIを入れている店は、まだ2割です</h2>
+    <p class="sub">中小企業のAI導入率。大企業との差は開いたままで、先に動いた店が有利な時期が続いています。</p>
+  </div>
+  <div class="pad" style="top:196px;">
+    <div class="stats">
+      <div class="card stat">
+        <div class="n">20<small>.4%</small></div>
+        <div class="k">中小企業のAI導入率</div>
+        <div class="v">検討中を足しても39.0%。<br>8割はまだ何もしていません。<br><span style="color:var(--ink3);">中小企業基盤整備機構（2026年3月）</span></div>
+      </div>
+      <div class="card stat">
+        <div class="n">42<small>〜48%</small></div>
+        <div class="k">大企業の導入率</div>
+        <div class="v">中小企業との差は約5倍。<br>この差がそのまま、<br>検索で見つかるかの差になります。</div>
+      </div>
+      <div class="card stat hi">
+        <div class="n">62<small>%</small></div>
+        <div class="k">「何から始めればいいか<br>分からない」</div>
+        <div class="v">導入しない理由の1位。<br><b>反対しているのではなく、<br>やり方が分からないだけです。</b></div>
+      </div>
+    </div>
+  </div>
+  <div class="pad" style="top:560px;">
+    <div class="callout">
+      <b>だから、この資料では説明よりも実物をお見せします。</b>
+      実際に触れるデモをご用意しました。5分で、何が起きるか分かります。
+    </div>
+  </div>
+  <div class="foot"><span>Leaves Bali · クチコミ返信AI</span><span>2</span></div>
+</section>
+
+<!-- 3 課題 -->
+<section class="slide">
+  <div class="pad" style="top:52px;">
+    <div class="eyebrow">現場で起きていること</div>
+    <h2 style="margin-top:8px;">返信が止まるのは、書けないからではありません</h2>
+    <p class="sub">時間がない。言語が分からない。何を書けばいいか迷う。この3つで止まります。</p>
+  </div>
+  <div class="pad" style="top:200px;">
+    <div class="rows">
+      <div class="card row">
+        <div class="chip">1</div>
+        <div class="t">時間が取られる</div>
+        <div class="d">1件あたり3〜5分。月30件なら2時間半。営業前の30分を返信に充てている店も多く、積み重なると「あとで」が溜まり続けます。</div>
+      </div>
+      <div class="card row">
+        <div class="chip">2</div>
+        <div class="t">外国語に返せない</div>
+        <div class="d">訪日客の32.9%が「スタッフと言葉が通じない」を困りごとに挙げています。英語・中国語・韓国語のクチコミに返信できる人が、その日いるとは限りません。</div>
+      </div>
+      <div class="card row">
+        <div class="chip">3</div>
+        <div class="t">低評価ほど手が止まる</div>
+        <div class="d">いちばん返信が必要なのは低評価です。しかし言葉選びに迷い、後回しになります。返信のない低評価は、次のお客様がそのまま読みます。</div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>Leaves Bali · クチコミ返信AI</span><span>3</span></div>
+</section>
+
+<!-- 4 3案 -->
+<section class="slide">
+  <div class="pad" style="top:46px;">
+    <div class="eyebrow">できること</div>
+    <h2 style="margin-top:8px;">1件につき、3つの案が用意されます</h2>
+    <p class="sub">長さを変えただけの3案ではありません。言い方の温度を変えてあるので、お店の空気に合うものを選べます。</p>
+  </div>
+
+  <div class="pad" style="top:186px;">
+    <div class="card" style="padding:18px 22px;">
+      <div style="font-size:11px;color:var(--ink3);font-weight:700;">★★☆☆☆ &nbsp; 実際のクチコミ</div>
+      <div style="font-size:14px;margin-top:8px;">部屋が案内されたときに清掃されていませんでした。エアコンも効きませんでした。</div>
+    </div>
+  </div>
+
+  <div class="pad" style="top:300px;">
+    <div class="opts">
+      <div class="card opt">
+        <div class="h">丁寧</div>
+        <div class="b">このたびは申し訳ございませんでした。
+お部屋は清掃されているべきで、エアコンも動いているべきでした。どちらも果たせておらず、私たちの責任です。
+すでに改善に着手しております。</div>
+        <div class="m">気持ちを込めた、いちばん厚い言い方</div>
+      </div>
+      <div class="card opt sel">
+        <div class="h">標準 &nbsp;— 既定</div>
+        <div class="b">このたびは申し訳ございませんでした。
+清掃とエアコンのどちらも、あるべき状態ではありませんでした。
+改善に取り組んでおります。</div>
+        <div class="m">丁寧さと簡潔さのバランス型</div>
+      </div>
+      <div class="card opt">
+        <div class="h">簡潔</div>
+        <div class="b">申し訳ございませんでした。
+起きてはならないことでした。
+すぐに改善いたします。</div>
+        <div class="m">短く要点だけ。忙しい日向け</div>
+      </div>
+    </div>
+  </div>
+
+  <p class="pad note" style="top:620px;">
+    返信は、事前にいただいた情報の範囲だけで書きます。実在しない設備・サービス・スタッフ名に触れることはありません。
+  </p>
+  <div class="foot"><span>Leaves Bali · クチコミ返信AI</span><span>4</span></div>
+</section>
+
+<!-- 5 対応範囲（正直に） -->
+<section class="slide">
+  <div class="pad" style="top:46px;">
+    <div class="eyebrow">対応できる範囲</div>
+    <h2 style="margin-top:8px;">できること・できないことを、先にお伝えします</h2>
+    <p class="sub">サイトによって、できることが違います。あとで「話が違う」となるより、先に正直にお伝えします。</p>
+  </div>
+
+  <div class="pad" style="top:182px;">
+    <div class="card" style="overflow:hidden;">
+      <table>
+        <thead>
+          <tr><th>サイト</th><th class="mark" style="text-align:center;">取得</th><th class="mark" style="text-align:center;">自動で返信</th><th>実際にできること</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><b>Google</b>（マップ・検索）</td>
+            <td class="mark ok">◎</td><td class="mark ok">◎</td>
+            <td>取得から公開まで<b>すべて自動</b>。ボタン1つで公開できます</td>
+          </tr>
+          <tr>
+            <td>Booking.com</td>
+            <td class="mark ok">◎</td><td class="mark part">△</td>
+            <td>返信の仕組みはありますが、<b>現在ブッキング社が新規受付を停止中</b>です</td>
+          </tr>
+          <tr>
+            <td>Expedia / Hotels.com</td>
+            <td class="mark ok">◎</td><td class="mark part">△</td>
+            <td>返信の仕組みはありますが、<b>先方の審査に通る必要</b>があります</td>
+          </tr>
+          <tr>
+            <td>Agoda</td>
+            <td class="mark no">×</td><td class="mark no">×</td>
+            <td>AIが返信案を作成 → <b>管理画面に貼り付け</b></td>
+          </tr>
+          <tr>
+            <td>トリップアドバイザー</td>
+            <td class="mark part">△</td><td class="mark no">×</td>
+            <td>AIが返信案を作成 → <b>管理画面に貼り付け</b></td>
+          </tr>
+          <tr>
+            <td>Trip.com</td>
+            <td class="mark no">×</td><td class="mark no">×</td>
+            <td>AIが返信案を作成 → <b>管理画面に貼り付け</b></td>
+          </tr>
+          <tr>
+            <td>食べログ / ぐるなび / Retty</td>
+            <td class="mark no">×</td><td class="mark no">×</td>
+            <td>AIが返信案を作成 → <b>管理画面に貼り付け</b></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="pad" style="top:586px;">
+    <div class="callout">
+      <b>×は「まだ対応していない」ではなく、各社が返信の仕組みを外部に公開していないという意味です。</b>
+      これらは「AIが書く・人が貼る」になります。時間がかかるのは文章を考えるほうで、貼り付けは数秒です。
+    </div>
+  </div>
+  <div class="foot"><span>Leaves Bali · クチコミ返信AI</span><span>5</span></div>
+</section>
+
+<!-- 6 安全設計 -->
+<section class="slide">
+  <div class="pad" style="top:52px;">
+    <div class="eyebrow">安心していただくために</div>
+    <h2 style="margin-top:8px;">「AIが勝手なことを書く」が起きない理由</h2>
+    <p class="sub">返信はネット上に残り続け、これから来るお客様が読みます。取り返しがつかないからこそ、止まる仕組みを先に入れています。</p>
+  </div>
+  <div class="pad" style="top:206px;">
+    <div class="grid3">
+      <div class="card fact">
+        <div class="ft">全件が下書きで止まります</div>
+        <div class="fd">人が押さないかぎり、1件も公開されません。自動公開の機能は既定で切ってあります。</div>
+      </div>
+      <div class="card fact">
+        <div class="ft">返金や補償を約束しません</div>
+        <div class="fd">金銭に関わる判断はお店のものです。AIには書かせない制約を入れています。</div>
+      </div>
+      <div class="card fact">
+        <div class="ft">危ないクチコミは隔離します</div>
+        <div class="fd">低評価、衛生・盗難の主張、返金要求は「要確認」に分けて表示します。</div>
+      </div>
+      <div class="card fact">
+        <div class="ft">事実を作りません</div>
+        <div class="fd">いただいた情報にない設備・サービス・スタッフ名には触れない設計です。</div>
+      </div>
+      <div class="card fact">
+        <div class="ft">スタッフはGoogleに触れません</div>
+        <div class="fd">合言葉で入るだけなので、店舗情報や写真を誤って変更する心配がありません。</div>
+      </div>
+      <div class="card fact">
+        <div class="ft">辞めた人はすぐ締め出せます</div>
+        <div class="fd">合言葉を作り直すだけで完了します。Googleアカウントを触る必要はありません。</div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>Leaves Bali · クチコミ返信AI</span><span>6</span></div>
+</section>
+
+<!-- 7 使い方 -->
+<section class="slide">
+  <div class="pad" style="top:52px;">
+    <div class="eyebrow">スタッフの作業</div>
+    <h2 style="margin-top:8px;">読む、直す、押す。それだけです</h2>
+    <p class="sub">パソコンでもスマートフォンでも同じように使えます。専門知識は要りません。</p>
+  </div>
+  <div class="pad" style="top:206px;">
+    <div class="steps">
+      <div class="card step">
+        <div class="n">1</div>
+        <div class="k">開く</div>
+        <div class="v">配られたURLを開き、合言葉を入れます。Googleアカウントは必要ありません。新しいクチコミは毎時間、自動で集まっています。</div>
+      </div>
+      <div class="card step">
+        <div class="n">2</div>
+        <div class="k">選ぶ・直す</div>
+        <div class="v">3つの案から選びます。そのままでよければ何もしません。言い回しを変えたければ、その場で書き換えられます。</div>
+      </div>
+      <div class="card step">
+        <div class="n">3</div>
+        <div class="k">押す</div>
+        <div class="v">ボタンを押すとGoogleに反映されます。返信したくないクチコミは「返信しない」で片付けられます。</div>
+      </div>
+      <div class="card step">
+        <div class="n">4</div>
+        <div class="k">画面の言語も選べる</div>
+        <div class="v">操作画面そのものを日本語・英語・インドネシア語で切り替えられます。外国人スタッフがいる店でもそのまま使えます。</div>
+      </div>
+    </div>
+  </div>
+  <div class="pad" style="top:560px;">
+    <div class="callout">
+      <b>実際に触れるデモをご用意しています。</b>
+      合言葉の入力から返信の公開まで、この場で試していただけます。Googleには一切投稿されません。
+    </div>
+  </div>
+  <div class="foot"><span>Leaves Bali · クチコミ返信AI</span><span>7</span></div>
+</section>
+
+<!-- 8 導入 -->
+<section class="slide">
+  <div class="pad" style="top:52px;">
+    <div class="eyebrow">導入</div>
+    <h2 style="margin-top:8px;">お店にしていただくことは、ほとんどありません</h2>
+    <p class="sub">設定はこちらで行います。ご用意いただくのは、Googleの管理権限と、返信に使う情報だけです。</p>
+  </div>
+  <div class="pad" style="top:200px;">
+    <div class="rows">
+      <div class="card row">
+        <div class="chip">1</div>
+        <div class="t">Googleとつなぐ</div>
+        <div class="d">Googleビジネスプロフィールを管理しているアカウントで、1回だけ接続していただきます。パスワードをお伺いすることはありません。</div>
+      </div>
+      <div class="card row">
+        <div class="chip">2</div>
+        <div class="t">お店のことを教えていただく</div>
+        <div class="d">署名に使う名前、低評価のときのご連絡先、お客様に伝えたい魅力を2〜3つ。これがAIの書ける範囲になります。</div>
+      </div>
+      <div class="card row">
+        <div class="chip">3</div>
+        <div class="t">合言葉をお渡しする</div>
+        <div class="d">スタッフの方にURLと合言葉をお渡しして完了です。当日から使えます。用途ごとに分けて発行することもできます。</div>
+      </div>
+    </div>
+  </div>
+  <div class="pad" style="top:560px;">
+    <div class="callout">
+      <b>Googleについては、すでにシステムが完成しています。</b>
+      接続作業そのものは30分ほどで終わります。
+    </div>
+  </div>
+  <div class="foot"><span>Leaves Bali · クチコミ返信AI</span><span>8</span></div>
+</section>
+
+<!-- 9 クロージング -->
+<section class="slide dark">
+  <div class="pad" style="top:62px;">
+    <div class="eyebrow" style="color:#7C9187;">まとめ</div>
+    <h2 style="margin-top:10px;color:#fff;">まず、5分だけ触ってみてください</h2>
+    <p style="margin-top:16px;font-size:14px;color:#AFC2B4;line-height:1.9;max-width:860px;">
+      AIを入れていない店が8割です。その理由の1位は「何から始めればいいか分からない」でした。<br>
+      説明を聞くより、実物を触っていただくのが早いと考えています。
+    </p>
+  </div>
+  <div class="pad" style="top:272px;">
+    <div class="ask">
+      <ul style="list-style:none;">
+        <li><b>1. デモを触っていただく。</b>合言葉の入力から返信の公開まで、この場で試せます。<br>
+          Googleには一切投稿されません。お店のアカウントも必要ありません。</li>
+        <li><b>2. Googleのクチコミを見せていただく。</b>実際に届いているクチコミで、<br>
+          AIがどんな返信を書くかをお見せします。公開はしません。</li>
+        <li><b>3. 合うと思っていただけたら、接続します。</b>作業は30分ほどです。<br>
+          合わなければ、そこでやめていただいて構いません。</li>
+      </ul>
+    </div>
+  </div>
+  <div class="pad" style="top:620px;">
+    <div style="border-top:1px solid #2E4638;padding-top:18px;font-size:12px;color:#7C9187;">
+      Leaves Bali &nbsp;&nbsp;·&nbsp;&nbsp; クチコミ返信AI &nbsp;&nbsp;·&nbsp;&nbsp; 2026年9月
+    </div>
+  </div>
+</section>
+
+</body>
+</html>
