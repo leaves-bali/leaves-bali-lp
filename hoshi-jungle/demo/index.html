@@ -173,6 +173,17 @@
     main { padding:18px 16px 60px; }
   }
   @media (prefers-reduced-motion: reduce) { * { transition:none !important; } }
+
+  /* ---- JavaScript が動かない環境向けの案内 ----
+     LINE などのアプリ内ファイルプレビューはスクリプトを実行しないため、
+     何も出ない真っ白な画面になる。原因が分かる案内を必ず出す。 */
+  .nojs { max-width:460px; margin:48px auto; padding:0 20px; }
+  .nojs .box { padding:26px 24px; }
+  .nojs h2 { font-size:19px; font-weight:700; color:var(--j800); margin-bottom:10px; }
+  .nojs p { font-size:14px; color:var(--j700); margin-bottom:12px; }
+  .nojs ol { margin:0 0 14px 20px; font-size:14px; color:var(--j700); }
+  .nojs li { margin-bottom:6px; }
+  .nojs .en { margin-top:18px; padding-top:16px; border-top:1px solid var(--j100); font-size:13px; color:var(--j400); }
 </style>
 </head>
 <body>
@@ -181,6 +192,30 @@
   <span id="demoNote"></span>
   <button type="button" id="resetBtn"></button>
 </div>
+
+<noscript>
+  <div class="nojs"><div class="card box">
+    <h2>ブラウザで開いてください</h2>
+    <p>
+      この体験デモは操作できるページのため、JavaScript が必要です。
+      LINE やメールアプリの「プレビュー」では動かず、白い画面になります。
+    </p>
+    <ol>
+      <li>画面右上の「⋯」または共有ボタンを押す</li>
+      <li>「他のアプリで開く」「ブラウザで開く」を選ぶ</li>
+      <li>Safari / Chrome で開くと操作できます</li>
+    </ol>
+    <p style="margin-bottom:0;">
+      うまくいかない場合は、送信元にリンク（URL）での共有をご依頼ください。
+    </p>
+    <div class="en">
+      <b>Please open this in a web browser.</b><br>
+      This is an interactive demo and needs JavaScript. In-app file previews
+      (LINE, mail apps) do not run it, so the page appears blank.
+      Use “Open in browser” from the share menu, or ask the sender for a link.
+    </div>
+  </div></div>
+</noscript>
 
 <div id="app"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
