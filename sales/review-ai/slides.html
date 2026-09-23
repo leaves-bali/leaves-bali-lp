@@ -49,22 +49,22 @@
 
   h1 { font-size: 44px; font-weight: 700; line-height: 1.32; }
   h2 { font-size: 31px; font-weight: 700; line-height: 1.34; }
-  .eyebrow { font-size: 11px; font-weight: 700; letter-spacing: .18em; color: var(--ink3); }
-  .sub { font-size: 13px; color: var(--ink3); margin-top: 11px; line-height: 1.6; }
+  .eyebrow { font-size: 12.5px; font-weight: 700; letter-spacing: .18em; color: var(--ink3); }
+  .sub { font-size: 15px; color: var(--ink3); margin-top: 11px; line-height: 1.6; }
 
   .card { background: var(--white); border: 1px solid var(--line); border-radius: 6px; }
 
   .foot {
     position: absolute; left: 72px; right: 72px; bottom: 34px;
     display: flex; justify-content: space-between;
-    font-size: 9.5px; color: var(--ink3);
+    font-size: 11px; color: var(--ink3);
   }
-  .dark .foot { color: #6B7E71; }
+  .dark .foot { color: #8A9E92; }  /* 6.15:1 */
 
   /* ---- 表紙 ---- */
   .cover-route { font-size: 11px; font-weight: 700; letter-spacing: .2em; color: #7C9187; }
   .cover h1 { font-size: 50px; }
-  .cover .lead { margin-top: 26px; font-size: 14.5px; line-height: 1.95; color: #AFC2B4; max-width: 740px; }
+  .cover .lead { margin-top: 26px; font-size: 16px; line-height: 1.95; color: #C3D4C8; max-width: 740px; }
   .rule { height: 1px; background: #2E4638; margin-top: 34px; width: 300px; }
 
   /* ---- 数字を並べる ---- */
@@ -72,8 +72,8 @@
   .stat { flex: 1; padding: 30px 26px; }
   .stat .n { font-size: 52px; font-weight: 700; color: var(--pine); line-height: 1; }
   .stat .n small { font-size: 22px; font-weight: 700; }
-  .stat .k { font-size: 14px; font-weight: 700; margin-top: 14px; line-height: 1.5; }
-  .stat .v { font-size: 11.5px; color: var(--ink2); line-height: 1.75; margin-top: 9px; }
+  .stat .k { font-size: 16px; font-weight: 700; margin-top: 14px; line-height: 1.5; }
+  .stat .v { font-size: 13px; color: var(--ink2); line-height: 1.75; margin-top: 9px; }
   .stat.hi .n { color: var(--brass); }
 
   /* ---- 横棒グラフ ---- */
@@ -87,41 +87,41 @@
   .bar .pct { width: 62px; flex: 0 0 auto; font-size: 15px; font-weight: 700; color: var(--pine); }
 
   /* ---- 課題の行 ---- */
-  .rows { display: flex; flex-direction: column; gap: 16px; }
-  .row { display: flex; align-items: center; gap: 22px; padding: 22px 26px; }
+  .rows { display: flex; flex-direction: column; gap: 20px; }
+  .row { display: flex; align-items: center; gap: 26px; padding: 32px 30px; }
   .row .chip {
     width: 40px; height: 40px; border-radius: 10px; flex: 0 0 auto;
     background: var(--pine); color: #fff; font-size: 15px; font-weight: 700;
     display: flex; align-items: center; justify-content: center;
   }
-  .row .t { font-size: 17px; font-weight: 700; width: 280px; flex: 0 0 auto; }
-  .row .d { font-size: 12.5px; color: var(--ink2); line-height: 1.75; }
+  .row .t { font-size: 18.5px; font-weight: 700; width: 280px; flex: 0 0 auto; }
+  .row .d { font-size: 15px; color: var(--ink2); line-height: 1.85; }
 
   /* ---- 対応範囲の表 ---- */
   table { border-collapse: collapse; width: 100%; }
-  th, td { text-align: left; padding: 8px 16px; border-bottom: 1px solid var(--line); font-size: 12.5px; }
-  th { background: #E9EFE8; font-size: 10px; letter-spacing: .08em; color: var(--ink3); font-weight: 700; }
+  th, td { text-align: left; padding: 13px 16px; border-bottom: 1px solid var(--line); font-size: 14px; }
+  th { background: #E9EFE8; font-size: 11.5px; letter-spacing: .08em; color: var(--ink3); font-weight: 700; }
   tbody tr:last-child td { border-bottom: none; }
-  td.mark { text-align: center; font-size: 16px; font-weight: 700; width: 96px; }
+  td.mark { text-align: center; font-size: 18px; font-weight: 700; width: 96px; }
   .ok { color: var(--pine); }
   .part { color: var(--brass); }
   .no { color: var(--crit); }
-  .note { font-size: 10.5px; color: var(--ink3); line-height: 1.75; margin-top: 14px; }
+  .note { font-size: 12.5px; color: var(--ink3); line-height: 1.75; margin-top: 14px; }
 
   /* ---- 3案 ---- */
   .opts { display: flex; gap: 18px; }
   .opt { flex: 1; padding: 18px 20px; }
-  .opt .h { font-size: 12px; font-weight: 700; color: var(--ink3); letter-spacing: .05em; margin-bottom: 4px; }
+  .opt .h { font-size: 13px; font-weight: 700; color: var(--ink3); letter-spacing: .05em; margin-bottom: 4px; }
   .opt.sel { background: var(--moss); border-color: #A9C9B8; }
   .opt.sel .h { color: var(--pine); }
-  .opt .b { font-size: 11.5px; line-height: 1.8; white-space: pre-line; }
-  .opt .m { font-size: 10px; color: var(--ink3); margin-top: 10px; }
+  .opt .b { font-size: 13px; line-height: 1.8; white-space: pre-line; }
+  .opt .m { font-size: 11.5px; color: var(--ink3); margin-top: 10px; }
 
   /* ---- 安全設計 2x3 ---- */
-  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; }
-  .fact { padding: 22px 20px; }
-  .fact .ft { font-size: 14.5px; font-weight: 700; }
-  .fact .fd { font-size: 11.5px; color: var(--ink2); line-height: 1.75; margin-top: 8px; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; }
+  .fact { padding: 40px 28px; }
+  .fact .ft { font-size: 17.5px; font-weight: 700; }
+  .fact .fd { font-size: 14px; color: var(--ink2); line-height: 1.85; margin-top: 12px; }
 
   /* ---- 手順 ---- */
   .steps { display: flex; gap: 16px; }
@@ -130,19 +130,19 @@
     width: 34px; height: 34px; border-radius: 50%; background: var(--moss); color: var(--pine);
     font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center;
   }
-  .step .k { font-size: 15px; font-weight: 700; margin-top: 16px; }
-  .step .v { font-size: 11.5px; color: var(--ink2); line-height: 1.75; margin-top: 9px; }
+  .step .k { font-size: 16.5px; font-weight: 700; margin-top: 16px; }
+  .step .v { font-size: 13px; color: var(--ink2); line-height: 1.75; margin-top: 9px; }
 
   /* ---- 注意書き ---- */
   .callout {
     background: var(--warnbg); border: 1px solid var(--warnln); border-radius: 6px;
-    padding: 16px 20px; font-size: 12.5px; color: var(--warn); line-height: 1.75;
+    padding: 16px 20px; font-size: 14px; color: var(--warn); line-height: 1.75;
   }
   .callout b { font-weight: 700; }
 
   /* ---- 最終ページ ---- */
   .ask { border-left: 3px solid var(--pine-l); padding-left: 22px; }
-  .ask li { font-size: 14.5px; color: #C6D6CC; line-height: 1.8; margin-bottom: 14px; }
+  .ask li { font-size: 16px; color: #C6D6CC; line-height: 1.8; margin-bottom: 14px; }
   .ask li b { color: #fff; }
 </style>
 </head>
@@ -267,7 +267,7 @@
     </div>
   </div>
 
-  <p class="pad note" style="top:620px;">
+  <p class="pad note" style="top:610px;">
     返信は、事前にいただいた情報の範囲だけで書きます。実在しない設備・サービス・スタッフ名に触れることはありません。
   </p>
   <div class="foot"><span>Leaves Bali · クチコミ返信AI</span><span>4</span></div>
@@ -328,7 +328,7 @@
     </div>
   </div>
 
-  <div class="pad" style="top:586px;">
+  <div class="pad" style="top:552px;">
     <div class="callout">
       <b>×は「まだ対応していない」ではなく、各社が返信の仕組みを外部に公開していないという意味です。</b>
       これらは「AIが書く・人が貼る」になります。時間がかかるのは文章を考えるほうで、貼り付けは数秒です。
@@ -441,7 +441,7 @@
       </div>
     </div>
   </div>
-  <div class="pad" style="top:560px;">
+  <div class="pad" style="top:596px;">
     <div class="callout">
       <b>Googleについては、すでにシステムが完成しています。</b>
       接続作業そのものは30分ほどで終わります。

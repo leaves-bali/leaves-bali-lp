@@ -34,6 +34,34 @@ const overflow = await page.evaluate(() => {
   return out;
 });
 console.log('はみ出し:', overflow.length ? overflow : 'なし');
+
+// スライド枠に収まっていても、ブロック同士が重なることがある。
+// 実際に本文と注意書きが14px重なったまま出力しかけたので、専用に検査する。
+const overlaps = await page.evaluate(() => {
+  const out = [];
+  document.querySelectorAll('.slide').forEach((s, i) => {
+    const sr = s.getBoundingClientRect();
+    const blocks = [...s.querySelectorAll(':scope > .pad')].map((el) => {
+      const r = el.getBoundingClientRect();
+      return {
+        top: Math.round(r.top - sr.top),
+        bottom: Math.round(r.bottom - sr.top),
+        label: (el.textContent || '').trim().slice(0, 18),
+      };
+    });
+    for (let a = 0; a < blocks.length; a++) {
+      for (let c = a + 1; c < blocks.length; c++) {
+        const A = blocks[a];
+        const B = blocks[c];
+        if (A.top < B.bottom && B.top < A.bottom) {
+          out.push(`スライド${i + 1}: 「${A.label}」と「${B.label}」が重なっています`);
+        }
+      }
+    }
+  });
+  return out;
+});
+console.log('重なり:', overlaps.length ? overlaps : 'なし');
 console.log('JSエラー:', errors.length ? errors : 'なし');
 
 await page.pdf({
