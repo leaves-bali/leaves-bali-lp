@@ -8,22 +8,22 @@
   @page { size: 13.333in 7.5in; margin: 0; }
 
   :root {
-    --pine:   #1F5C47;
-    --pine-l: #6FC7A1;
-    --dark:   #111C16;
-    --moss:   #DDEAE2;
-    --surf:   #F2F6F1;
+    --red:   #9B2226;   /* 7.33:1 */
+    --red-l: #E8544E;   /* 暗い地の上で 5.16:1 */
+    --dark:   #1A1011;
+    --tint:   #F7E4E2;
+    --surf:   #FAF5F3;
     --white:  #FFFFFF;
-    --ink:    #16221A;
-    --ink2:   #44584B;
-    --ink3:   #72877A;
-    --brass:  #9A7A32;
-    --warn:   #8A5A11;
-    --warnbg: #FAEFD9;
-    --warnln: #E5D2A6;
-    --crit:   #9B3730;
-    --critbg: #FAE8E5;
-    --line:   #D8E0D5;
+    --ink:    #241718;   /* 16.04:1 */
+    --ink2:   #4A3634;   /* 10.39:1 */
+    --ink3:   #6E5250;   /* 6.50:1 */
+    --brass:  #8A6A28;   /* △印 5.03:1 */
+    --warn:   #7E5A12;   /* 5.54:1 */
+    --warnbg: #FBF0DC;
+    --warnln: #E7D4AC;
+    --crit:   #705957;   /* ×印 6.45:1 */
+    --critbg: #F1EAE9;
+    --line:   #E9DBD8;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -59,18 +59,18 @@
     display: flex; justify-content: space-between;
     font-size: 11px; color: var(--ink3);
   }
-  .dark .foot { color: #8A9E92; }  /* 6.15:1 */
+  .dark .foot { color: #A98F8A; }  /* 6.15:1 */
 
   /* ---- 表紙 ---- */
-  .cover-route { font-size: 11px; font-weight: 700; letter-spacing: .2em; color: #7C9187; }
+  .cover-route { font-size: 11px; font-weight: 700; letter-spacing: .2em; color: #A98F8A; }
   .cover h1 { font-size: 50px; }
-  .cover .lead { margin-top: 26px; font-size: 16px; line-height: 1.95; color: #C3D4C8; max-width: 740px; }
-  .rule { height: 1px; background: #2E4638; margin-top: 34px; width: 300px; }
+  .cover .lead { margin-top: 26px; font-size: 16px; line-height: 1.95; color: #E8CFC9; max-width: 740px; }
+  .rule { height: 1px; background: #46292A; margin-top: 34px; width: 300px; }
 
   /* ---- 数字を並べる ---- */
   .stats { display: flex; gap: 22px; }
   .stat { flex: 1; padding: 30px 26px; }
-  .stat .n { font-size: 52px; font-weight: 700; color: var(--pine); line-height: 1; }
+  .stat .n { font-size: 52px; font-weight: 700; color: var(--red); line-height: 1; }
   .stat .n small { font-size: 22px; font-weight: 700; }
   .stat .k { font-size: 16px; font-weight: 700; margin-top: 14px; line-height: 1.5; }
   .stat .v { font-size: 13px; color: var(--ink2); line-height: 1.75; margin-top: 9px; }
@@ -81,17 +81,17 @@
   .bar { display: flex; align-items: center; gap: 16px; }
   .bar .lbl { width: 300px; flex: 0 0 auto; font-size: 13.5px; font-weight: 700; text-align: right; }
   .bar .track { flex: 1; height: 30px; background: var(--white); border: 1px solid var(--line); border-radius: 4px; overflow: hidden; }
-  .bar .fill { height: 100%; background: var(--pine); }
-  .bar .fill.b2 { background: #4E8A72; }
-  .bar .fill.b3 { background: #7FAE99; }
-  .bar .pct { width: 62px; flex: 0 0 auto; font-size: 15px; font-weight: 700; color: var(--pine); }
+  .bar .fill { height: 100%; background: var(--red); }
+  .bar .fill.b2 { background: #B9453F; }
+  .bar .fill.b3 { background: #D07C77; }
+  .bar .pct { width: 62px; flex: 0 0 auto; font-size: 15px; font-weight: 700; color: var(--red); }
 
   /* ---- 課題の行 ---- */
   .rows { display: flex; flex-direction: column; gap: 20px; }
   .row { display: flex; align-items: center; gap: 26px; padding: 32px 30px; }
   .row .chip {
     width: 40px; height: 40px; border-radius: 10px; flex: 0 0 auto;
-    background: var(--pine); color: #fff; font-size: 15px; font-weight: 700;
+    background: var(--red); color: #fff; font-size: 15px; font-weight: 700;
     display: flex; align-items: center; justify-content: center;
   }
   .row .t { font-size: 18.5px; font-weight: 700; width: 280px; flex: 0 0 auto; }
@@ -100,10 +100,10 @@
   /* ---- 対応範囲の表 ---- */
   table { border-collapse: collapse; width: 100%; }
   th, td { text-align: left; padding: 13px 16px; border-bottom: 1px solid var(--line); font-size: 14px; }
-  th { background: #E9EFE8; font-size: 11.5px; letter-spacing: .08em; color: var(--ink3); font-weight: 700; }
+  th { background: #F3E6E4; font-size: 11.5px; letter-spacing: .08em; color: var(--ink3); font-weight: 700; }
   tbody tr:last-child td { border-bottom: none; }
   td.mark { text-align: center; font-size: 18px; font-weight: 700; width: 96px; }
-  .ok { color: var(--pine); }
+  .ok { color: var(--red); }
   .part { color: var(--brass); }
   .no { color: var(--crit); }
   .note { font-size: 12.5px; color: var(--ink3); line-height: 1.75; margin-top: 14px; }
@@ -112,8 +112,8 @@
   .opts { display: flex; gap: 18px; }
   .opt { flex: 1; padding: 18px 20px; }
   .opt .h { font-size: 13px; font-weight: 700; color: var(--ink3); letter-spacing: .05em; margin-bottom: 4px; }
-  .opt.sel { background: var(--moss); border-color: #A9C9B8; }
-  .opt.sel .h { color: var(--pine); }
+  .opt.sel { background: var(--tint); border-color: #E0AEA9; }
+  .opt.sel .h { color: var(--red); }
   .opt .b { font-size: 13px; line-height: 1.8; white-space: pre-line; }
   .opt .m { font-size: 11.5px; color: var(--ink3); margin-top: 10px; }
 
@@ -127,7 +127,7 @@
   .steps { display: flex; gap: 16px; }
   .step { flex: 1; padding: 24px 20px; }
   .step .n {
-    width: 34px; height: 34px; border-radius: 50%; background: var(--moss); color: var(--pine);
+    width: 34px; height: 34px; border-radius: 50%; background: var(--tint); color: var(--red);
     font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center;
   }
   .step .k { font-size: 16.5px; font-weight: 700; margin-top: 16px; }
@@ -141,8 +141,8 @@
   .callout b { font-weight: 700; }
 
   /* ---- 最終ページ ---- */
-  .ask { border-left: 3px solid var(--pine-l); padding-left: 22px; }
-  .ask li { font-size: 16px; color: #C6D6CC; line-height: 1.8; margin-bottom: 14px; }
+  .ask { border-left: 3px solid var(--red-l); padding-left: 22px; }
+  .ask li { font-size: 16px; color: #EBD6D1; line-height: 1.8; margin-bottom: 14px; }
   .ask li b { color: #fff; }
 </style>
 </head>
@@ -152,13 +152,13 @@
 <section class="slide dark cover">
   <div class="pad" style="top:206px;">
     <div class="cover-route">LEAVES BALI</div>
-    <h1 style="margin-top:32px;">クチコミ返信AI<br><span style="color:var(--pine-l)">ご提案</span></h1>
+    <h1 style="margin-top:32px;">クチコミ返信AI<br><span style="color:var(--red-l)">ご提案</span></h1>
     <p class="lead">
       Googleに届くクチコミに、AIが返信案を3つ用意します。日本語・英語・中国語・韓国語・インドネシア語。<br>
       公開するかどうかを決めるのは、いつでもお店の方です。
     </p>
     <div class="rule"></div>
-    <div style="margin-top:20px;font-size:11px;color:#7C9187;">飲食店・ホテル向け &nbsp;&nbsp; 2026年9月</div>
+    <div style="margin-top:20px;font-size:11px;color:#A98F8A;">飲食店・ホテル向け &nbsp;&nbsp; 2026年9月</div>
   </div>
 </section>
 
@@ -453,7 +453,7 @@
 <!-- 9 クロージング -->
 <section class="slide dark">
   <div class="pad" style="top:62px;">
-    <div class="eyebrow" style="color:#7C9187;">まとめ</div>
+    <div class="eyebrow" style="color:#A98F8A;">まとめ</div>
     <h2 style="margin-top:10px;color:#fff;">まず、5分だけ触ってみてください</h2>
     <p style="margin-top:16px;font-size:14px;color:#AFC2B4;line-height:1.9;max-width:860px;">
       AIを入れていない店が8割です。その理由の1位は「何から始めればいいか分からない」でした。<br>
@@ -473,7 +473,7 @@
     </div>
   </div>
   <div class="pad" style="top:620px;">
-    <div style="border-top:1px solid #2E4638;padding-top:18px;font-size:12px;color:#7C9187;">
+    <div style="border-top:1px solid #46292A;padding-top:18px;font-size:12px;color:#A98F8A;">
       Leaves Bali &nbsp;&nbsp;·&nbsp;&nbsp; クチコミ返信AI &nbsp;&nbsp;·&nbsp;&nbsp; 2026年9月
     </div>
   </div>
