@@ -408,3 +408,41 @@ AUTO_PUBLISH_MIN_RATING=5      # まず 5 つ星だけ
    ダッシュボードのロケーション切り替え UI を足すだけで、系列ホテルへ横展開できます。
 5. **クチコミ分析ダッシュボード** — 評点推移、言語別の傾向、頻出する不満のテーマ抽出。
    返信は「守り」ですが、蓄積されたクチコミデータは施設改善の「攻め」の材料になります。
+
+
+---
+
+## 契約オプションの切り替え（提供側の作業）
+
+料金は「導入費 ＋ 保守・運用費（必須）＋ オプション」の構成です。
+オプションの契約状態は `locations` の 2 列で管理します。
+
+| 列 | 機能 |
+|---|---|
+| `report_enabled` | 月次の改善レポート |
+| `other_sites_enabled` | Google以外のサイトのクチコミ（貼り付け） |
+
+決済・請求の仕組みはこのシステムに入れていません。店舗数が二桁になるまでは
+管理画面を作る手間に見合わないためで、Supabase の SQL Editor で直接切り替えます。
+
+```sql
+-- 契約状況の確認
+select location_id, name, report_enabled, other_sites_enabled
+  from locations order by created_at;
+
+-- オプションを有効にする
+update locations
+   set report_enabled = true, other_sites_enabled = true
+ where location_id = '<対象のlocation_id>';
+
+-- 解約時は false に戻す（データは消さない）
+update locations
+   set report_enabled = false
+ where location_id = '<対象のlocation_id>';
+```
+
+解約しても過去に作ったレポートや貼り付けたクチコミは消しません。
+再契約したときにそのまま見られるようにするためです。画面に出なくなるだけです。
+
+**判定はサーバー側でも行っています。** 画面から隠していても URL を直接叩けば
+API には届くため、`requireLocationPlan()` が契約を確認し、未契約なら 404 を返します。

@@ -4,6 +4,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 
 import { ReauthRequiredError } from '@/lib/google/accessToken';
 import { t, type UiLang } from '@/lib/i18n';
+import { PlanNotIncludedError } from '@/lib/settings/locationPlan';
 import { getSession, type SessionPayload } from '@/lib/session';
 import { getUiLang } from '@/lib/uiLang';
 
@@ -120,6 +121,12 @@ export async function errorResponse(err: unknown): Promise<NextResponse> {
       { error: t(lang).reauthNeeded, code: 'REAUTH_REQUIRED' },
       { status: 401 },
     );
+  }
+
+  // 契約していない機能は「無い」ものとして扱う。
+  // 画面から隠していても URL を直接叩けば API には届くため、ここでも止める。
+  if (err instanceof PlanNotIncludedError) {
+    return NextResponse.json({ error: translate(lang, 'not_found') }, { status: 404 });
   }
 
   if (err instanceof HttpError) {

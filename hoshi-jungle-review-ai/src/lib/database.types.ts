@@ -46,6 +46,10 @@ export type LocationRow = {
   auto_publish_enabled: boolean | null;
   auto_publish_min_rating: number | null;
   auto_publish_languages: string[] | null;
+
+  // --- 契約しているオプション（未契約は false） ---
+  report_enabled: boolean;
+  other_sites_enabled: boolean;
   last_synced_at: string | null;
   last_sync_error: string | null;
   consecutive_failures: number;
