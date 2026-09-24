@@ -6,6 +6,11 @@
  */
 
 export type ReviewLanguage = 'ja' | 'en' | 'id' | 'zh' | 'ko' | 'other';
+
+/** クチコミの出どころ。詳細は src/lib/reviews/sources.ts */
+export type ReviewSource =
+  | 'google' | 'booking' | 'expedia' | 'agoda'
+  | 'tripadvisor' | 'trip_com' | 'tabelog' | 'other';
 export type ReplyStatus = 'draft' | 'edited' | 'published' | 'failed' | 'skipped';
 export type LanguageSource = 'script' | 'tinyld' | 'claude' | 'manual';
 
@@ -60,7 +65,10 @@ export type LocationRow = {
 export type ReviewRow = {
   review_id: string;
   location_id: string;
+  /** 外部のクチコミID。貼り付け分は manual:<uuid> を内部採番する */
   google_review_id: string;
+  /** どのサイトのクチコミか。google 以外は人が貼り付けたもの */
+  source: ReviewSource;
   reviewer_display_name: string | null;
   reviewer_photo_url: string | null;
   is_anonymous: boolean;
@@ -101,6 +109,8 @@ export type ReplyRow = {
   published_at: string | null;
   published_by: string | null;
   published_by_staff_access_id: string | null;
+  /** Google以外のサイトで、スタッフが管理画面に貼り戻した時刻 */
+  externally_replied_at: string | null;
   publish_error: string | null;
   created_at: string;
   updated_at: string;
@@ -159,6 +169,10 @@ export type ReviewQueueRow = {
   review_id: string;
   location_id: string;
   google_review_id: string;
+  /** どのサイトのクチコミか。google 以外はこのシステムから投稿できない */
+  source: ReviewSource;
+  /** Google以外で、管理画面に貼り戻した記録 */
+  externally_replied_at: string | null;
   reviewer_display_name: string | null;
   rating: number;
   text: string | null;

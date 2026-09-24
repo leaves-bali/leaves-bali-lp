@@ -1,9 +1,12 @@
 import { LanguageTabs } from '@/components/LanguageTabs';
+import { PasteReviewForm } from '@/components/PasteReviewForm';
 import { ReviewCard } from '@/components/ReviewCard';
 import type { ReviewLanguage } from '@/lib/database.types';
 import { t } from '@/lib/i18n';
 import { getQueueCounts, getReviewQueue } from '@/lib/reviews/queries';
 import { getSession } from '@/lib/session';
+import { loadLocationPlan } from '@/lib/settings/loadLocationPlan';
+import { getUserLocations } from '@/lib/reviews/queries';
 import { getUiLang } from '@/lib/uiLang';
 
 export const dynamic = 'force-dynamic';
@@ -25,10 +28,15 @@ export default async function InboxPage({
   const { lang: filterParam } = await searchParams;
   const filter = normalizeLanguage(filterParam);
 
-  const [rows, counts] = await Promise.all([
+  const [rows, counts, locations] = await Promise.all([
     getReviewQueue(session, { view: 'inbox', language: filter }),
     getQueueCounts(session),
+    getUserLocations(session),
   ]);
+
+  // Google以外の貼り付けはオプション契約。契約していない店には出さない。
+  const primaryLocation = locations[0];
+  const plan = primaryLocation ? await loadLocationPlan(primaryLocation.location_id) : null;
 
   return (
     <section>
@@ -36,6 +44,10 @@ export default async function InboxPage({
         <h2 className="text-xl font-bold text-jungle-800">{d.inboxTitle}</h2>
         <p className="mt-1 text-sm text-jungle-500">{d.inboxLead}</p>
       </div>
+
+      {plan?.otherSitesEnabled && primaryLocation ? (
+        <PasteReviewForm locationId={primaryLocation.location_id} lang={uiLang} />
+      ) : null}
 
       <div className="mb-6">
         <LanguageTabs

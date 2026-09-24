@@ -1,0 +1,71 @@
+# =============================================================================
+# Supabase を眠らせない
+# -----------------------------------------------------------------------------
+# 【なぜ必要か】
+# Supabase の無料プランは、一定期間アクセスが無いとプロジェクトを自動停止する。
+# 実際に停止が起き、復帰させたらデータベースが白紙で戻ってきた（テーブルが全消失）。
+# 稼働中のデータが入った状態でこれが起きると被害が大きい。
+#
+# 【いつ必要か】
+# 導入後の店舗があれば sync-reviews.yml が毎時アクセスするので止まらない。
+# 危ないのは「まだ店舗を繋いでいない時期」と「全店が解約された後」で、
+# まさにデモ環境がその状態にあたる。営業期間中こそ止まってはいけない。
+#
+# 【なぜ人手や対話AIに頼らないか】
+# 「気づいたら再開する」では、気づく前に止まる。無料枠の中で自動化できる以上、
+# 仕組みで解決する。1 回数秒なので GitHub Actions の無料枠もほぼ消費しない
+# （3 日に 1 回 = 月 10 回 = 約 10 分／無料枠 2,000 分）。
+# =============================================================================
+
+name: Keep Supabase Awake
+
+on:
+  schedule:
+    # 3 日に 1 回。Supabase の停止は 1 週間程度の無アクセスで起きるため、
+    # 余裕を持たせつつ実行回数は最小限にする。
+    - cron: '17 3 */3 * *'
+  workflow_dispatch:
+
+concurrency:
+  group: keep-supabase-awake
+  cancel-in-progress: false
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Supabase に軽い問い合わせを投げる
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${SUPABASE_URL:-}" ] || [ -z "${SUPABASE_SERVICE_ROLE_KEY:-}" ]; then
+            echo "SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY が未設定です。"
+            echo "リポジトリの Settings → Secrets and variables → Actions で登録してください。"
+            exit 1
+          fi
+
+          # 1 行だけ数える最小の問い合わせ。データは読まない。
+          # 目的は「アクセスがあった」という記録を残すことだけ。
+          status=$(curl -s -o /tmp/body -w '%{http_code}' \
+            -H "apikey: ${SUPABASE_SERVICE_ROLE_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_SERVICE_ROLE_KEY}" \
+            -H "Range: 0-0" \
+            "${SUPABASE_URL}/rest/v1/locations?select=location_id")
+
+          echo "HTTP ${status}"
+
+          # 2xx なら生きている。空のテーブルでも 200 か 206 が返る。
+          case "$status" in
+            2*) echo "Supabase は稼働しています。" ;;
+            *)
+              echo "Supabase に到達できませんでした。停止している可能性があります。"
+              cat /tmp/body || true
+              echo "Supabase のダッシュボードから Restore を実行してください。"
+              exit 1
+              ;;
+          esac

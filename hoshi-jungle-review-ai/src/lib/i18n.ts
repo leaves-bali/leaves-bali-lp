@@ -235,6 +235,26 @@ type Dict = {
   updateFailed: string;
   copyFailed: string;
 
+  // Google以外のサイト
+  copyReply: string;
+  copiedNotice: string;
+  markReplied: string;
+  markedReplied: string;
+  markRepliedHint: string;
+  markedRepliedNotice: string;
+  pasteTitle: string;
+  pasteLead: string;
+  pasteSite: string;
+  pasteRating: string;
+  pasteText: string;
+  pasteAuthor: string;
+  pasteDate: string;
+  pasteOptional: string;
+  pasteSubmit: string;
+  pasteSubmitting: string;
+  pasteDone: string;
+  cannotPublishHere: string;
+
   // 店舗ごとの設定
   storeSettingsTitle: string;
   storeSettingsLead: string;
@@ -463,6 +483,27 @@ const ja: Dict = {
   issueFailed: 'パスコードの発行に失敗しました。',
   updateFailed: '更新に失敗しました。',
   copyFailed: 'コピーできませんでした。手動で控えてください。',
+
+  copyReply: '返信をコピー',
+  copiedNotice: 'コピーしました。サイトの管理画面に貼り付けてください。',
+  markReplied: '管理画面で返信した',
+  markedReplied: '返信済み',
+  markRepliedHint: '各サイトの管理画面に貼り付けたあとに押してください。押した記録が残るだけで、投稿されたことの確認ではありません。',
+  markedRepliedNotice: '返信済みとして記録しました。',
+  pasteTitle: '他のサイトのクチコミを追加',
+  pasteLead:
+    'Google以外のサイトのクチコミを貼り付けると、AIが返信案を3つ作ります。本文をコピーして、各サイトの管理画面に貼り付けてください。',
+  pasteSite: 'サイト',
+  pasteRating: '評価',
+  pasteText: 'クチコミの本文',
+  pasteAuthor: '投稿者名',
+  pasteDate: '投稿日',
+  pasteOptional: '任意',
+  pasteSubmit: '返信案を作る',
+  pasteSubmitting: '作成中…',
+  pasteDone: '返信案を作りました。一覧に追加されています。',
+  cannotPublishHere:
+    'このサイトは外部から返信を投稿する仕組みがないため、このシステムからは公開できません。',
 
   storeSettingsTitle: 'お店の設定',
   storeSettingsLead:
@@ -698,6 +739,27 @@ const en: Dict = {
   updateFailed: 'Could not save the change.',
   copyFailed: 'Could not copy. Please write it down manually.',
 
+  copyReply: 'Copy reply',
+  copiedNotice: 'Copied. Paste it into that site\u2019s own dashboard.',
+  markReplied: 'Replied on the site',
+  markedReplied: 'Replied',
+  markRepliedHint: 'Press this after you paste the reply into that site. It only records that you pressed it — it cannot confirm the reply was posted.',
+  markedRepliedNotice: 'Marked as replied.',
+  pasteTitle: 'Add a review from another site',
+  pasteLead:
+    'Paste a review from a site other than Google and the AI writes three replies. Copy the one you want and paste it into that site\u2019s dashboard.',
+  pasteSite: 'Site',
+  pasteRating: 'Rating',
+  pasteText: 'Review text',
+  pasteAuthor: 'Reviewer name',
+  pasteDate: 'Date posted',
+  pasteOptional: 'optional',
+  pasteSubmit: 'Write replies',
+  pasteSubmitting: 'Writing…',
+  pasteDone: 'Replies written. The review is now in your list.',
+  cannotPublishHere:
+    'This site has no way for outside systems to post replies, so it cannot be published from here.',
+
   storeSettingsTitle: 'Store settings',
   storeSettingsLead:
     'What the AI uses when it writes a reply. It writes only from what you put here, and will not mention anything else. Leave a field empty to use the default.',
@@ -932,6 +994,27 @@ const id: Dict = {
   issueFailed: 'Gagal membuat kode akses.',
   updateFailed: 'Gagal menyimpan perubahan.',
   copyFailed: 'Gagal menyalin. Mohon catat secara manual.',
+
+  copyReply: 'Salin balasan',
+  copiedNotice: 'Tersalin. Tempelkan di dasbor situs tersebut.',
+  markReplied: 'Sudah dibalas di situsnya',
+  markedReplied: 'Sudah dibalas',
+  markRepliedHint: 'Tekan setelah Anda menempelkan balasan di situs itu. Ini hanya catatan bahwa Anda menekannya, bukan konfirmasi bahwa balasan terkirim.',
+  markedRepliedNotice: 'Ditandai sudah dibalas.',
+  pasteTitle: 'Tambah ulasan dari situs lain',
+  pasteLead:
+    'Tempelkan ulasan dari situs selain Google, lalu AI menulis tiga balasan. Salin yang Anda pilih dan tempelkan di dasbor situs tersebut.',
+  pasteSite: 'Situs',
+  pasteRating: 'Bintang',
+  pasteText: 'Isi ulasan',
+  pasteAuthor: 'Nama pengulas',
+  pasteDate: 'Tanggal ulasan',
+  pasteOptional: 'opsional',
+  pasteSubmit: 'Buat balasan',
+  pasteSubmitting: 'Menulis…',
+  pasteDone: 'Balasan sudah dibuat. Ulasan masuk ke daftar Anda.',
+  cannotPublishHere:
+    'Situs ini tidak menyediakan cara bagi sistem luar untuk mengirim balasan, jadi tidak bisa diterbitkan dari sini.',
 
   storeSettingsTitle: 'Pengaturan toko',
   storeSettingsLead:

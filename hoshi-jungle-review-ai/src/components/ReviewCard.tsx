@@ -12,6 +12,7 @@ import {
   STATUS_STYLES,
 } from '@/lib/constants';
 import type { ReplyStatus, ReviewQueueRow } from '@/lib/database.types';
+import { canPublishDirectly, SOURCE_LABELS } from '@/lib/reviews/sources';
 import { attentionText, t, type UiLang } from '@/lib/i18n';
 
 /**
@@ -44,7 +45,14 @@ export function ReviewCard({
     row.edited_text ? null : (row.selected_style ?? null),
   );
   const [status, setStatus] = useState<ReplyStatus | null>(row.status);
-  const [busy, setBusy] = useState<null | 'save' | 'publish' | 'regenerate' | 'skip'>(null);
+  const [busy, setBusy] = useState<
+    null | 'save' | 'publish' | 'regenerate' | 'skip' | 'copy' | 'mark'
+  >(null);
+  const [markedAt, setMarkedAt] = useState<string | null>(row.externally_replied_at);
+
+  // Google だけがこのシステムから投稿できる。他サイトは API が無く、
+  // 押しても何も起きないボタンを出すと「公開したつもり」の事故になる。
+  const canPublish = canPublishDirectly(row.source);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 
@@ -141,6 +149,46 @@ export function ReviewCard({
       setStyle(json.reply.selected_style ?? null);
       setStatus('draft');
       setNotice(d.regeneratedNotice);
+    }
+  }
+
+  /** 各サイトの管理画面に貼るため、返信本文をクリップボードに写す。 */
+  async function handleCopy() {
+    setBusy('copy');
+    setError(null);
+    try {
+      await navigator.clipboard.writeText(text);
+      setNotice(d.copiedNotice);
+    } catch {
+      setError(d.copyFailed);
+    } finally {
+      setTimeout(() => setBusy(null), 900);
+    }
+  }
+
+  /**
+   * 「管理画面で返信した」の印を付ける。
+   * 押した記録であって、投稿されたことの保証ではない（各サイトを読めないため）。
+   */
+  async function handleMarkReplied() {
+    setBusy('mark');
+    setError(null);
+    try {
+      const response = await fetch(`/api/replies/${row.reply_id}/mark-replied`, {
+        method: 'POST',
+      });
+      const json = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        setError(json.error ?? d.updateFailed);
+        return;
+      }
+      setMarkedAt(new Date().toISOString());
+      setNotice(d.markedRepliedNotice);
+      startTransition(() => router.refresh());
+    } catch {
+      setError(d.networkError);
+    } finally {
+      setBusy(null);
     }
   }
 
@@ -300,15 +348,37 @@ export function ReviewCard({
 
             {!readOnly && status !== 'published' && status !== 'skipped' ? (
               <div className="mt-3 flex flex-wrap items-center gap-2">
-                <button
-                  type="button"
-                  onClick={handlePublish}
-                  disabled={busy !== null || isDirty || text.trim().length === 0}
-                  className="btn-primary"
-                  title={isDirty ? d.saveFirst : d.publish}
-                >
-                  {busy === 'publish' ? d.publishing : d.publish}
-                </button>
+                {canPublish ? (
+                  <button
+                    type="button"
+                    onClick={handlePublish}
+                    disabled={busy !== null || isDirty || text.trim().length === 0}
+                    className="btn-primary"
+                    title={isDirty ? d.saveFirst : d.publish}
+                  >
+                    {busy === 'publish' ? d.publishing : d.publish}
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      onClick={handleCopy}
+                      disabled={busy !== null || text.trim().length === 0}
+                      className="btn-primary"
+                    >
+                      {busy === 'copy' ? d.copied : d.copyReply}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleMarkReplied}
+                      disabled={busy !== null || markedAt !== null}
+                      className="btn-secondary"
+                      title={d.markRepliedHint}
+                    >
+                      {markedAt ? d.markedReplied : d.markReplied}
+                    </button>
+                  </>
+                )}
                 <button
                   type="button"
                   onClick={handleSave}
