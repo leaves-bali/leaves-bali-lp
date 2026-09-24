@@ -11,7 +11,8 @@
     "typecheck": "tsc --noEmit",
     "test": "node --import tsx --test tests/*.test.ts",
     "sync": "node --conditions=react-server --import tsx scripts/sync-worker.ts",
-    "report": "node --conditions=react-server --import tsx scripts/monthly-report.ts"
+    "report": "node --conditions=react-server --import tsx scripts/monthly-report.ts",
+    "report:test-email": "node --conditions=react-server --import tsx scripts/test-report-email.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.126.0",

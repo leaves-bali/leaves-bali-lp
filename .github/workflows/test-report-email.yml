@@ -1,0 +1,54 @@
+# =============================================================================
+# メール送信の動作確認（手動実行）
+# -----------------------------------------------------------------------------
+# なぜ用意するか:
+#   月次レポートが動くのは毎月1日。そこで初めて「届かない」と分かるのでは遅い。
+#   鍵・差出人・ドメイン認証のどれかが間違っていても、登録した時点では気づけない。
+#   見本のレポートを1通送って、経路が通っているかを先に確かめる。
+#
+# 使い方:
+#   Actions タブ → 「Test Report Email」→ Run workflow
+#   → 送り先のメールアドレスを入れて実行
+#
+# 注意: onboarding@resend.dev（Resendの練習用アドレス）を差出人にしている間は、
+#       Resend に登録した本人のアドレスにしか届きません。
+# =============================================================================
+
+name: Test Report Email
+
+on:
+  workflow_dispatch:
+    inputs:
+      to:
+        description: '送り先のメールアドレス'
+        required: true
+        type: string
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    defaults:
+      run:
+        working-directory: hoshi-jungle-review-ai
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: hoshi-jungle-review-ai/package-lock.json
+
+      - name: 依存関係をインストール
+        run: npm ci
+
+      - name: 見本のレポートを1通送る
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          REPORT_EMAIL_FROM: ${{ vars.REPORT_EMAIL_FROM }}
+          NEXT_PUBLIC_APP_URL: ${{ vars.NEXT_PUBLIC_APP_URL }}
+          TEST_EMAIL_TO: ${{ inputs.to }}
+        run: npm run report:test-email
