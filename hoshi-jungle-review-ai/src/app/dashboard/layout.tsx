@@ -8,6 +8,7 @@ import { getFallbackUiLang, getUiLang } from '@/lib/uiLang';
 import { getBudgetState } from '@/lib/ai/budget';
 import { getQueueCounts, getUserLocations } from '@/lib/reviews/queries';
 import { getSession } from '@/lib/session';
+import { loadLocationPlan } from '@/lib/settings/loadLocationPlan';
 import { supabaseAdmin } from '@/lib/supabase/admin';
 
 export const dynamic = 'force-dynamic';
@@ -32,6 +33,8 @@ export default async function DashboardLayout({
   const fallbackLang = await getFallbackUiLang();
   const d = t(uiLang);
   const budget = await getBudgetState(locations[0]?.location_id);
+  // 契約していないオプションはメニューにも出さない。押せない項目は不具合に見える。
+  const plan = await loadLocationPlan(locations[0].location_id);
 
   const isOwner = session.role === 'owner';
 
@@ -89,6 +92,7 @@ export default async function DashboardLayout({
           <NavLink href="/dashboard" label={d.navInbox} count={counts.inbox} />
           <NavLink href="/dashboard/pending" label={d.navAttention} count={counts.attention} highlight />
           <NavLink href="/dashboard/archive" label={d.navArchive} count={counts.archive} />
+          {plan.reportEnabled ? <NavLink href="/dashboard/report" label={d.navReport} /> : null}
         </nav>
       </header>
 
@@ -144,7 +148,8 @@ function NavLink({
 }: {
   href: string;
   label: string;
-  count: number;
+  /** 件数のない項目（レポートなど）では省略する */
+  count?: number;
   highlight?: boolean;
 }) {
   return (
@@ -153,13 +158,15 @@ function NavLink({
       className="group relative px-4 py-3 text-sm font-medium text-jungle-600 hover:text-jungle-800"
     >
       {label}
-      <span
-        className={`ml-2 rounded-full px-2 py-0.5 text-xs ${
-          highlight && count > 0 ? 'bg-amber-100 text-amber-800' : 'bg-jungle-50 text-jungle-500'
-        }`}
-      >
-        {count}
-      </span>
+      {count === undefined ? null : (
+        <span
+          className={`ml-2 rounded-full px-2 py-0.5 text-xs ${
+            highlight && count > 0 ? 'bg-amber-100 text-amber-800' : 'bg-jungle-50 text-jungle-500'
+          }`}
+        >
+          {count}
+        </span>
+      )}
     </Link>
   );
 }

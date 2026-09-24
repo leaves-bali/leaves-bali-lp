@@ -164,6 +164,31 @@ export type SyncRunRow = {
   error: string | null;
 }
 
+/** 月次の改善レポート。数字は実データ、話題と次の一手は AI。 */
+export type MonthlyReportRow = {
+  monthly_report_id: string;
+  location_id: string;
+  /** 対象月の1日（YYYY-MM-01） */
+  period: string;
+  review_count: number;
+  prev_review_count: number;
+  average_rating: number | null;
+  prev_average_rating: number | null;
+  /** { ja: 12, en: 3 } */
+  by_language: Record<string, number>;
+  /** 0.0〜1.0 */
+  reply_rate: number | null;
+  prev_reply_rate: number | null;
+  /** [{ topic: '朝食', count: 7 }] */
+  praised_themes: Array<{ topic: string; count: number }>;
+  complained_themes: Array<{ topic: string; count: number }>;
+  next_actions: string[];
+  model: string | null;
+  generation_meta: Record<string, unknown>;
+  emailed_at: string | null;
+  created_at: string;
+};
+
 /** review_queue ビュー: reviews LEFT JOIN replies */
 export type ReviewQueueRow = {
   review_id: string;
@@ -273,6 +298,14 @@ type SyncRunsToLocations = {
   referencedColumns: ['location_id'];
 };
 
+type MonthlyReportsToLocations = {
+  foreignKeyName: 'monthly_reports_location_id_fkey';
+  columns: ['location_id'];
+  isOneToOne: false;
+  referencedRelation: 'locations';
+  referencedColumns: ['location_id'];
+};
+
 export interface Database {
   public: {
     Tables: {
@@ -284,6 +317,7 @@ export interface Database {
       staff_access: Table<StaffAccessRow, [StaffAccessToLocations]>;
       staff_login_attempts: Table<StaffLoginAttemptRow, [StaffLoginAttemptsToLocations]>;
       ai_usage: Table<AiUsageRow, [AiUsageToLocations]>;
+      monthly_reports: Table<MonthlyReportRow, [MonthlyReportsToLocations]>;
     };
     Views: {
       review_queue: { Row: ReviewQueueRow; Relationships: [] };

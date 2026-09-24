@@ -255,6 +255,26 @@ type Dict = {
   pasteDone: string;
   cannotPublishHere: string;
 
+  // 月次の改善レポート
+  navReport: string;
+  reportTitle: string;
+  reportLead: string;
+  reportEmpty: string;
+  reportPeriodLabel: string;
+  reportReviewCount: string;
+  reportAverageRating: string;
+  reportReplyRate: string;
+  reportByLanguage: string;
+  reportVsPrev: string;
+  reportNoPrev: string;
+  reportPraised: string;
+  reportComplained: string;
+  reportNextActions: string;
+  reportNoThemes: string;
+  reportSmallSample: string;
+  reportCountSuffix: string;
+  reportSourceNote: string;
+
   // 店舗ごとの設定
   storeSettingsTitle: string;
   storeSettingsLead: string;
@@ -504,6 +524,25 @@ const ja: Dict = {
   pasteDone: '返信案を作りました。一覧に追加されています。',
   cannotPublishHere:
     'このサイトは外部から返信を投稿する仕組みがないため、このシステムからは公開できません。',
+
+  navReport: 'レポート',
+  reportTitle: '月次の改善レポート',
+  reportLead: '先月届いたクチコミを数え、褒められた点と指摘された点をまとめています。数字はすべて実際のクチコミから数えたものです。',
+  reportEmpty: 'まだレポートがありません。毎月1日に前月分を作ります。',
+  reportPeriodLabel: '対象の月',
+  reportReviewCount: 'クチコミの件数',
+  reportAverageRating: '平均の評価',
+  reportReplyRate: '返信できた割合',
+  reportByLanguage: '言語ごとの件数',
+  reportVsPrev: '前の月',
+  reportNoPrev: '前の月のデータなし',
+  reportPraised: '褒められた点',
+  reportComplained: '指摘された点',
+  reportNextActions: '来月やること',
+  reportNoThemes: 'まとまった傾向は見つかりませんでした。無理に書くと事実と違うことを書くことになるため、空欄にしています。',
+  reportSmallSample: 'この月はクチコミが少ないため、傾向としては弱い点にご注意ください。',
+  reportCountSuffix: '件',
+  reportSourceNote: '件数・平均・返信率は実際のクチコミから数えた値です。話題のまとめと「来月やること」はAIが書いています。',
 
   storeSettingsTitle: 'お店の設定',
   storeSettingsLead:
@@ -760,6 +799,25 @@ const en: Dict = {
   cannotPublishHere:
     'This site has no way for outside systems to post replies, so it cannot be published from here.',
 
+  navReport: 'Report',
+  reportTitle: 'Monthly improvement report',
+  reportLead: 'A count of last month\u2019s reviews, with what guests praised and what they raised. Every number is counted from the actual reviews.',
+  reportEmpty: 'No report yet. The previous month is written up on the 1st of each month.',
+  reportPeriodLabel: 'Month',
+  reportReviewCount: 'Reviews received',
+  reportAverageRating: 'Average rating',
+  reportReplyRate: 'Replied to',
+  reportByLanguage: 'By language',
+  reportVsPrev: 'Previous month',
+  reportNoPrev: 'No data for the previous month',
+  reportPraised: 'Praised',
+  reportComplained: 'Raised as a problem',
+  reportNextActions: 'To do next month',
+  reportNoThemes: 'No clear pattern was found. Rather than invent one, this is left empty.',
+  reportSmallSample: 'There were few reviews this month, so treat these as weak signals.',
+  reportCountSuffix: '',
+  reportSourceNote: 'Counts, averages and reply rate are measured from the reviews themselves. The themes and the to-do list are written by AI.',
+
   storeSettingsTitle: 'Store settings',
   storeSettingsLead:
     'What the AI uses when it writes a reply. It writes only from what you put here, and will not mention anything else. Leave a field empty to use the default.',
@@ -1015,6 +1073,25 @@ const id: Dict = {
   pasteDone: 'Balasan sudah dibuat. Ulasan masuk ke daftar Anda.',
   cannotPublishHere:
     'Situs ini tidak menyediakan cara bagi sistem luar untuk mengirim balasan, jadi tidak bisa diterbitkan dari sini.',
+
+  navReport: 'Laporan',
+  reportTitle: 'Laporan perbaikan bulanan',
+  reportLead: 'Hitungan ulasan bulan lalu, beserta hal yang dipuji dan yang dikeluhkan tamu. Semua angka dihitung dari ulasan yang benar-benar masuk.',
+  reportEmpty: 'Belum ada laporan. Laporan bulan sebelumnya dibuat setiap tanggal 1.',
+  reportPeriodLabel: 'Bulan',
+  reportReviewCount: 'Jumlah ulasan',
+  reportAverageRating: 'Rata-rata bintang',
+  reportReplyRate: 'Sudah dibalas',
+  reportByLanguage: 'Per bahasa',
+  reportVsPrev: 'Bulan sebelumnya',
+  reportNoPrev: 'Tidak ada data bulan sebelumnya',
+  reportPraised: 'Yang dipuji',
+  reportComplained: 'Yang dikeluhkan',
+  reportNextActions: 'Yang dikerjakan bulan depan',
+  reportNoThemes: 'Tidak ditemukan pola yang jelas. Daripada mengarang, bagian ini dibiarkan kosong.',
+  reportSmallSample: 'Ulasan bulan ini sedikit, jadi anggap ini sinyal yang lemah.',
+  reportCountSuffix: '',
+  reportSourceNote: 'Jumlah, rata-rata, dan persentase balasan dihitung langsung dari ulasan. Rangkuman topik dan daftar tindakan ditulis oleh AI.',
 
   storeSettingsTitle: 'Pengaturan toko',
   storeSettingsLead:

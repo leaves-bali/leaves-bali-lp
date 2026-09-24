@@ -36,7 +36,8 @@ export async function recordUsage(params: {
   inputTokens: number;
   outputTokens: number;
   estimatedCostUsd: number;
-  purpose: 'generate' | 'regenerate';
+  /** report = 月次レポートの要約。返信生成と同じ財布から出る。 */
+  purpose: 'generate' | 'regenerate' | 'report';
 }): Promise<void> {
   await supabaseAdmin().from('ai_usage').insert({
     location_id: params.locationId,

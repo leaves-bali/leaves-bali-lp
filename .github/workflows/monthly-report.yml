@@ -1,0 +1,76 @@
+# =============================================================================
+# 月次の改善レポート（毎月1日）
+# -----------------------------------------------------------------------------
+# なぜ GitHub Actions なのか:
+#   クチコミ同期（sync-reviews.yml）と同じ理由。
+#   AI 呼び出しを含むため Netlify Free の 10 秒の関数では終わらない。
+#
+# 消費量: 月1回・数分。無料枠 2,000 分にほとんど影響しない。
+#
+# 対象は「前月」。1日に動かすので、前月はすでに締まっている。
+# 対象月を指定して作り直したいときは workflow_dispatch から
+# period（例 2026-08）と force を渡す。
+# =============================================================================
+
+name: Monthly Report
+
+on:
+  schedule:
+    # 毎月1日 の 01:00 UTC（日本時間 10:00 / バリ時間 09:00）。
+    # 深夜に作っても誰も読まないので、店が開く時間帯に合わせている。
+    - cron: '0 1 1 * *'
+  workflow_dispatch:
+    inputs:
+      period:
+        description: '対象月（YYYY-MM）。空なら前月'
+        required: false
+        type: string
+      force:
+        description: '作成済みでも作り直す'
+        required: false
+        default: false
+        type: boolean
+
+concurrency:
+  group: monthly-report
+  cancel-in-progress: false
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    defaults:
+      run:
+        working-directory: hoshi-jungle-review-ai
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: hoshi-jungle-review-ai/package-lock.json
+
+      - name: 依存関係をインストール
+        run: npm ci
+
+      - name: 月次レポートを作成
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ANTHROPIC_MODEL: ${{ vars.ANTHROPIC_MODEL || 'claude-haiku-4-5' }}
+          # 返信生成と同じ月次予算を共有する。レポートもこの財布から出る。
+          AI_MONTHLY_BUDGET_USD: ${{ vars.AI_MONTHLY_BUDGET_USD || '0.40' }}
+          # レポート内のリンク先
+          NEXT_PUBLIC_APP_URL: ${{ vars.NEXT_PUBLIC_APP_URL }}
+          # 未設定の店舗に使われる既定値（店舗ごとの設定が優先される）
+          HOTEL_NAME: ${{ vars.HOTEL_NAME || 'Hoshi Jungle' }}
+          HOTEL_LOCATION: ${{ vars.HOTEL_LOCATION || 'Ubud, Bali, Indonesia' }}
+          HOTEL_SIGNATURE: ${{ vars.HOTEL_SIGNATURE || 'Hoshi Jungle Team' }}
+          HOTEL_CONTACT_EMAIL: ${{ vars.HOTEL_CONTACT_EMAIL }}
+          REPORT_PERIOD: ${{ inputs.period }}
+          REPORT_FORCE: ${{ inputs.force }}
+        run: npm run report
