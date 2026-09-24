@@ -66,6 +66,9 @@ jobs:
           AI_MONTHLY_BUDGET_USD: ${{ vars.AI_MONTHLY_BUDGET_USD || '0.40' }}
           # レポート内のリンク先
           NEXT_PUBLIC_APP_URL: ${{ vars.NEXT_PUBLIC_APP_URL }}
+          # メール送信（Resend）。未設定ならレポートは作るが送らない。
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          REPORT_EMAIL_FROM: ${{ vars.REPORT_EMAIL_FROM }}
           # 未設定の店舗に使われる既定値（店舗ごとの設定が優先される）
           HOTEL_NAME: ${{ vars.HOTEL_NAME || 'Hoshi Jungle' }}
           HOTEL_LOCATION: ${{ vars.HOTEL_LOCATION || 'Ubud, Bali, Indonesia' }}

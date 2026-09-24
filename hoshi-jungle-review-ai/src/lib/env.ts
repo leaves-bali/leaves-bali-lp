@@ -121,6 +121,23 @@ export const env = {
     return Number.isFinite(parsed) && parsed >= 0 ? parsed : 0.4;
   },
 
+  // --- メール送信（Resend） ---
+  /**
+   * 未設定でも動く（送信しないだけ）。
+   * 月次レポートのメールは「あれば送る」機能であり、
+   * 鍵が無いだけでバッチ全体を止めるべきではない。
+   */
+  get resendApiKey(): string {
+    return optional('RESEND_API_KEY');
+  },
+  /**
+   * 差出人。Resend で認証済みのドメインのアドレスでないと送れない。
+   * 例: 'Leaves Bali <report@leavesbali.com>'
+   */
+  get reportEmailFrom(): string {
+    return optional('REPORT_EMAIL_FROM');
+  },
+
   // --- ホテル情報 ---
   get hotelName(): string {
     return optional('HOTEL_NAME', 'Hoshi Jungle');

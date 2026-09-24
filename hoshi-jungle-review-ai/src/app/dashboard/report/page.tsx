@@ -1,12 +1,13 @@
 import { notFound } from 'next/navigation';
 
+import { LANGUAGE_LABELS } from '@/lib/constants';
 import { t, type UiLang } from '@/lib/i18n';
 import { loadMonthlyReports } from '@/lib/reports/loadReports';
 import { getUserLocations } from '@/lib/reviews/queries';
 import { getSession } from '@/lib/session';
 import { loadLocationPlan } from '@/lib/settings/loadLocationPlan';
 import { getUiLang } from '@/lib/uiLang';
-import type { MonthlyReportRow } from '@/lib/database.types';
+import type { MonthlyReportRow, ReviewLanguage } from '@/lib/database.types';
 
 export const dynamic = 'force-dynamic';
 
@@ -101,7 +102,8 @@ function ReportCard({ report, lang }: { report: MonthlyReportRow; lang: UiLang }
               .sort((a, b) => b[1] - a[1])
               .map(([code, count]) => (
                 <li key={code} className="badge bg-brand-50 text-ink-600">
-                  {code}: {count}
+                  {/* 「ja: 18」ではお店の人に伝わらない。原語表記の言語名で出す。 */}
+                  {LANGUAGE_LABELS[code as ReviewLanguage] ?? code}: {count}
                   {d.reportCountSuffix}
                 </li>
               ))}
