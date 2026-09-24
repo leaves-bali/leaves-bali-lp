@@ -6,6 +6,7 @@ import { z } from 'zod';
 
 import { env } from '@/lib/env';
 import { buildSystemPrompt, buildUserPrompt, type ReviewPromptInput } from '@/lib/ai/prompt';
+import type { LocationSettings } from '@/lib/settings/locationSettings';
 import { REPLY_MAX_LENGTH } from '@/lib/google/businessProfile';
 import type { ReviewLanguage } from '@/lib/database.types';
 
@@ -95,6 +96,7 @@ function anthropic(): Anthropic {
 
 export async function generateReply(
   input: ReviewPromptInput,
+  settings: LocationSettings,
 ): Promise<GenerateReplyResult> {
   let response;
   try {
@@ -102,7 +104,7 @@ export async function generateReply(
       model: env.anthropicModel,
       // 3案ぶんの本文 + adaptive thinking の思考トークンが max_tokens に含まれる。
       max_tokens: 6000,
-      system: buildSystemPrompt(),
+      system: buildSystemPrompt(settings),
       // クチコミ返信は難問ではないので effort は low 既定。品質不足なら env で上げられる。
       thinking: { type: 'adaptive' },
       output_config: {

@@ -34,6 +34,13 @@ erDiagram
         text name
         boolean setup_complete
         text default_ui_lang "共有端末が戻る言語"
+        text area_label "返信文で使う所在地"
+        text reply_signature "返信の署名"
+        text contact_email "低評価時の連絡先"
+        text_array highlights "AIが触れてよい魅力"
+        boolean auto_publish_enabled "null=環境変数に従う"
+        smallint auto_publish_min_rating
+        text_array auto_publish_languages
         timestamptz last_synced_at
         text last_sync_error
         integer consecutive_failures
@@ -218,6 +225,42 @@ UI ごとに JOIN を書き直すと、条件の食い違いで件数バッジ�
 | `staff_login_attempts` | ログイン試行の記録。IP はハッシュ化して保存し、レート制限と不審アクセス検知に使う |
 | `replies.published_by_staff_access_id` | 監査。スタッフが公開した場合、どのパスコード経由かを残す |
 | `staff_access.ui_lang` / `locations.default_ui_lang` | 共有端末の表示言語。詳細は `docs/05-staff-access.md` の「共有端末での表示言語」 |
+| `locations` の設定列（`area_label` 〜 `auto_publish_languages`） | 店舗ごとの設定。下記参照 |
+
+## 店舗ごとの設定（0010）
+
+店名・所在地・署名・連絡先・お店の魅力・自動公開の条件は、もともと環境変数
+（`HOTEL_NAME` など）にあり、**システム全体で 1 組しか持てませんでした**。
+この状態では店舗が増えるたびに別のシステムを立ち上げることになり、
+複数店舗への販売が成り立ちません。そこで `locations` の列に移しました。
+
+### すべて NULL 可にしている理由
+
+NULL は「この店では未設定」を意味し、アプリは環境変数の値にフォールバックします
+（`src/lib/settings/locationSettings.ts`）。この設計により、**マイグレーションを
+当てただけでは既存店の挙動が一切変わりません**。オーナーが設定画面で値を入れた
+時点で、その店だけが切り替わります。
+
+とくに `auto_publish_enabled` を `not null default false` にしなかったのは、
+環境変数で自動公開を有効にしていた店が、移行と同時に無効化されてしまうためです。
+NULL（未設定）と false（明示的に無効）は区別する必要があります。
+この性質は `tests/locationSettings.test.ts` で固定しています。
+
+### `highlights` が持つ意味
+
+「AI が触れてよい事実の範囲」そのものです。ここに無い設備・サービス・料理には、
+クチコミ本文が言及している場合を除き触れさせません。空のときは指示を消さず、
+「本文に書かれていること以外に触れるな」という指示に切り替えます
+（指示ごと消すと、AI が一般的なホテル像から設備を補ってしまうため）。
+
+### インドネシア語を 3 段で弾いている
+
+自動公開の対象からインドネシア語を外すのは仕様上の制約で、店ごとに変えてよい
+判断ではありません。次の 3 箇所で同じ条件を弾いています。
+
+1. DB 制約 `locations_auto_publish_languages_no_id_check`
+2. 設定の正規化 `sanitizeAutoPublishLanguages()`（環境変数由来の値はここを通る）
+3. 判定 `shouldAutoPublish()`
 
 **`passcode_hash` に平文は入りません。** scrypt (N=32768, r=8, p=1) でハッシュ化し、
 発行直後の 1 回だけ画面に表示します。これは「あとで見返せる」と誤解させないための

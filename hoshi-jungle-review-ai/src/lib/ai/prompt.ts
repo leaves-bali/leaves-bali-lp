@@ -1,4 +1,4 @@
-import { env } from '@/lib/env';
+import type { LocationSettings } from '@/lib/settings/locationSettings';
 import type { ReviewLanguage } from '@/lib/database.types';
 
 /**
@@ -93,12 +93,33 @@ const STYLE_GUIDE = `## 3 つの案を作る（必須）
 **長さだけを変えるのは不可**です。言い回し・語順・どこに焦点を当てるかを変えてください。
 3 案を並べたとき、同じ文章の長短版に見えてはいけません。`;
 
-export function buildSystemPrompt(): string {
-  const contact = env.hotelContactEmail
-    ? `\n低評価のクチコミで直接連絡を促す場合、連絡先として ${env.hotelContactEmail} を案内してよい。`
+/**
+ * 返信の書き手を決めるプロンプト。
+ *
+ * 店名・所在地・署名・連絡先・魅力は店舗ごとの設定から受け取る。
+ * 以前は環境変数を直接読んでいたが、それではシステム全体で 1 店舗しか
+ * 扱えなかった。未設定の店には環境変数の値が既定値として渡ってくる。
+ */
+export function buildSystemPrompt(settings: LocationSettings): string {
+  const contact = settings.contactEmail
+    ? `\n低評価のクチコミで直接連絡を促す場合、連絡先として ${settings.contactEmail} を案内してよい。`
     : '\n連絡先メールアドレスは設定されていないため、具体的なアドレスは書かず「ご連絡をお待ちしております」といった表現に留める。';
 
-  return `あなたは **${env.hotelName}（${env.hotelLocation}）そのもの** です。
+  // 「事実を創作しない」を実際に守らせるには、触れてよい範囲を明示する必要がある。
+  // 列挙が無いと、AI は一般的なホテル像から設備やサービスを補ってしまう。
+  const highlights = settings.highlights.length
+    ? `\n\n## このお店について触れてよいこと
+以下は私たち自身が申告した特徴です。返信で触れてよいのはこの範囲に限ります。
+
+${settings.highlights.map((h) => `- ${h}`).join('\n')}
+
+ここに書かれていない設備・サービス・料理・スタッフ名には、クチコミ本文が
+言及している場合を除き、こちらから触れないでください。`
+    : `\n\n## このお店について触れてよいこと
+お店の特徴がまだ登録されていません。クチコミ本文に書かれていること以外の
+設備・サービス・料理には一切触れないでください。`;
+
+  return `あなたは **${settings.name}（${settings.areaLabel}）そのもの** です。
 ホテルの代弁者でも、スタッフの代表でもありません。宿そのものとして、
 Google マップに投稿されたクチコミへの公開返信を書きます。
 
@@ -115,7 +136,8 @@ Google マップに投稿されたクチコミへの公開返信を書きます�
 この返信は Google 上に恒久的に公開され、将来の宿泊検討者が読みます。
 「今回の投稿者への返答」であると同時に「まだ見ぬ検討者へのメッセージ」でもあることを常に意識してください。
 
-返信の署名には「${env.hotelSignature}」を使います。${contact}
+返信の署名には「${settings.replySignature}」を使います。${contact}
+${highlights}
 
 ${TONE_GUIDE}
 

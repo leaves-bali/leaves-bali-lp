@@ -1,5 +1,5 @@
-import { env } from '@/lib/env';
 import type { ReviewLanguage } from '@/lib/database.types';
+import type { LocationSettings } from '@/lib/settings/locationSettings';
 import type { AttentionCode } from '@/lib/i18n';
 
 /**
@@ -52,20 +52,33 @@ export function evaluateAttention(input: AttentionInput): AttentionResult {
 /**
  * 自動公開してよいか。
  *
- * 既定は「常に false（全件ドラフト）」。AUTO_PUBLISH_ENABLED を明示的に true にし、
+ * 判断材料は店舗ごとの設定から受け取る。以前は環境変数を直接読んでいたため、
+ * システム全体で 1 つの方針しか持てなかった。店によって「4つ星以上の日本語だけ自動」
+ * 「全件手動」と分かれるのが普通なので、店の属性として扱う。
+ *
+ * 既定は「常に false（全件ドラフト）」。設定で明示的に有効にし、
  * かつ以下をすべて満たしたときだけ自動公開する:
  *   - 要確認フラグが立っていない
  *   - 評点が閾値以上
- *   - 言語が許可リストに含まれる（インドネシア語は env 側で強制除外済み）
+ *   - 言語が許可リストに含まれる
+ *
+ * インドネシア語は設定に関わらず自動公開しない。現地の言い回しと敬意表現を
+ * AI に任せきれないためで、これは店ごとに変えてよい判断ではない。
+ * DB 制約・設定の正規化・ここ、の 3 段で同じ条件を弾いている。
  */
 export function shouldAutoPublish(params: {
   rating: number;
   language: ReviewLanguage;
   needsAttention: boolean;
+  settings: Pick<
+    LocationSettings,
+    'autoPublishEnabled' | 'autoPublishMinRating' | 'autoPublishLanguages'
+  >;
 }): boolean {
-  if (!env.autoPublishEnabled) return false;
+  const { settings } = params;
+  if (!settings.autoPublishEnabled) return false;
   if (params.needsAttention) return false;
-  if (params.rating < env.autoPublishMinRating) return false;
+  if (params.rating < settings.autoPublishMinRating) return false;
   if (params.language === 'id') return false;
-  return env.autoPublishLanguages.includes(params.language);
+  return settings.autoPublishLanguages.includes(params.language);
 }

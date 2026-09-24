@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { errorResponse, HttpError, requireSession } from '@/lib/api';
 import { defaultOption, generateReply } from '@/lib/ai/generateReply';
 import { evaluateAttention } from '@/lib/reviews/policy';
+import { loadLocationSettings } from '@/lib/settings/loadLocationSettings';
 import { loadReplyContext } from '@/lib/reviews/publish';
 import { supabaseAdmin } from '@/lib/supabase/admin';
 
@@ -28,7 +29,7 @@ export async function POST(
       .from('replies')
       .select(
         `reply_id, status, regenerated_count, review_id,
-         reviews!inner ( rating, text, reviewer_display_name, language, language_confidence )`,
+         reviews!inner ( location_id, rating, text, reviewer_display_name, language, language_confidence )`,
       )
       .eq('reply_id', replyId)
       .single();
@@ -42,13 +43,21 @@ export async function POST(
     if (!review) throw new HttpError('レビュー情報を取得できませんでした。', 500);
 
     const languageIsUncertain = (review.language_confidence ?? 0) < 0.3;
-    const { draft, meta } = await generateReply({
-      rating: review.rating,
-      text: review.text,
-      reviewerName: review.reviewer_display_name,
-      detectedLanguage: review.language,
-      languageIsUncertain,
-    });
+
+    // 作り直しでも、毎時バッチと同じ店舗設定（店名・署名・魅力）で書かせる。
+    // ここだけ環境変数を見ていると、店ごとの設定が反映されない返信が混ざる。
+    const settings = await loadLocationSettings(review.location_id);
+
+    const { draft, meta } = await generateReply(
+      {
+        rating: review.rating,
+        text: review.text,
+        reviewerName: review.reviewer_display_name,
+        detectedLanguage: review.language,
+        languageIsUncertain,
+      },
+      settings,
+    );
 
     const attention = evaluateAttention({
       rating: review.rating,

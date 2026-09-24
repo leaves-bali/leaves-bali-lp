@@ -235,6 +235,29 @@ type Dict = {
   updateFailed: string;
   copyFailed: string;
 
+  // 店舗ごとの設定
+  storeSettingsTitle: string;
+  storeSettingsLead: string;
+  fieldStoreName: string;
+  fieldAreaLabel: string;
+  fieldSignature: string;
+  fieldContactEmail: string;
+  fieldHighlights: string;
+  highlightsHint: string;
+  addHighlight: string;
+  removeHighlight: string;
+  usesDefault: string;
+  autoPublishTitle: string;
+  autoPublishLead: string;
+  autoPublishOn: string;
+  autoPublishMinRating: string;
+  autoPublishLangs: string;
+  autoPublishIdNote: string;
+  save: string;
+  saved: string;
+
+  saveFailed: string;
+
   // 共有端末の表示言語
   langRevertHint: (lang: string, minutes: number) => string;
   defaultLangTitle: string;
@@ -440,6 +463,32 @@ const ja: Dict = {
   issueFailed: 'パスコードの発行に失敗しました。',
   updateFailed: '更新に失敗しました。',
   copyFailed: 'コピーできませんでした。手動で控えてください。',
+
+  storeSettingsTitle: 'お店の設定',
+  storeSettingsLead:
+    'AIが返信を書くときに使う情報です。ここで設定した内容だけを根拠に書き、書かれていないことには触れません。空欄にすると初期値を使います。',
+  fieldStoreName: '店名',
+  fieldAreaLabel: '所在地の表記',
+  fieldSignature: '返信の署名',
+  fieldContactEmail: '低評価のときの連絡先',
+  fieldHighlights: 'お店の魅力',
+  highlightsHint:
+    'AIが触れてよいのはここに書いたことだけです。2〜3個、具体的に書いてください（5つまで）。',
+  addHighlight: '追加',
+  removeHighlight: '削除',
+  usesDefault: '空欄なら初期値',
+  autoPublishTitle: '自動公開',
+  autoPublishLead:
+    '条件を満たした返信をスタッフの確認なしで公開します。既定では使いません。低評価と要確認は、設定に関わらず自動公開されません。',
+  autoPublishOn: '自動公開を使う',
+  autoPublishMinRating: '自動公開する最低の星の数',
+  autoPublishLangs: '自動公開する言語',
+  autoPublishIdNote:
+    'インドネシア語は自動公開できません。現地の言い回しの確認が必要なためです。',
+  save: '保存',
+  saved: '保存しました。',
+
+  saveFailed: '保存に失敗しました。',
 
   langRevertHint: (lang, m) => `${m}分操作がないと${lang}に戻ります`,
   defaultLangTitle: '端末の既定の言語',
@@ -649,6 +698,32 @@ const en: Dict = {
   updateFailed: 'Could not save the change.',
   copyFailed: 'Could not copy. Please write it down manually.',
 
+  storeSettingsTitle: 'Store settings',
+  storeSettingsLead:
+    'What the AI uses when it writes a reply. It writes only from what you put here, and will not mention anything else. Leave a field empty to use the default.',
+  fieldStoreName: 'Store name',
+  fieldAreaLabel: 'Location shown in replies',
+  fieldSignature: 'Reply signature',
+  fieldContactEmail: 'Contact for low ratings',
+  fieldHighlights: 'What your store is known for',
+  highlightsHint:
+    'The AI may only mention what you list here. Two or three specific points work best (five maximum).',
+  addHighlight: 'Add',
+  removeHighlight: 'Remove',
+  usesDefault: 'Empty uses the default',
+  autoPublishTitle: 'Automatic publishing',
+  autoPublishLead:
+    'Publishes qualifying replies without staff review. Off by default. Low ratings and flagged reviews are never published automatically, whatever you set here.',
+  autoPublishOn: 'Use automatic publishing',
+  autoPublishMinRating: 'Minimum stars to publish automatically',
+  autoPublishLangs: 'Languages to publish automatically',
+  autoPublishIdNote:
+    'Indonesian cannot be published automatically — local wording needs a human check.',
+  save: 'Save',
+  saved: 'Saved.',
+
+  saveFailed: 'Could not save.',
+
   langRevertHint: (lang, m) => `Returns to ${lang} after ${m} min of inactivity`,
   defaultLangTitle: 'Default language for this device',
   defaultLangLead:
@@ -857,6 +932,32 @@ const id: Dict = {
   issueFailed: 'Gagal membuat kode akses.',
   updateFailed: 'Gagal menyimpan perubahan.',
   copyFailed: 'Gagal menyalin. Mohon catat secara manual.',
+
+  storeSettingsTitle: 'Pengaturan toko',
+  storeSettingsLead:
+    'Yang dipakai AI saat menulis balasan. AI hanya menulis dari isi di sini dan tidak menyebut hal lain. Kosongkan untuk memakai nilai bawaan.',
+  fieldStoreName: 'Nama toko',
+  fieldAreaLabel: 'Lokasi yang ditulis di balasan',
+  fieldSignature: 'Tanda tangan balasan',
+  fieldContactEmail: 'Kontak untuk ulasan bintang rendah',
+  fieldHighlights: 'Keunggulan toko',
+  highlightsHint:
+    'AI hanya boleh menyebut yang Anda tulis di sini. Dua atau tiga poin yang spesifik paling baik (maksimal lima).',
+  addHighlight: 'Tambah',
+  removeHighlight: 'Hapus',
+  usesDefault: 'Kosong berarti nilai bawaan',
+  autoPublishTitle: 'Terbit otomatis',
+  autoPublishLead:
+    'Menerbitkan balasan yang memenuhi syarat tanpa diperiksa staf. Mati secara bawaan. Bintang rendah dan yang perlu dicek tidak pernah terbit otomatis.',
+  autoPublishOn: 'Gunakan terbit otomatis',
+  autoPublishMinRating: 'Bintang minimum untuk terbit otomatis',
+  autoPublishLangs: 'Bahasa yang boleh terbit otomatis',
+  autoPublishIdNote:
+    'Bahasa Indonesia tidak bisa terbit otomatis — pilihan katanya perlu diperiksa orang.',
+  save: 'Simpan',
+  saved: 'Tersimpan.',
+
+  saveFailed: 'Gagal menyimpan.',
 
   langRevertHint: (lang, m) => `Kembali ke ${lang} setelah ${m} menit tanpa aktivitas`,
   defaultLangTitle: 'Bahasa bawaan perangkat ini',

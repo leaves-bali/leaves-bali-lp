@@ -1,11 +1,18 @@
 import { redirect } from 'next/navigation';
 
 import { DefaultLanguageCard } from '@/components/DefaultLanguageCard';
+import { StoreSettingsCard } from '@/components/StoreSettingsCard';
 import { StaffAccessManager } from '@/components/StaffAccessManager';
 import { DEFAULT_UI_LANG, isUiLang, t } from '@/lib/i18n';
 import { getSession } from '@/lib/session';
 import { getUiLang } from '@/lib/uiLang';
 import { supabaseAdmin } from '@/lib/supabase/admin';
+import { envLocationDefaults } from '@/lib/settings/loadLocationSettings';
+import {
+  LOCATION_SETTINGS_COLUMNS,
+  resolveLocationSettings,
+  type LocationSettingsRow,
+} from '@/lib/settings/locationSettings';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,7 +29,7 @@ export default async function SettingsPage() {
 
   const { data: locations } = await db
     .from('locations')
-    .select('location_id, name, default_ui_lang')
+    .select(`${LOCATION_SETTINGS_COLUMNS}, default_ui_lang`)
     .eq('user_id', session.userId)
     .eq('setup_complete', true)
     .order('created_at', { ascending: true });
@@ -57,6 +64,32 @@ export default async function SettingsPage() {
           {d.passcodeLead}
         </p>
       </div>
+
+      {/* お店の設定。AIが書ける範囲そのものなので、いちばん上に置く。 */}
+      {locations?.[0] ? (
+        <div className="mb-4">
+          <StoreSettingsCard
+            lang={uiLang}
+            initial={(() => {
+              // 未設定（null）の項目は環境変数の初期値で埋めず、空欄のまま見せる。
+              // 初期値を入れてしまうと「未設定」と「同じ値を明示した」が区別できなくなる。
+              const row = locations[0] as unknown as LocationSettingsRow;
+              const resolved = resolveLocationSettings(row, envLocationDefaults());
+              return {
+                locationId: row.location_id,
+                name: row.name ?? '',
+                areaLabel: row.area_label ?? '',
+                replySignature: row.reply_signature ?? '',
+                contactEmail: row.contact_email ?? '',
+                highlights: row.highlights ?? [],
+                autoPublishEnabled: resolved.autoPublishEnabled,
+                autoPublishMinRating: resolved.autoPublishMinRating,
+                autoPublishLanguages: resolved.autoPublishLanguages,
+              };
+            })()}
+          />
+        </div>
+      ) : null}
 
       {locations?.[0] ? (
         <div className="mb-4">

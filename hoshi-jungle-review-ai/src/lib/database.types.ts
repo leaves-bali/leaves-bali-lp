@@ -33,6 +33,19 @@ export type LocationRow = {
   setup_complete: boolean;
   /** 共有端末が待機状態のときに戻る表示言語 */
   default_ui_lang: 'ja' | 'en' | 'id';
+
+  // --- 店舗ごとの設定（null は「未設定」。環境変数の値を使う） ---
+  /** 返信文で使う所在地の表記 */
+  area_label: string | null;
+  /** 返信の末尾に置く署名 */
+  reply_signature: string | null;
+  /** 低評価のクチコミで案内してよい連絡先 */
+  contact_email: string | null;
+  /** AI が触れてよいお店の魅力 */
+  highlights: string[] | null;
+  auto_publish_enabled: boolean | null;
+  auto_publish_min_rating: number | null;
+  auto_publish_languages: string[] | null;
   last_synced_at: string | null;
   last_sync_error: string | null;
   consecutive_failures: number;

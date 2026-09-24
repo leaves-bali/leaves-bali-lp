@@ -16,6 +16,8 @@ import {
 } from '@/lib/google/businessProfile';
 import { detectLanguage, reconcileLanguage } from '@/lib/lang/detect';
 import { evaluateAttention, shouldAutoPublish } from '@/lib/reviews/policy';
+import { loadLocationSettings } from '@/lib/settings/loadLocationSettings';
+import type { LocationSettings } from '@/lib/settings/locationSettings';
 import { supabaseAdmin } from '@/lib/supabase/admin';
 
 /**
@@ -113,17 +115,25 @@ export async function syncLocation(
     result.reviewsNew = await upsertReviews(locationId, reviews);
 
     // --- 3. 未返信レビューに AI 返信案を生成 --------------------------------
-    const generated = await generateMissingReplies(locationId, {
-      deadline: startedAt + timeBudgetMs,
-      maxGenerations: options.maxGenerations ?? env.maxGenerationsPerRun,
-    });
+    // 店舗ごとの設定（店名・署名・魅力・自動公開の条件）は 1 回だけ読み、
+    // 生成と自動公開の両方で使い回す。1 件ごとに引くと同じ行を何度も読むことになる。
+    const settings = await loadLocationSettings(locationId);
+
+    const generated = await generateMissingReplies(
+      locationId,
+      {
+        deadline: startedAt + timeBudgetMs,
+        maxGenerations: options.maxGenerations ?? env.maxGenerationsPerRun,
+      },
+      settings,
+    );
     result.repliesGenerated = generated.generated;
     result.hasMore = generated.hasMore;
     result.budgetExhausted = generated.budgetExhausted;
     result.errors.push(...generated.errors);
 
     // --- 4. ポリシーが許す返信だけ自動公開 ----------------------------------
-    const published = await publishAutoApproved(locationId, accessToken, parentPath);
+    const published = await publishAutoApproved(locationId, accessToken, parentPath, settings);
     result.repliesPublished = published.published;
     result.errors.push(...published.errors);
 
@@ -267,6 +277,7 @@ async function upsertReviews(
 async function generateMissingReplies(
   locationId: string,
   limits: { deadline: number; maxGenerations: number },
+  settings: LocationSettings,
 ): Promise<{
   generated: number;
   hasMore: boolean;
@@ -342,13 +353,16 @@ async function generateMissingReplies(
     const languageIsUncertain = (review.language_confidence ?? 0) < 0.3;
 
     try {
-      const { draft, meta } = await generateReply({
-        rating: review.rating,
-        text: review.text,
-        reviewerName: review.reviewer_display_name,
-        detectedLanguage: review.language,
-        languageIsUncertain,
-      });
+      const { draft, meta } = await generateReply(
+        {
+          rating: review.rating,
+          text: review.text,
+          reviewerName: review.reviewer_display_name,
+          detectedLanguage: review.language,
+          languageIsUncertain,
+        },
+        settings,
+      );
 
       // Claude の言語判定で、低信頼だったローカル判定を上書きする。
       const reconciled = reconcileLanguage(
@@ -453,11 +467,12 @@ async function publishAutoApproved(
   locationId: string,
   accessToken: string,
   parentPath: string,
+  settings: LocationSettings,
 ): Promise<{ published: number; errors: string[] }> {
   const errors: string[] = [];
 
   // 自動公開が無効なら Google API を 1 度も叩かない。
-  if (!env.autoPublishEnabled) return { published: 0, errors };
+  if (!settings.autoPublishEnabled) return { published: 0, errors };
 
   const db = supabaseAdmin();
   const { data: candidates, error } = await db
@@ -477,6 +492,7 @@ async function publishAutoApproved(
       rating: candidate.rating,
       language: candidate.language,
       needsAttention: Boolean(candidate.needs_human_attention),
+      settings,
     });
     if (!eligible) continue;
 
