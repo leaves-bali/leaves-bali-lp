@@ -191,6 +191,7 @@
 
 <div class="demobar">
   <span id="demoNote"></span>
+  <button type="button" id="loginViewBtn"></button>
   <button type="button" id="resetBtn"></button>
 </div>
 
@@ -237,6 +238,7 @@
     ja: {
       demoNote: "これは体験用のデモです。Google には一切投稿されません。",
       reset: "最初から",
+      loginView: "ログイン画面を見る",
       appName: "HOSHI JUNGLE REVIEW AI",
       staffLogin: "スタッフ用ログイン",
       passcode: "パスコード",
@@ -287,6 +289,7 @@
     en: {
       demoNote: "This is a hands-on demo. Nothing is ever posted to Google.",
       reset: "Start over",
+      loginView: "See the sign-in screen",
       appName: "HOSHI JUNGLE REVIEW AI",
       staffLogin: "Staff sign-in",
       passcode: "Passcode",
@@ -337,6 +340,7 @@
     id: {
       demoNote: "Ini demo untuk dicoba langsung. Tidak ada yang diterbitkan ke Google.",
       reset: "Mulai lagi",
+      loginView: "Lihat layar masuk",
       appName: "HOSHI JUNGLE REVIEW AI",
       staffLogin: "Masuk sebagai staf",
       passcode: "Kode akses",
@@ -450,7 +454,11 @@
   function freshState() {
     return {
       lang: detectLang(),
-      signedIn: false,
+      // 開いた瞬間から中身が見える状態で始める。
+      // 実物はパスコード入室だが、デモで最初に入力を求めると
+      // そこで止まってしまい、肝心の画面に辿り着かない人が出る。
+      // ログイン画面は上部のリンクからいつでも見られるようにしてある。
+      signedIn: true,
       loginError: null,
       view: "inbox",          // inbox | attention | archive
       filter: "all",          // all | ja | en | id | zh | ko
@@ -674,6 +682,9 @@
     document.documentElement.lang = S.lang;
     document.getElementById("demoNote").textContent = d().demoNote;
     document.getElementById("resetBtn").textContent = d().reset;
+    var lv = document.getElementById("loginViewBtn");
+    lv.textContent = d().loginView;
+    lv.hidden = !S.signedIn;   // ログイン画面を見ているときは出さない
     appEl.innerHTML = S.signedIn ? dashHTML() : loginHTML();
     autosize();
     var pc = document.getElementById("pc");
@@ -696,6 +707,7 @@
     if (el.dataset.setlang) { S.lang = el.dataset.setlang; render(); return; }
 
     if (el.id === "resetBtn") { S = freshState(); render(); toast(d().reset); return; }
+    if (el.id === "loginViewBtn") { S.signedIn = false; S.loginError = null; render(); return; }
     if (el.id === "fillBtn") { document.getElementById("pc").value = DEMO_PASSCODE; return; }
 
     if (el.id === "enterBtn") {
