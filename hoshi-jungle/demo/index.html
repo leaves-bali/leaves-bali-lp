@@ -1,0 +1,812 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<!-- 先方へ個別にお渡しするデモのため、検索エンジンには載せない -->
+<meta name="robots" content="noindex, nofollow">
+<title>Review AI 体験デモ</title>
+<style>
+  /* 実際のアプリ（Tailwind の jungle / sand パレット）と同じ配色をそのまま使う。
+     見た目が違うと「デモと本番は別物」という印象になり、体験の意味が薄れるため。 */
+  :root {
+    color-scheme: light;   /* 実アプリ（globals.css）と同じく light 固定 */
+    --j50:#f2f8f4; --j100:#dcefe2; --j200:#bbdec8; --j300:#8dc5a4; --j400:#5ba57c;
+    --j500:#3a875f; --j600:#2a6c4b; --j700:#22563d; --j800:#1d4532; --j900:#19392b;
+    --s50:#faf8f3; --s100:#f2ede1; --s200:#e5dac2;
+    --warn:#8a5a11; --warn-bg:#fdf6e7; --warn-line:#e8d3a6;
+    --crit:#9b3730; --crit-bg:#fbeae7; --crit-line:#e9c3bd;
+    --ok:#1f5c47; --ok-bg:#deede4;
+    --brass:#9a7a32;
+    --sans: ui-sans-serif, system-ui, "Hiragino Sans", "Noto Sans JP", sans-serif;
+  }
+  * { box-sizing: border-box; margin:0; padding:0; }
+  html, body { height:100%; }
+  body {
+    font-family: var(--sans); background: var(--s50); color: var(--j900);
+    -webkit-font-smoothing: antialiased; font-size:15px; line-height:1.7;
+  }
+  button, input, textarea { font: inherit; color: inherit; }
+
+  /* ---- デモ帯 ---- */
+  .demobar {
+    background: var(--j900); color:#dbe9df; font-size:12px;
+    padding:8px 16px; display:flex; gap:12px; align-items:center;
+    flex-wrap:wrap; justify-content:center; text-align:center;
+  }
+  .demobar b { color:#8dc5a4; font-weight:700; }
+  .demobar button {
+    background:none; border:1px solid #3a5a48; color:#9dbcab;
+    border-radius:999px; padding:2px 11px; font-size:11px; cursor:pointer;
+  }
+  .demobar button:hover { background:#22362b; color:#cfe3d7; }
+
+  /* ---- 共通パーツ（実アプリの .card / .btn-* と同じ見た目） ---- */
+  .card { border:1px solid var(--j100); background:#fff; border-radius:12px; box-shadow:0 1px 2px rgba(25,57,43,.05); }
+  .btn {
+    display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    border-radius:8px; padding:8px 16px; font-size:14px; font-weight:500;
+    border:1px solid transparent; cursor:pointer; transition:background .15s, color .15s;
+  }
+  .btn:disabled { opacity:.5; cursor:not-allowed; }
+  .btn-primary { background:var(--j600); color:#fff; }
+  .btn-primary:not(:disabled):hover { background:var(--j700); }
+  .btn-secondary { border-color:var(--j200); background:#fff; color:var(--j700); }
+  .btn-secondary:not(:disabled):hover { background:var(--j50); }
+  .btn-ghost { background:none; color:var(--j600); }
+  .btn-ghost:not(:disabled):hover { background:var(--j50); }
+  .badge { display:inline-flex; align-items:center; border-radius:999px; padding:2px 10px; font-size:12px; font-weight:500; }
+
+  /* ---- 言語切替 ---- */
+  .langs { display:inline-flex; border:1px solid var(--j200); background:#fff; border-radius:999px; overflow:hidden; }
+  .langs button { background:none; border:none; padding:6px 12px; font-size:12px; font-weight:500; color:var(--j600); cursor:pointer; }
+  .langs button:hover { background:var(--j50); }
+  .langs button[aria-pressed="true"] { background:var(--j600); color:#fff; }
+
+  /* ---- ログイン画面 ---- */
+  .login { min-height:calc(100vh - 100px); display:flex; align-items:center; justify-content:center; padding:40px 20px; }
+  .login-inner { width:100%; max-width:360px; }
+  .login .eyebrow { font-size:12px; font-weight:500; letter-spacing:.18em; color:var(--j500); text-align:center; }
+  .login h1 { font-size:26px; font-weight:700; color:var(--j800); text-align:center; margin-top:6px; }
+  .login .sub { font-size:14px; color:var(--j600); text-align:center; margin-top:6px; }
+  .field { display:block; font-size:13px; font-weight:500; color:var(--j700); margin-bottom:6px; }
+  .input {
+    width:100%; border:1px solid var(--j200); border-radius:10px; padding:13px 14px;
+    font-size:18px; letter-spacing:.12em; text-align:center; background:#fff; outline:none;
+  }
+  .input:focus { border-color:var(--j500); box-shadow:0 0 0 3px var(--j100); }
+  .hintbox { margin-top:12px; background:var(--j50); border:1px dashed var(--j200); border-radius:8px; padding:10px 12px; font-size:12px; color:var(--j700); }
+  .hintbox code { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-weight:700; letter-spacing:.06em; }
+  .hintbox button { margin-top:6px; background:none; border:none; color:var(--j600); font-size:12px; text-decoration:underline; cursor:pointer; padding:0; }
+  .err { margin-top:10px; background:#fdecea; border:1px solid #f3c9c4; color:#9b3730; border-radius:8px; padding:9px 12px; font-size:13px; }
+  .muted { font-size:12px; color:var(--j400); text-align:center; margin-top:18px; line-height:1.7; }
+
+  /* ---- ヘッダー ---- */
+  header.app { background:#fff; border-bottom:1px solid var(--j100); }
+  .hrow { max-width:1000px; margin:0 auto; padding:14px 20px; display:flex; gap:14px; align-items:center; flex-wrap:wrap; }
+  .hname .k { font-size:11px; font-weight:500; letter-spacing:.16em; color:var(--j400); }
+  .hname .v { font-size:18px; font-weight:700; color:var(--j800); }
+  .hright { margin-left:auto; display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .hright .link { font-size:12px; color:var(--j400); text-decoration:none; cursor:pointer; background:none; border:none; }
+  .hright .link:hover { color:var(--j600); }
+  nav.tabs { max-width:1000px; margin:0 auto; padding:0 20px; display:flex; gap:2px; flex-wrap:wrap; }
+  nav.tabs button {
+    background:none; border:none; cursor:pointer; padding:10px 14px; font-size:14px; font-weight:600;
+    color:var(--j400); border-bottom:2px solid transparent; margin-bottom:-1px;
+  }
+  nav.tabs button:hover { color:var(--j700); }
+  nav.tabs button[aria-selected="true"] { color:var(--j800); border-bottom-color:var(--j600); }
+  nav.tabs .n { margin-left:6px; font-weight:500; color:var(--j400); font-variant-numeric:tabular-nums; }
+  nav.tabs button.warnTab[aria-selected="true"] { color:var(--warn); border-bottom-color:var(--warn); }
+
+  main { max-width:1000px; margin:0 auto; padding:22px 20px 60px; }
+
+  /* ---- 言語フィルタ ---- */
+  .filters { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:16px; }
+  .filters button {
+    background:#fff; border:1px solid var(--j200); border-radius:999px; padding:5px 13px;
+    font-size:12.5px; font-weight:500; color:var(--j600); cursor:pointer;
+  }
+  .filters button:hover { background:var(--j50); }
+  .filters button[aria-pressed="true"] { background:var(--j600); border-color:var(--j600); color:#fff; }
+
+  /* ---- レビューカード ---- */
+  .list { display:flex; flex-direction:column; gap:14px; }
+  .rev { padding:20px; }
+  .rev.attn { border-left:3px solid var(--warn); }
+  .rev.attn.crit { border-left-color:var(--crit); }
+  .rev.done { background:var(--s50); }
+  .rtop { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:9px; }
+  .stars { color:var(--brass); font-size:14px; letter-spacing:1px; }
+  .stars .off { color:var(--j100); }
+  .who { font-weight:700; font-size:14.5px; }
+  .when { margin-left:auto; font-size:12px; color:var(--j400); }
+  .b-lang { background:var(--j100); color:var(--j700); }
+  .b-draft { background:var(--s100); color:var(--j700); }
+  .b-done { background:var(--ok-bg); color:var(--ok); }
+  .b-skip { background:var(--j100); color:var(--j400); }
+  .rtext { font-size:14.5px; white-space:pre-wrap; }
+
+  .alert {
+    margin-top:12px; padding:10px 13px; border-radius:8px; font-size:12.5px; line-height:1.65;
+    background:var(--warn-bg); border:1px solid var(--warn-line); color:var(--warn);
+  }
+  .alert.crit { background:var(--crit-bg); border-color:var(--crit-line); color:var(--crit); }
+  .alert b { font-weight:700; }
+
+  .reply { margin-top:16px; }
+  .rhead { display:flex; align-items:baseline; gap:10px; font-size:12px; color:var(--j400); font-weight:600; margin-bottom:8px; }
+  .rhead .count { margin-left:auto; font-variant-numeric:tabular-nums; font-family:ui-monospace,Menlo,monospace; font-size:11px; }
+  .picker { display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin-bottom:9px; }
+  .picker button {
+    background:#fff; border:1px solid var(--j200); border-radius:999px; padding:4px 13px;
+    font-size:12px; font-weight:600; color:var(--j600); cursor:pointer;
+  }
+  .picker button:hover { background:var(--j50); }
+  .picker button[aria-pressed="true"] { background:var(--j600); border-color:var(--j600); color:#fff; }
+  .picker .hint { font-size:11.5px; color:var(--j400); padding-left:4px; }
+  textarea {
+    width:100%; min-height:100px; resize:vertical; overflow:hidden;
+    border:1px solid var(--j200); border-radius:10px; padding:13px 14px;
+    font-size:14px; line-height:1.85; background:var(--s50); outline:none; white-space:pre-wrap;
+  }
+  textarea:focus { border-color:var(--j500); box-shadow:0 0 0 3px var(--j100); background:#fff; }
+  textarea[readonly] { background:var(--s100); color:var(--j700); }
+  .acts { display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; align-items:center; }
+  .acts .right { margin-left:auto; }
+  .note-ok { margin-top:12px; font-size:13px; color:var(--ok); font-weight:600; }
+  .empty { padding:48px 20px; text-align:center; color:var(--j400); font-size:14px; }
+
+  /* ---- トースト ---- */
+  .toast {
+    position:fixed; left:50%; bottom:calc(22px + env(safe-area-inset-bottom,0px));
+    transform:translateX(-50%) translateY(14px);
+    background:var(--j900); color:#fff; padding:11px 20px; border-radius:999px;
+    font-size:13px; font-weight:600; opacity:0; pointer-events:none;
+    transition:opacity .18s, transform .18s; z-index:60;
+    max-width:calc(100vw - 40px); text-align:center; box-shadow:0 8px 24px -10px rgba(0,0,0,.4);
+  }
+  .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+  @media (max-width:560px) {
+    .when { margin-left:0; width:100%; }
+    .hrow { padding:12px 16px; }
+    main { padding:18px 16px 60px; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition:none !important; } }
+
+  /* ---- JavaScript が動かない環境向けの案内 ----
+     LINE などのアプリ内ファイルプレビューはスクリプトを実行しないため、
+     何も出ない真っ白な画面になる。原因が分かる案内を必ず出す。 */
+  .nojs { max-width:460px; margin:48px auto; padding:0 20px; }
+  .nojs .box { padding:26px 24px; }
+  .nojs h2 { font-size:19px; font-weight:700; color:var(--j800); margin-bottom:10px; }
+  .nojs p { font-size:14px; color:var(--j700); margin-bottom:12px; }
+  .nojs ol { margin:0 0 14px 20px; font-size:14px; color:var(--j700); }
+  .nojs li { margin-bottom:6px; }
+  .nojs .en { margin-top:18px; padding-top:16px; border-top:1px solid var(--j100); font-size:13px; color:var(--j400); }
+</style>
+</head>
+<body>
+
+<div class="demobar">
+  <span id="demoNote"></span>
+  <button type="button" id="loginViewBtn"></button>
+  <button type="button" id="resetBtn"></button>
+</div>
+
+<noscript>
+  <div class="nojs"><div class="card box">
+    <h2>ブラウザで開いてください</h2>
+    <p>
+      この体験デモは操作できるページのため、JavaScript が必要です。
+      LINE やメールアプリの「プレビュー」では動かず、白い画面になります。
+    </p>
+    <ol>
+      <li>画面右上の「⋯」または共有ボタンを押す</li>
+      <li>「他のアプリで開く」「ブラウザで開く」を選ぶ</li>
+      <li>Safari / Chrome で開くと操作できます</li>
+    </ol>
+    <p style="margin-bottom:0;">
+      うまくいかない場合は、送信元にリンク（URL）での共有をご依頼ください。
+    </p>
+    <div class="en">
+      <b>Please open this in a web browser.</b><br>
+      This is an interactive demo and needs JavaScript. In-app file previews
+      (LINE, mail apps) do not run it, so the page appears blank.
+      Use “Open in browser” from the share menu, or ask the sender for a link.
+    </div>
+  </div></div>
+</noscript>
+
+<div id="app"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  var SIGN = "Hoshi Jungle Team";
+  var DEMO_PASSCODE = "HJ-DEMO-2026";
+  var MAX = 4096;
+
+  /* ------------------------------------------------------------------ *
+   * 画面の文言。実アプリ src/lib/i18n.ts の文言をそのまま写している。
+   * デモと本番で言い回しが違うと、体験した印象と実物がズレるため。
+   * ------------------------------------------------------------------ */
+  var DICT = {
+    ja: {
+      demoNote: "これは体験用のデモです。Google には一切投稿されません。",
+      reset: "最初から",
+      loginView: "ログイン画面を見る",
+      appName: "HOSHI JUNGLE REVIEW AI",
+      staffLogin: "スタッフ用ログイン",
+      passcode: "パスコード",
+      enter: "入室する",
+      askAdmin: "パスコードが分からない場合は、ホテルの管理者に確認してください。",
+      demoPass: "デモ用パスコード",
+      fillIt: "入力する",
+      errPasscodeWrong: "パスコードが違います。",
+      staff: "スタッフ",
+      frontDesk: "フロントデスク用",
+      logout: "ログアウト",
+      syncNow: "今すぐ同期",
+      syncing: "同期中…",
+      autoHourly: "毎時自動で取得しています",
+      quota: "今月の返信案 残り",
+      cases: "件",
+      navInbox: "未返信",
+      navAttention: "要確認",
+      navArchive: "履歴",
+      filterAll: "すべて",
+      needsCheck: "要確認",
+      replyDraft: "AIが作成した返信案",
+      replyEdited: "返信案（編集済み）",
+      replyPublished: "公開した返信",
+      publish: "Googleに公開",
+      publishing: "公開中…",
+      regenerate: "AIで作り直す",
+      regenerating: "生成中…",
+      skip: "返信しない",
+      styleWarm: "丁寧", styleStandard: "標準", styleConcise: "簡潔",
+      styleWarmHint: "気持ちを込めた、いちばん厚い言い方",
+      styleStandardHint: "丁寧さと簡潔さのバランス型",
+      styleConciseHint: "短く要点だけ。忙しい日向け",
+      edited: "編集済み（どの案にも一致しません）",
+      publishedNotice: "Google に公開しました。（デモなので実際には投稿されていません）",
+      regeneratedNotice: "3つの返信案を作り直しました。",
+      skippedNotice: "このクチコミには返信しない設定にしました。",
+      emptyReply: "返信が空です。文章を入れてください。",
+      skippedBody: "このクチコミには返信しない設定にしました。",
+      emptyInbox: "未返信のクチコミはありません。",
+      emptyAttention: "要確認のクチコミはありません。",
+      emptyArchive: "まだ履歴がありません。",
+      reasonLowRating: "低評価（1〜2つ星）のため、公開前に必ず内容を確認してください",
+      reasonIndonesian: "インドネシア語のため、現地スタッフによる表現確認が必要です",
+      reasonAiFlagged: "AI が要確認と判定しました（返金の要求・金銭トラブルの主張）。AI は返金を約束していません",
+      locale: "ja-JP"
+    },
+    en: {
+      demoNote: "This is a hands-on demo. Nothing is ever posted to Google.",
+      reset: "Start over",
+      loginView: "See the sign-in screen",
+      appName: "HOSHI JUNGLE REVIEW AI",
+      staffLogin: "Staff sign-in",
+      passcode: "Passcode",
+      enter: "Enter",
+      askAdmin: "If you don't know the passcode, ask your hotel administrator.",
+      demoPass: "Demo passcode",
+      fillIt: "Fill it in",
+      errPasscodeWrong: "That passcode is not correct.",
+      staff: "Staff",
+      frontDesk: "Front desk",
+      logout: "Sign out",
+      syncNow: "Sync now",
+      syncing: "Syncing…",
+      autoHourly: "Syncs automatically every hour",
+      quota: "Drafts left this month",
+      cases: "",
+      navInbox: "To reply",
+      navAttention: "Needs check",
+      navArchive: "History",
+      filterAll: "All",
+      needsCheck: "Needs check",
+      replyDraft: "AI draft reply",
+      replyEdited: "Reply (edited)",
+      replyPublished: "Published reply",
+      publish: "Publish to Google",
+      publishing: "Publishing…",
+      regenerate: "Rewrite with AI",
+      regenerating: "Writing…",
+      skip: "Don't reply",
+      styleWarm: "Warm", styleStandard: "Standard", styleConcise: "Short",
+      styleWarmHint: "The fullest, most personal wording",
+      styleStandardHint: "Balanced — polite but not long",
+      styleConciseHint: "Short and to the point, for busy days",
+      edited: "Edited — no longer matches any draft",
+      publishedNotice: "Published to Google. (Demo — nothing was actually posted)",
+      regeneratedNotice: "Three new drafts written.",
+      skippedNotice: "Marked as no reply needed.",
+      emptyReply: "The reply is empty. Please write something.",
+      skippedBody: "Marked as no reply needed.",
+      emptyInbox: "Nothing left to reply to.",
+      emptyAttention: "Nothing needs checking.",
+      emptyArchive: "No history yet.",
+      reasonLowRating: "Low rating (1–2 stars) — please read carefully before publishing",
+      reasonIndonesian: "Indonesian — please have local staff check the wording",
+      reasonAiFlagged: "Flagged by the AI (refund request / billing dispute). The AI has not promised a refund",
+      locale: "en-GB"
+    },
+    id: {
+      demoNote: "Ini demo untuk dicoba langsung. Tidak ada yang diterbitkan ke Google.",
+      reset: "Mulai lagi",
+      loginView: "Lihat layar masuk",
+      appName: "HOSHI JUNGLE REVIEW AI",
+      staffLogin: "Masuk sebagai staf",
+      passcode: "Kode akses",
+      enter: "Masuk",
+      askAdmin: "Jika tidak tahu kode aksesnya, tanyakan kepada admin hotel.",
+      demoPass: "Kode akses demo",
+      fillIt: "Isikan",
+      errPasscodeWrong: "Kode akses salah.",
+      staff: "Staf",
+      frontDesk: "Resepsionis",
+      logout: "Keluar",
+      syncNow: "Sinkronkan sekarang",
+      syncing: "Menyinkronkan…",
+      autoHourly: "Diperbarui otomatis setiap jam",
+      quota: "Sisa draf bulan ini",
+      cases: "",
+      navInbox: "Belum dibalas",
+      navAttention: "Perlu dicek",
+      navArchive: "Riwayat",
+      filterAll: "Semua",
+      needsCheck: "Perlu dicek",
+      replyDraft: "Draf balasan dari AI",
+      replyEdited: "Balasan (sudah disunting)",
+      replyPublished: "Balasan yang terbit",
+      publish: "Terbitkan ke Google",
+      publishing: "Menerbitkan…",
+      regenerate: "Tulis ulang dengan AI",
+      regenerating: "Menulis…",
+      skip: "Tidak dibalas",
+      styleWarm: "Hangat", styleStandard: "Standar", styleConcise: "Singkat",
+      styleWarmHint: "Paling hangat dan personal",
+      styleStandardHint: "Seimbang — sopan tapi tidak panjang",
+      styleConciseHint: "Singkat dan langsung, untuk hari sibuk",
+      edited: "Sudah disunting — tidak cocok dengan draf mana pun",
+      publishedNotice: "Terbit di Google. (Demo — tidak benar-benar dikirim)",
+      regeneratedNotice: "Tiga draf baru telah ditulis.",
+      skippedNotice: "Ditandai tidak perlu dibalas.",
+      emptyReply: "Balasan masih kosong. Silakan tulis isinya.",
+      skippedBody: "Ditandai tidak perlu dibalas.",
+      emptyInbox: "Tidak ada yang perlu dibalas.",
+      emptyAttention: "Tidak ada yang perlu dicek.",
+      emptyArchive: "Belum ada riwayat.",
+      reasonLowRating: "Bintang rendah (1–2) — mohon baca teliti sebelum menerbitkan",
+      reasonIndonesian: "Bahasa Indonesia — mohon staf lokal memeriksa pilihan katanya",
+      reasonAiFlagged: "Ditandai AI (permintaan refund / sengketa tagihan). AI tidak menjanjikan refund",
+      locale: "id-ID"
+    }
+  };
+
+  var UI_LANGS = [["ja","日本語"],["en","English"],["id","Indonesia"]];
+  var LANG_LABEL = { ja:"日本語", en:"English", id:"Bahasa Indonesia", zh:"中文", ko:"한국어" };
+
+  /* ------------------------------------------------------------------ *
+   * サンプルのクチコミ。1件につき3案（丁寧・標準・簡潔）を持つ。
+   * 長さだけを変えた3案では選ぶ意味がないため、言い方の温度を変えてある。
+   * ------------------------------------------------------------------ */
+  var SEED = [
+    { id:"r1", lang:"ja", rating:5, who:"田中 美咲", date:"2026-09-12", reason:null,
+      text:"プールからの景色が最高でした。スタッフの方もとても親切です。また行きたいです。",
+      options:[
+        { style:"warm", text:"田中様、うれしいお言葉をありがとうございます。\n プールからの景色を気に入っていただけたこと、そして応対を「親切」と言っていただけたことが、何よりの励みになります。\nまたお会いできる日を楽しみにお待ちしております。\n\n"+SIGN },
+        { style:"standard", text:"田中様、ありがとうございます。\nプールからの眺めを気に入っていただけて、私たちもうれしく思います。\nまたのお越しをお待ちしております。\n\n"+SIGN },
+        { style:"concise", text:"田中様、ありがとうございます。\nまたお越しいただける日を楽しみにしております。\n\n"+SIGN }
+      ] },
+    { id:"r2", lang:"id", rating:5, who:"Putu Ayu", date:"2026-09-11", reason:"reasonIndonesian",
+      text:"Tempatnya bagus dan pelayanannya ramah. Sarapannya juga enak.",
+      options:[
+        { style:"warm", text:"Terima kasih banyak, Putu.\nSenang sekali mendengar bahwa suasana, pelayanan, dan sarapan kami berkesan untuk Anda. Itulah yang paling kami jaga di sini.\nKami tunggu kedatangan Anda berikutnya.\n\n"+SIGN },
+        { style:"standard", text:"Terima kasih banyak, Putu.\nSenang mendengar Anda menikmati suasana dan pelayanan kami.\nKami tunggu kedatangan Anda berikutnya.\n\n"+SIGN },
+        { style:"concise", text:"Terima kasih, Putu.\nSampai jumpa lagi di Hoshi Jungle.\n\n"+SIGN }
+      ] },
+    { id:"r3", lang:"en", rating:2, who:"Michael R.", date:"2026-09-10", reason:"reasonLowRating",
+      text:"The room wasn't clean when we arrived and the AC didn't work.",
+      options:[
+        { style:"warm", text:"Michael, I am sorry.\nThe room should have been clean, and the air conditioning should have been working. Neither was, and that is on us — not on the day you arrived, and not on any day.\nWe are putting both right. Please write to stay@hoshijungle.com; we would like to hear the details from you.\n\n"+SIGN },
+        { style:"standard", text:"Michael, I am sorry.\nThe room should have been clean and the air conditioning should have been working. We are putting both right.\nPlease contact us at stay@hoshijungle.com.\n\n"+SIGN },
+        { style:"concise", text:"Michael, I am sorry — that should not have happened.\nWe are putting it right. Please contact us at stay@hoshijungle.com.\n\n"+SIGN }
+      ] },
+    { id:"r4", lang:"zh", rating:4, who:"王 小美", date:"2026-09-09", reason:null,
+      text:"位置很好，早餐也不错。房间的隔音可以再好一点。",
+      options:[
+        { style:"warm", text:"王女士，感謝您抽空留下評價。\n很高興位置與早餐讓您滿意。關於房間隔音，您說得對，這是我們仍在改善的地方，會認真對待。\n期待再次為您服務。\n\n"+SIGN },
+        { style:"standard", text:"王女士，感謝您的評價。\n很高興位置與早餐讓您滿意。房間隔音的部分，我們會繼續改善。\n期待再次見到您。\n\n"+SIGN },
+        { style:"concise", text:"王女士，感謝您的評價。\n隔音的問題我們會改善。期待您再次光臨。\n\n"+SIGN }
+      ] },
+    { id:"r5", lang:"ko", rating:5, who:"김민준", date:"2026-09-08", reason:null,
+      text:"직원분들이 정말 친절했어요. 수영장 전망이 최고입니다.",
+      options:[
+        { style:"warm", text:"민준님, 따뜻한 후기 감사합니다.\n친절했다는 말씀, 그리고 수영장에서 본 풍경을 좋아해 주셨다는 말씀이 저희에게 큰 힘이 됩니다.\n다시 뵐 수 있기를 기다리겠습니다.\n\n"+SIGN },
+        { style:"standard", text:"민준님, 감사합니다.\n수영장 전망을 마음에 들어 하셨다니 저희도 기쁩니다.\n다시 찾아주시기를 기다리겠습니다.\n\n"+SIGN },
+        { style:"concise", text:"민준님, 감사합니다.\n다시 뵙기를 기다리겠습니다.\n\n"+SIGN }
+      ] },
+    { id:"r6", lang:"en", rating:1, who:"Sarah L.", date:"2026-09-07", reason:"reasonAiFlagged", crit:true,
+      text:"Charged twice for the airport transfer. No reply to my emails for a week. I want a refund.",
+      options:[
+        { style:"warm", text:"Sarah, I am sorry — for the double charge, and for leaving you without an answer for a week. Waiting that long for a reply is not something we can defend.\nWe are checking the transfer booking now and will come back to you.\nPlease write to stay@hoshijungle.com so we can reach you directly.\n\n"+SIGN },
+        { style:"standard", text:"Sarah, I am sorry — for the double charge and for the week of silence.\nWe are checking the booking now.\nPlease write to stay@hoshijungle.com so we can reach you directly.\n\n"+SIGN },
+        { style:"concise", text:"Sarah, I am sorry. A week without a reply is not acceptable.\nWe are checking the booking now — please write to stay@hoshijungle.com.\n\n"+SIGN }
+      ] },
+    { id:"r7", lang:"en", rating:5, who:"James", date:"2026-09-05", reason:null,
+      text:"Perfect stay. The staff made it.",
+      options:[
+        { style:"warm", text:"Thank you, James.\nBeing told that the people are what made the stay is the best thing anyone can say about us.\nYou are welcome back any time.\n\n"+SIGN },
+        { style:"standard", text:"Thank you, James.\nThat is the compliment we value most. You are welcome back any time.\n\n"+SIGN },
+        { style:"concise", text:"Thank you, James. You are welcome back any time.\n\n"+SIGN }
+      ] }
+  ];
+
+  /* ---------------------- 状態 ---------------------- */
+  var S;
+  function freshState() {
+    return {
+      lang: detectLang(),
+      // 開いた瞬間から中身が見える状態で始める。
+      // 実物はパスコード入室だが、デモで最初に入力を求めると
+      // そこで止まってしまい、肝心の画面に辿り着かない人が出る。
+      // ログイン画面は上部のリンクからいつでも見られるようにしてある。
+      signedIn: true,
+      loginError: null,
+      view: "inbox",          // inbox | attention | archive
+      filter: "all",          // all | ja | en | id | zh | ko
+      quota: 64,
+      busy: null,
+      reviews: SEED.map(function (r) {
+        var std = r.options.filter(function (o) { return o.style === "standard"; })[0];
+        return {
+          id:r.id, lang:r.lang, rating:r.rating, who:r.who, date:r.date,
+          reason:r.reason, crit:!!r.crit, text:r.text, options:r.options,
+          selected:"standard", body:std.text, status:"draft"   // draft | published | skipped
+        };
+      })
+    };
+  }
+  function detectLang() {
+    var tags = (navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language || "ja"]);
+    for (var i = 0; i < tags.length; i++) {
+      var base = String(tags[i]).toLowerCase().split("-")[0];
+      if (DICT[base]) return base;
+    }
+    return "ja";
+  }
+  function d() { return DICT[S.lang] || DICT.ja; }
+
+  /* ---------------------- 小道具 ---------------------- */
+  function esc(t) {
+    return String(t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+                    .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+  }
+  function stars(n) {
+    var out = "";
+    for (var i = 1; i <= 5; i++) out += (i <= n ? "★" : '<span class="off">★</span>');
+    return out;
+  }
+  function fmtDate(iso) {
+    try {
+      return new Date(iso + "T00:00:00").toLocaleDateString(d().locale, { month:"short", day:"numeric" });
+    } catch (e) { return iso; }
+  }
+  var toastEl = document.getElementById("toast"), toastT;
+  function toast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add("show");
+    clearTimeout(toastT);
+    toastT = setTimeout(function () { toastEl.classList.remove("show"); }, 2800);
+  }
+  function langSwitcher() {
+    return '<div class="langs" role="group" aria-label="Display language">' +
+      UI_LANGS.map(function (p) {
+        return '<button type="button" data-setlang="' + p[0] + '" aria-pressed="' +
+               (S.lang === p[0]) + '">' + p[1] + "</button>";
+      }).join("") + "</div>";
+  }
+
+  /* ---------------------- 絞り込み ---------------------- */
+  function inView(r, view) {
+    if (view === "archive") return r.status === "published" || r.status === "skipped";
+    if (r.status !== "draft") return false;
+    if (view === "attention") return !!r.reason;
+    return true;                                  // inbox = 未返信すべて（要確認も含む）
+  }
+  function counts() {
+    var c = { inbox:0, attention:0, archive:0 };
+    S.reviews.forEach(function (r) {
+      if (inView(r, "inbox")) c.inbox++;
+      if (inView(r, "attention")) c.attention++;
+      if (inView(r, "archive")) c.archive++;
+    });
+    return c;
+  }
+  function visible() {
+    return S.reviews.filter(function (r) {
+      if (!inView(r, S.view)) return false;
+      if (S.filter !== "all" && r.lang !== S.filter) return false;
+      return true;
+    });
+  }
+
+  /* ---------------------- ログイン画面 ---------------------- */
+  function loginHTML() {
+    var t = d();
+    return '' +
+    '<div class="login"><div class="login-inner">' +
+      '<div style="display:flex;justify-content:center;margin-bottom:22px;">' + langSwitcher() + '</div>' +
+      '<p class="eyebrow">HOSHI JUNGLE</p>' +
+      '<h1>Review AI</h1>' +
+      '<p class="sub">' + esc(t.staffLogin) + '</p>' +
+      '<div class="card" style="padding:20px;margin-top:22px;">' +
+        '<label class="field" for="pc">' + esc(t.passcode) + '</label>' +
+        '<input class="input" id="pc" type="text" autocomplete="off" spellcheck="false" placeholder="HJ-XXXX-XXXX">' +
+        (S.loginError ? '<div class="err">' + esc(t.errPasscodeWrong) + '</div>' : '') +
+        '<button type="button" class="btn btn-primary" id="enterBtn" style="width:100%;margin-top:14px;">' +
+          esc(t.enter) + '</button>' +
+        '<div class="hintbox">' + esc(t.demoPass) + ': <code>' + DEMO_PASSCODE + '</code><br>' +
+          '<button type="button" id="fillBtn">' + esc(t.fillIt) + '</button></div>' +
+      '</div>' +
+      '<p class="muted">' + esc(t.askAdmin) + '</p>' +
+    '</div></div>';
+  }
+
+  /* ---------------------- ダッシュボード ---------------------- */
+  function dashHTML() {
+    var t = d(), c = counts(), list = visible();
+
+    var langsPresent = ["all"];
+    ["ja","en","id","zh","ko"].forEach(function (L) {
+      if (S.reviews.some(function (r) { return r.lang === L; })) langsPresent.push(L);
+    });
+
+    var head = '' +
+      '<header class="app">' +
+        '<div class="hrow">' +
+          '<div class="hname"><div class="k">' + esc(t.appName) + '</div>' +
+            '<div class="v">Hoshi Jungle</div></div>' +
+          '<div class="hright">' +
+            '<span class="badge b-draft">' + esc(t.staff) + ' · ' + esc(t.frontDesk) + '</span>' +
+            '<span class="badge b-lang">' + esc(t.quota) + ' ' + S.quota + (t.cases ? " " + t.cases : "") + '</span>' +
+            langSwitcher() +
+            '<button type="button" class="btn btn-secondary" id="syncBtn">' +
+              (S.busy === "sync" ? esc(t.syncing) : esc(t.syncNow)) + '</button>' +
+            '<button type="button" class="link" id="logoutBtn">' + esc(t.logout) + '</button>' +
+          '</div>' +
+        '</div>' +
+        '<nav class="tabs">' +
+          tab("inbox", t.navInbox, c.inbox, false) +
+          tab("attention", t.navAttention, c.attention, true) +
+          tab("archive", t.navArchive, c.archive, false) +
+        '</nav>' +
+      '</header>';
+
+    var filters = '<div class="filters">' + langsPresent.map(function (L) {
+      return '<button type="button" data-filter="' + L + '" aria-pressed="' + (S.filter === L) + '">' +
+             esc(L === "all" ? t.filterAll : LANG_LABEL[L]) + '</button>';
+    }).join("") + '</div>';
+
+    var emptyMsg = S.view === "attention" ? t.emptyAttention
+                 : S.view === "archive"   ? t.emptyArchive : t.emptyInbox;
+
+    var body = list.length
+      ? '<div class="list">' + list.map(cardHTML).join("") + '</div>'
+      : '<div class="card empty">' + esc(emptyMsg) + '</div>';
+
+    return head + '<main>' + filters + body +
+      '<p style="margin-top:18px;font-size:12px;color:var(--j400);">' + esc(t.autoHourly) + '</p></main>';
+  }
+
+  function tab(key, label, n, warn) {
+    return '<button type="button" data-view="' + key + '"' +
+           (warn ? ' class="warnTab"' : '') +
+           ' aria-selected="' + (S.view === key) + '">' + esc(label) +
+           '<span class="n">' + n + "</span></button>";
+  }
+
+  function cardHTML(r) {
+    var t = d();
+    var done = r.status === "published", skipped = r.status === "skipped";
+    var cls = "card rev" + (r.reason && !done && !skipped ? " attn" : "") +
+              (r.crit && !done && !skipped ? " crit" : "") + (done || skipped ? " done" : "");
+
+    var statusBadge = done ? '<span class="badge b-done">' + esc(t.replyPublished) + '</span>'
+      : skipped ? '<span class="badge b-skip">' + esc(t.skip) + '</span>'
+      : '<span class="badge b-draft">' + esc(t.replyDraft) + '</span>';
+
+    var alertHTML = (r.reason && !done && !skipped)
+      ? '<div class="alert' + (r.crit ? " crit" : "") + '"><b>' + esc(t.needsCheck) + '</b> — ' +
+        esc(t[r.reason]) + '</div>' : "";
+
+    var replyHTML;
+    if (skipped) {
+      replyHTML = '<p class="note-ok" style="color:var(--j400);">' + esc(t.skippedBody) + '</p>';
+    } else {
+      var heading = done ? t.replyPublished : (r.selected ? t.replyDraft : t.replyEdited);
+      var hint = r.selected ? t[styleHintKey(r.selected)] : t.edited;
+      replyHTML = '<div class="reply">' +
+        '<div class="rhead"><span>' + esc(heading) + '</span>' +
+          '<span class="count" data-count="' + r.id + '">' + r.body.length + " / " + MAX + '</span></div>' +
+        (done ? "" :
+          '<div class="picker">' +
+            r.options.map(function (o) {
+              return '<button type="button" data-pick="' + o.style + '" data-id="' + r.id + '" aria-pressed="' +
+                     (r.selected === o.style) + '">' + esc(t[styleKey(o.style)]) + "</button>";
+            }).join("") +
+            '<span class="hint">' + esc(hint) + '</span>' +
+          '</div>') +
+        '<textarea data-id="' + r.id + '"' + (done ? " readonly" : "") + ' aria-label="' + esc(t.replyDraft) + '">' +
+          esc(r.body) + '</textarea>' +
+        (done
+          ? '<p class="note-ok">' + esc(t.publishedNotice) + '</p>'
+          : '<div class="acts">' +
+              '<button type="button" class="btn btn-primary" data-do="publish" data-id="' + r.id + '">' +
+                (S.busy === "pub:" + r.id ? esc(t.publishing) : esc(t.publish)) + '</button>' +
+              '<button type="button" class="btn btn-secondary" data-do="regen" data-id="' + r.id + '"' +
+                (S.busy === "gen:" + r.id ? " disabled" : "") + '>' +
+                (S.busy === "gen:" + r.id ? esc(t.regenerating) : esc(t.regenerate)) + '</button>' +
+              '<button type="button" class="btn btn-ghost right" data-do="skip" data-id="' + r.id + '">' +
+                esc(t.skip) + '</button>' +
+            '</div>') +
+      '</div>';
+    }
+
+    return '<article class="' + cls + '">' +
+      '<div class="rtop">' +
+        '<span class="stars" aria-label="' + r.rating + ' / 5">' + stars(r.rating) + '</span>' +
+        '<span class="who">' + esc(r.who) + '</span>' +
+        '<span class="badge b-lang">' + esc(LANG_LABEL[r.lang]) + '</span>' +
+        statusBadge +
+        '<time class="when">' + esc(fmtDate(r.date)) + '</time>' +
+      '</div>' +
+      '<p class="rtext">' + esc(r.text) + '</p>' +
+      alertHTML + replyHTML +
+    '</article>';
+  }
+
+  function styleKey(s) { return s === "warm" ? "styleWarm" : s === "concise" ? "styleConcise" : "styleStandard"; }
+  function styleHintKey(s) { return s === "warm" ? "styleWarmHint" : s === "concise" ? "styleConciseHint" : "styleStandardHint"; }
+
+  /* ---------------------- 描画 ---------------------- */
+  var appEl = document.getElementById("app");
+  function render() {
+    document.documentElement.lang = S.lang;
+    document.getElementById("demoNote").textContent = d().demoNote;
+    document.getElementById("resetBtn").textContent = d().reset;
+    var lv = document.getElementById("loginViewBtn");
+    lv.textContent = d().loginView;
+    lv.hidden = !S.signedIn;   // ログイン画面を見ているときは出さない
+    appEl.innerHTML = S.signedIn ? dashHTML() : loginHTML();
+    autosize();
+    var pc = document.getElementById("pc");
+    if (pc) pc.focus();
+  }
+  function autosize() {
+    Array.prototype.forEach.call(appEl.querySelectorAll("textarea"), function (ta) {
+      ta.style.height = "auto";
+      ta.style.height = (ta.scrollHeight + 2) + "px";
+    });
+  }
+  function byId(id) { return S.reviews.filter(function (r) { return r.id === id; })[0]; }
+
+  /* ---------------------- 操作 ---------------------- */
+  document.addEventListener("click", function (e) {
+    var el = e.target.closest ? e.target.closest("button") : null;
+    if (!el) return;
+
+    // 言語切替（ログイン前でも効く。共用端末で読めない画面を出さないため）
+    if (el.dataset.setlang) { S.lang = el.dataset.setlang; render(); return; }
+
+    if (el.id === "resetBtn") { S = freshState(); render(); toast(d().reset); return; }
+    if (el.id === "loginViewBtn") { S.signedIn = false; S.loginError = null; render(); return; }
+    if (el.id === "fillBtn") { document.getElementById("pc").value = DEMO_PASSCODE; return; }
+
+    if (el.id === "enterBtn") {
+      var v = (document.getElementById("pc").value || "").trim().toUpperCase().replace(/\s+/g, "");
+      if (v === DEMO_PASSCODE) { S.signedIn = true; S.loginError = null; }
+      else { S.loginError = true; }
+      render();
+      return;
+    }
+    if (el.id === "logoutBtn") { S.signedIn = false; S.loginError = null; render(); return; }
+
+    if (el.id === "syncBtn") {
+      if (S.busy) return;
+      S.busy = "sync"; render();
+      setTimeout(function () { S.busy = null; render(); toast(d().autoHourly); }, 800);
+      return;
+    }
+
+    if (el.dataset.view) { S.view = el.dataset.view; render(); return; }
+    if (el.dataset.filter) { S.filter = el.dataset.filter; render(); return; }
+
+    if (el.dataset.pick) {
+      var rp = byId(el.dataset.id);
+      var opt = rp.options.filter(function (o) { return o.style === el.dataset.pick; })[0];
+      if (!opt) return;
+      rp.body = opt.text; rp.selected = opt.style;
+      render();
+      return;
+    }
+
+    var act = el.dataset.do;
+    if (!act) return;
+    var r = byId(el.dataset.id);
+    var t = d();
+
+    if (act === "publish") {
+      if (!r.body.trim()) { toast(t.emptyReply); return; }
+      S.busy = "pub:" + r.id; render();
+      setTimeout(function () {
+        r.status = "published"; S.busy = null; render(); toast(t.publishedNotice);
+      }, 550);
+      return;
+    }
+    if (act === "regen") {
+      S.busy = "gen:" + r.id; render();
+      setTimeout(function () {
+        r.selected = "standard";
+        r.body = r.options.filter(function (o) { return o.style === "standard"; })[0].text;
+        S.quota = Math.max(0, S.quota - 1);
+        S.busy = null; render(); toast(t.regeneratedNotice);
+      }, 750);
+      return;
+    }
+    if (act === "skip") { r.status = "skipped"; render(); toast(t.skippedNotice); return; }
+  });
+
+  // 本文の編集：どの案とも一致しなくなったら「編集済み」に落とす
+  document.addEventListener("input", function (e) {
+    var ta = e.target.closest ? e.target.closest("textarea[data-id]") : null;
+    if (!ta) return;
+    var r = byId(ta.dataset.id);
+    if (!r) return;
+    r.body = ta.value;
+    var match = r.options.filter(function (o) { return o.text === ta.value; })[0];
+    r.selected = match ? match.style : null;
+
+    var c = appEl.querySelector('[data-count="' + r.id + '"]');
+    if (c) c.textContent = ta.value.length + " / " + MAX;
+
+    // 3案のどれとも一致しなくなったことを、その場で見せる。
+    // 再描画するとカーソル位置が飛ぶので、変わった箇所だけ差し替える。
+    var card = ta.closest("article.rev");
+    if (card) {
+      var hint = card.querySelector(".picker .hint");
+      if (hint) hint.textContent = r.selected ? d()[styleHintKey(r.selected)] : d().edited;
+      Array.prototype.forEach.call(card.querySelectorAll("[data-pick]"), function (btn) {
+        btn.setAttribute("aria-pressed", String(r.selected === btn.dataset.pick));
+      });
+    }
+    ta.style.height = "auto";
+    ta.style.height = (ta.scrollHeight + 2) + "px";
+  });
+
+  // パスコード欄で Enter
+  document.addEventListener("keydown", function (e) {
+    if (e.key !== "Enter") return;
+    var pc = document.getElementById("pc");
+    if (pc && document.activeElement === pc) {
+      e.preventDefault();
+      var b = document.getElementById("enterBtn");
+      if (b) b.click();
+    }
+  });
+
+  window.addEventListener("resize", autosize);
+
+  S = freshState();
+  render();
+})();
+</script>
+</body>
+</html>
