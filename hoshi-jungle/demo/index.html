@@ -7,30 +7,39 @@
 <meta name="robots" content="noindex, nofollow">
 <title>Review AI 体験デモ</title>
 <style>
-  /* 実際のアプリ（Tailwind の jungle / sand パレット）と同じ配色をそのまま使う。
-     見た目が違うと「デモと本番は別物」という印象になり、体験の意味が薄れるため。 */
+  /* 実際のアプリ（Tailwind の brand / ink パレット）と同じ配色をそのまま使う。
+     見た目が違うと「デモと本番は別物」という印象になり、体験の意味が薄れるため。
+
+     小さい文字はすべて背景との比が 4.5:1 以上（実測値は
+     hoshi-jungle-review-ai/tailwind.config.ts に記載）。 */
   :root {
     color-scheme: light;   /* 実アプリ（globals.css）と同じく light 固定 */
-    --j50:#f2f8f4; --j100:#dcefe2; --j200:#bbdec8; --j300:#8dc5a4; --j400:#5ba57c;
-    --j500:#3a875f; --j600:#2a6c4b; --j700:#22563d; --j800:#1d4532; --j900:#19392b;
-    --s50:#faf8f3; --s100:#f2ede1; --s200:#e5dac2;
+    --brand:#c8102e; --brand-600:#b00c26; --brand-700:#93091f;
+    --brand-50:#fdf1f1; --brand-100:#fadbdc;
+    --head:#93091f;                       /* 見出し（白地で 9.13:1） */
+    --ink-900:#111111; --ink:#333333;     /* 本文・ラベル */
+    --muted:#6f6f6f;                      /* いちばん薄い文字（白地で 5.02:1） */
+    --line:#dcdcdc;                       /* 枠線 */
+    --bg:#f7f7f7; --bg-2:#ededed;         /* 地 */
+    /* 要確認だけは赤から外す。赤の中に赤で警告を描くと埋もれるため。 */
     --warn:#8a5a11; --warn-bg:#fdf6e7; --warn-line:#e8d3a6;
-    --crit:#9b3730; --crit-bg:#fbeae7; --crit-line:#e9c3bd;
-    --ok:#1f5c47; --ok-bg:#deede4;
-    --brass:#9a7a32;
+    --crit:#93091f; --crit-bg:#fdf1f1; --crit-line:#f4b8b9;
+    /* 「済み」は緑をやめて無彩色に。文言（公開済み）で意味は伝わる。 */
+    --ok:#333333; --ok-bg:#ededed;
+    --brass:#8a6d1f;                      /* 星 */
     --sans: ui-sans-serif, system-ui, "Hiragino Sans", "Noto Sans JP", sans-serif;
   }
   * { box-sizing: border-box; margin:0; padding:0; }
   html, body { height:100%; }
   body {
-    font-family: var(--sans); background: var(--s50); color: var(--j900);
+    font-family: var(--sans); background: var(--bg); color: var(--ink-900);
     -webkit-font-smoothing: antialiased; font-size:15px; line-height:1.7;
   }
   button, input, textarea { font: inherit; color: inherit; }
 
   /* ---- デモ帯 ---- */
   .demobar {
-    background: var(--j900); color:#dbe9df; font-size:12px;
+    background: var(--ink-900); color:#f0f0f0; font-size:12px;
     padding:8px 16px; display:flex; gap:12px; align-items:center;
     flex-wrap:wrap; justify-content:center; text-align:center;
   }
@@ -42,61 +51,63 @@
   .demobar button:hover { background:#22362b; color:#cfe3d7; }
 
   /* ---- 共通パーツ（実アプリの .card / .btn-* と同じ見た目） ---- */
-  .card { border:1px solid var(--j100); background:#fff; border-radius:12px; box-shadow:0 1px 2px rgba(25,57,43,.05); }
+  .card { border:1px solid var(--brand-100); background:#fff; border-radius:12px; box-shadow:0 1px 2px rgba(25,57,43,.05); }
   .btn {
     display:inline-flex; align-items:center; justify-content:center; gap:8px;
     border-radius:8px; padding:8px 16px; font-size:14px; font-weight:500;
     border:1px solid transparent; cursor:pointer; transition:background .15s, color .15s;
   }
   .btn:disabled { opacity:.5; cursor:not-allowed; }
-  .btn-primary { background:var(--j600); color:#fff; }
-  .btn-primary:not(:disabled):hover { background:var(--j700); }
-  .btn-secondary { border-color:var(--j200); background:#fff; color:var(--j700); }
-  .btn-secondary:not(:disabled):hover { background:var(--j50); }
-  .btn-ghost { background:none; color:var(--j600); }
-  .btn-ghost:not(:disabled):hover { background:var(--j50); }
+  .btn-primary { background:var(--brand-600); color:#fff; }
+  .btn-primary:not(:disabled):hover { background:var(--brand-700); }
+  .btn-secondary { border-color:var(--line); background:#fff; color:var(--ink); }
+  .btn-secondary:not(:disabled):hover { background:var(--brand-50); }
+  /* 主ボタン（Googleに公開）と同じ赤にしない。同じ強さで並ぶと、
+     いちばん押してほしい操作が埋もれる。 */
+  .btn-ghost { background:none; color:var(--ink); }
+  .btn-ghost:not(:disabled):hover { background:var(--brand-50); }
   .badge { display:inline-flex; align-items:center; border-radius:999px; padding:2px 10px; font-size:12px; font-weight:500; }
 
   /* ---- 言語切替 ---- */
-  .langs { display:inline-flex; border:1px solid var(--j200); background:#fff; border-radius:999px; overflow:hidden; }
-  .langs button { background:none; border:none; padding:6px 12px; font-size:12px; font-weight:500; color:var(--j600); cursor:pointer; }
-  .langs button:hover { background:var(--j50); }
-  .langs button[aria-pressed="true"] { background:var(--j600); color:#fff; }
+  .langs { display:inline-flex; border:1px solid var(--line); background:#fff; border-radius:999px; overflow:hidden; }
+  .langs button { background:none; border:none; padding:6px 12px; font-size:12px; font-weight:500; color:var(--brand-600); cursor:pointer; }
+  .langs button:hover { background:var(--brand-50); }
+  .langs button[aria-pressed="true"] { background:var(--brand-600); color:#fff; }
 
   /* ---- ログイン画面 ---- */
   .login { min-height:calc(100vh - 100px); display:flex; align-items:center; justify-content:center; padding:40px 20px; }
   .login-inner { width:100%; max-width:360px; }
-  .login .eyebrow { font-size:12px; font-weight:500; letter-spacing:.18em; color:var(--j500); text-align:center; }
-  .login h1 { font-size:26px; font-weight:700; color:var(--j800); text-align:center; margin-top:6px; }
-  .login .sub { font-size:14px; color:var(--j600); text-align:center; margin-top:6px; }
-  .field { display:block; font-size:13px; font-weight:500; color:var(--j700); margin-bottom:6px; }
+  .login .eyebrow { font-size:12px; font-weight:500; letter-spacing:.18em; color:var(--brand); text-align:center; }
+  .login h1 { font-size:26px; font-weight:700; color:var(--head); text-align:center; margin-top:6px; }
+  .login .sub { font-size:14px; color:var(--brand-600); text-align:center; margin-top:6px; }
+  .field { display:block; font-size:13px; font-weight:500; color:var(--ink); margin-bottom:6px; }
   .input {
-    width:100%; border:1px solid var(--j200); border-radius:10px; padding:13px 14px;
+    width:100%; border:1px solid var(--line); border-radius:10px; padding:13px 14px;
     font-size:18px; letter-spacing:.12em; text-align:center; background:#fff; outline:none;
   }
-  .input:focus { border-color:var(--j500); box-shadow:0 0 0 3px var(--j100); }
-  .hintbox { margin-top:12px; background:var(--j50); border:1px dashed var(--j200); border-radius:8px; padding:10px 12px; font-size:12px; color:var(--j700); }
+  .input:focus { border-color:var(--brand); box-shadow:0 0 0 3px var(--brand-100); }
+  .hintbox { margin-top:12px; background:var(--brand-50); border:1px dashed var(--line); border-radius:8px; padding:10px 12px; font-size:12px; color:var(--ink); }
   .hintbox code { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-weight:700; letter-spacing:.06em; }
-  .hintbox button { margin-top:6px; background:none; border:none; color:var(--j600); font-size:12px; text-decoration:underline; cursor:pointer; padding:0; }
+  .hintbox button { margin-top:6px; background:none; border:none; color:var(--brand-600); font-size:12px; text-decoration:underline; cursor:pointer; padding:0; }
   .err { margin-top:10px; background:#fdecea; border:1px solid #f3c9c4; color:#9b3730; border-radius:8px; padding:9px 12px; font-size:13px; }
-  .muted { font-size:12px; color:var(--j400); text-align:center; margin-top:18px; line-height:1.7; }
+  .muted { font-size:12px; color:var(--muted); text-align:center; margin-top:18px; line-height:1.7; }
 
   /* ---- ヘッダー ---- */
-  header.app { background:#fff; border-bottom:1px solid var(--j100); }
+  header.app { background:#fff; border-bottom:1px solid var(--brand-100); }
   .hrow { max-width:1000px; margin:0 auto; padding:14px 20px; display:flex; gap:14px; align-items:center; flex-wrap:wrap; }
-  .hname .k { font-size:11px; font-weight:500; letter-spacing:.16em; color:var(--j400); }
-  .hname .v { font-size:18px; font-weight:700; color:var(--j800); }
+  .hname .k { font-size:11px; font-weight:500; letter-spacing:.16em; color:var(--muted); }
+  .hname .v { font-size:18px; font-weight:700; color:var(--head); }
   .hright { margin-left:auto; display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
-  .hright .link { font-size:12px; color:var(--j400); text-decoration:none; cursor:pointer; background:none; border:none; }
-  .hright .link:hover { color:var(--j600); }
+  .hright .link { font-size:12px; color:var(--muted); text-decoration:none; cursor:pointer; background:none; border:none; }
+  .hright .link:hover { color:var(--brand-600); }
   nav.tabs { max-width:1000px; margin:0 auto; padding:0 20px; display:flex; gap:2px; flex-wrap:wrap; }
   nav.tabs button {
     background:none; border:none; cursor:pointer; padding:10px 14px; font-size:14px; font-weight:600;
-    color:var(--j400); border-bottom:2px solid transparent; margin-bottom:-1px;
+    color:var(--muted); border-bottom:2px solid transparent; margin-bottom:-1px;
   }
-  nav.tabs button:hover { color:var(--j700); }
-  nav.tabs button[aria-selected="true"] { color:var(--j800); border-bottom-color:var(--j600); }
-  nav.tabs .n { margin-left:6px; font-weight:500; color:var(--j400); font-variant-numeric:tabular-nums; }
+  nav.tabs button:hover { color:var(--ink); }
+  nav.tabs button[aria-selected="true"] { color:var(--head); border-bottom-color:var(--brand-600); }
+  nav.tabs .n { margin-left:6px; font-weight:500; color:var(--muted); font-variant-numeric:tabular-nums; }
   nav.tabs button.warnTab[aria-selected="true"] { color:var(--warn); border-bottom-color:var(--warn); }
 
   main { max-width:1000px; margin:0 auto; padding:22px 20px 60px; }
@@ -104,27 +115,27 @@
   /* ---- 言語フィルタ ---- */
   .filters { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:16px; }
   .filters button {
-    background:#fff; border:1px solid var(--j200); border-radius:999px; padding:5px 13px;
-    font-size:12.5px; font-weight:500; color:var(--j600); cursor:pointer;
+    background:#fff; border:1px solid var(--line); border-radius:999px; padding:5px 13px;
+    font-size:12.5px; font-weight:500; color:var(--brand-600); cursor:pointer;
   }
-  .filters button:hover { background:var(--j50); }
-  .filters button[aria-pressed="true"] { background:var(--j600); border-color:var(--j600); color:#fff; }
+  .filters button:hover { background:var(--brand-50); }
+  .filters button[aria-pressed="true"] { background:var(--brand-600); border-color:var(--brand-600); color:#fff; }
 
   /* ---- レビューカード ---- */
   .list { display:flex; flex-direction:column; gap:14px; }
   .rev { padding:20px; }
   .rev.attn { border-left:3px solid var(--warn); }
   .rev.attn.crit { border-left-color:var(--crit); }
-  .rev.done { background:var(--s50); }
+  .rev.done { background:var(--bg); }
   .rtop { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:9px; }
   .stars { color:var(--brass); font-size:14px; letter-spacing:1px; }
-  .stars .off { color:var(--j100); }
+  .stars .off { color:var(--brand-100); }
   .who { font-weight:700; font-size:14.5px; }
-  .when { margin-left:auto; font-size:12px; color:var(--j400); }
-  .b-lang { background:var(--j100); color:var(--j700); }
-  .b-draft { background:var(--s100); color:var(--j700); }
+  .when { margin-left:auto; font-size:12px; color:var(--muted); }
+  .b-lang { background:var(--brand-100); color:var(--ink); }
+  .b-draft { background:var(--bg-2); color:var(--ink); }
   .b-done { background:var(--ok-bg); color:var(--ok); }
-  .b-skip { background:var(--j100); color:var(--j400); }
+  .b-skip { background:var(--brand-100); color:var(--muted); }
   .rtext { font-size:14.5px; white-space:pre-wrap; }
 
   .alert {
@@ -135,33 +146,33 @@
   .alert b { font-weight:700; }
 
   .reply { margin-top:16px; }
-  .rhead { display:flex; align-items:baseline; gap:10px; font-size:12px; color:var(--j400); font-weight:600; margin-bottom:8px; }
+  .rhead { display:flex; align-items:baseline; gap:10px; font-size:12px; color:var(--muted); font-weight:600; margin-bottom:8px; }
   .rhead .count { margin-left:auto; font-variant-numeric:tabular-nums; font-family:ui-monospace,Menlo,monospace; font-size:11px; }
   .picker { display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin-bottom:9px; }
   .picker button {
-    background:#fff; border:1px solid var(--j200); border-radius:999px; padding:4px 13px;
-    font-size:12px; font-weight:600; color:var(--j600); cursor:pointer;
+    background:#fff; border:1px solid var(--line); border-radius:999px; padding:4px 13px;
+    font-size:12px; font-weight:600; color:var(--brand-600); cursor:pointer;
   }
-  .picker button:hover { background:var(--j50); }
-  .picker button[aria-pressed="true"] { background:var(--j600); border-color:var(--j600); color:#fff; }
-  .picker .hint { font-size:11.5px; color:var(--j400); padding-left:4px; }
+  .picker button:hover { background:var(--brand-50); }
+  .picker button[aria-pressed="true"] { background:var(--brand-600); border-color:var(--brand-600); color:#fff; }
+  .picker .hint { font-size:11.5px; color:var(--muted); padding-left:4px; }
   textarea {
     width:100%; min-height:100px; resize:vertical; overflow:hidden;
-    border:1px solid var(--j200); border-radius:10px; padding:13px 14px;
-    font-size:14px; line-height:1.85; background:var(--s50); outline:none; white-space:pre-wrap;
+    border:1px solid var(--line); border-radius:10px; padding:13px 14px;
+    font-size:14px; line-height:1.85; background:var(--bg); outline:none; white-space:pre-wrap;
   }
-  textarea:focus { border-color:var(--j500); box-shadow:0 0 0 3px var(--j100); background:#fff; }
-  textarea[readonly] { background:var(--s100); color:var(--j700); }
+  textarea:focus { border-color:var(--brand); box-shadow:0 0 0 3px var(--brand-100); background:#fff; }
+  textarea[readonly] { background:var(--bg-2); color:var(--ink); }
   .acts { display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; align-items:center; }
   .acts .right { margin-left:auto; }
   .note-ok { margin-top:12px; font-size:13px; color:var(--ok); font-weight:600; }
-  .empty { padding:48px 20px; text-align:center; color:var(--j400); font-size:14px; }
+  .empty { padding:48px 20px; text-align:center; color:var(--muted); font-size:14px; }
 
   /* ---- トースト ---- */
   .toast {
     position:fixed; left:50%; bottom:calc(22px + env(safe-area-inset-bottom,0px));
     transform:translateX(-50%) translateY(14px);
-    background:var(--j900); color:#fff; padding:11px 20px; border-radius:999px;
+    background:var(--ink-900); color:#fff; padding:11px 20px; border-radius:999px;
     font-size:13px; font-weight:600; opacity:0; pointer-events:none;
     transition:opacity .18s, transform .18s; z-index:60;
     max-width:calc(100vw - 40px); text-align:center; box-shadow:0 8px 24px -10px rgba(0,0,0,.4);
@@ -180,11 +191,11 @@
      何も出ない真っ白な画面になる。原因が分かる案内を必ず出す。 */
   .nojs { max-width:460px; margin:48px auto; padding:0 20px; }
   .nojs .box { padding:26px 24px; }
-  .nojs h2 { font-size:19px; font-weight:700; color:var(--j800); margin-bottom:10px; }
-  .nojs p { font-size:14px; color:var(--j700); margin-bottom:12px; }
-  .nojs ol { margin:0 0 14px 20px; font-size:14px; color:var(--j700); }
+  .nojs h2 { font-size:19px; font-weight:700; color:var(--head); margin-bottom:10px; }
+  .nojs p { font-size:14px; color:var(--ink); margin-bottom:12px; }
+  .nojs ol { margin:0 0 14px 20px; font-size:14px; color:var(--ink); }
   .nojs li { margin-bottom:6px; }
-  .nojs .en { margin-top:18px; padding-top:16px; border-top:1px solid var(--j100); font-size:13px; color:var(--j400); }
+  .nojs .en { margin-top:18px; padding-top:16px; border-top:1px solid var(--brand-100); font-size:13px; color:var(--muted); }
 </style>
 </head>
 <body>
@@ -603,7 +614,7 @@
       : '<div class="card empty">' + esc(emptyMsg) + '</div>';
 
     return head + '<main>' + filters + body +
-      '<p style="margin-top:18px;font-size:12px;color:var(--j400);">' + esc(t.autoHourly) + '</p></main>';
+      '<p style="margin-top:18px;font-size:12px;color:var(--muted);">' + esc(t.autoHourly) + '</p></main>';
   }
 
   function tab(key, label, n, warn) {
@@ -629,7 +640,7 @@
 
     var replyHTML;
     if (skipped) {
-      replyHTML = '<p class="note-ok" style="color:var(--j400);">' + esc(t.skippedBody) + '</p>';
+      replyHTML = '<p class="note-ok" style="color:var(--muted);">' + esc(t.skippedBody) + '</p>';
     } else {
       var heading = done ? t.replyPublished : (r.selected ? t.replyDraft : t.replyEdited);
       var hint = r.selected ? t[styleHintKey(r.selected)] : t.edited;

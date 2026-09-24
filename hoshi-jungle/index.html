@@ -6,25 +6,30 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Old+Mincho:wght@500;700&display=swap">
 <style>
   :root {
-    --bg:        #F4F7F2;
+    /* 白地に赤。ソフトウェア本体・営業資料・体験デモと同じ値。
+       資料ごとに色が違うと、同じ会社の同じ商品だと受け取ってもらえない。
+       括弧内は白地との実測コントラスト比。小さい文字はすべて 4.5:1 以上。 */
+    --bg:        #F7F7F7;
     --surface:   #FFFFFF;
-    --surface-2: #EAEFE7;
-    --line:      #D6DFD3;
-    --line-soft: #E5EBE2;
-    --ink:       #16221A;
-    --ink-2:     #43584A;
-    --ink-3:     #6E8375;
-    --pine:      #1F5C47;
-    --pine-2:    #174837;
-    --pine-soft: #DDEAE2;
-    --brass:     #9A7A32;
+    --surface-2: #EDEDED;
+    --line:      #DCDCDC;
+    --line-soft: #EDEDED;
+    --ink:       #1F1F1F;   /* 16.48:1  本文 */
+    --ink-2:     #444444;   /*  9.74:1 */
+    --ink-3:     #5A5A5A;   /*  6.90:1  小さい文字 */
+    --pine:      #C8102E;   /*  5.88:1  見出し・強調（変数名は旧来のまま） */
+    --pine-2:    #93091F;   /*  9.13:1  濃い赤 */
+    --pine-soft: #FDF1F1;   /* 淡い赤の地 */
+    --brass:     #8A6D1F;   /* 星 */
+    /* 「要確認」の黄色は残す。赤の中に赤で注意を描くと埋もれるため。 */
     --warn:      #8A5A11;
     --warn-bg:   #FBF1DC;
     --warn-line: #E8D3A6;
-    --crit:      #9B3730;
-    --crit-bg:   #FAE8E5;
-    --ok:        #1F5C47;
-    --ok-bg:     #DEEDE4;
+    --crit:      #93091F;
+    --crit-bg:   #FDF1F1;
+    /* 「済み」は緑をやめて無彩色に。文言で意味は伝わる。 */
+    --ok:        #333333;
+    --ok-bg:     #EDEDED;
     --on-pine:   #FFFFFF;
     --shadow:    0 1px 2px rgba(20,40,28,.06), 0 8px 24px -12px rgba(20,40,28,.18);
 
@@ -35,51 +40,58 @@
 
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-      --bg:        #0D1411;
-      --surface:   #151F1A;
-      --surface-2: #1C2922;
-      --line:      #2B3B32;
-      --line-soft: #223029;
-      --ink:       #E7EEE8;
-      --ink-2:     #B3C4B8;
-      --ink-3:     #859A8C;
-      --pine:      #62C099;
-      --pine-2:    #7ED0AC;
-      --pine-soft: #1A3B2D;
+      /* 暗い地の上では #C8102E は沈んで読めない。赤を明るい側にずらす。
+         実測値（地 #121212 / カード #1C1C1C / 淡赤 #2A1416 の順）:
+           ink  #EDEDED  16.00 / 14.56 / 14.82
+           ink-3 #A0A0A0  7.16 /  6.52 /  6.64
+           pine #FF8A8A   8.26 /  7.51 /  7.65
+           赤の上の文字 #1A0A0C on #FF8A8A = 8.47 */
+      --bg:        #121212;
+      --surface:   #1C1C1C;
+      --surface-2: #262626;
+      --line:      #333333;
+      --line-soft: #2A2A2A;
+      --ink:       #EDEDED;
+      --ink-2:     #C4C4C4;
+      --ink-3:     #A0A0A0;
+      --pine:      #FF8A8A;
+      --pine-2:    #FFB3B3;
+      --pine-soft: #2A1416;
       --brass:     #D4B266;
       --warn:      #E2B972;
       --warn-bg:   #2E2415;
       --warn-line: #4A3A1E;
-      --crit:      #EE9A92;
-      --crit-bg:   #331C1A;
-      --ok:        #62C099;
-      --ok-bg:     #17332A;
-      --on-pine:   #0B120F;
+      --crit:      #FF9A94;
+      --crit-bg:   #2A1416;
+      --ok:        #C4C4C4;
+      --ok-bg:     #262626;
+      --on-pine:   #1A0A0C;
       --shadow:    0 1px 2px rgba(0,0,0,.4), 0 10px 28px -14px rgba(0,0,0,.7);
     }
   }
 
   :root[data-theme="dark"] {
-    --bg:        #0D1411;
-    --surface:   #151F1A;
-    --surface-2: #1C2922;
-    --line:      #2B3B32;
-    --line-soft: #223029;
-    --ink:       #E7EEE8;
-    --ink-2:     #B3C4B8;
-    --ink-3:     #859A8C;
-    --pine:      #62C099;
-    --pine-2:    #7ED0AC;
-    --pine-soft: #1A3B2D;
+    --bg:        #121212;
+    --surface:   #1C1C1C;
+    --surface-2: #262626;
+    --line:      #333333;
+    --line-soft: #2A2A2A;
+    --ink:       #EDEDED;
+    --ink-2:     #C4C4C4;
+    --ink-3:     #A0A0A0;
+    --pine:      #FF8A8A;
+    --pine-2:    #FFB3B3;
+    --pine-soft: #2A1416;
     --brass:     #D4B266;
     --warn:      #E2B972;
     --warn-bg:   #2E2415;
     --warn-line: #4A3A1E;
-    --crit:      #EE9A92;
-    --crit-bg:   #331C1A;
-    --ok:        #62C099;
-    --ok-bg:     #17332A;
-    --on-pine:   #0B120F;
+    --crit:      #FF9A94;
+    --crit-bg:   #2A1416;
+    /* 「済み」は明るい地と同じく無彩色。赤にすると失敗と見分けがつかない */
+    --ok:        #C4C4C4;
+    --ok-bg:     #262626;
+    --on-pine:   #1A0A0C;
     --shadow:    0 1px 2px rgba(0,0,0,.4), 0 10px 28px -14px rgba(0,0,0,.7);
   }
 
