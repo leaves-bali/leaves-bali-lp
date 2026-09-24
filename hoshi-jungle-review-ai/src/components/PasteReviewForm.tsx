@@ -36,8 +36,8 @@ export function PasteReviewForm({
   const [note, setNote] = useState<{ ok: boolean; text: string } | null>(null);
 
   const field =
-    'w-full rounded-lg border border-jungle-200 px-3 py-2 text-sm outline-none ' +
-    'focus:border-jungle-500 focus:ring-1 focus:ring-jungle-500';
+    'w-full rounded-lg border border-ink-200 px-3 py-2 text-sm outline-none ' +
+    'focus:border-brand-500 focus:ring-1 focus:ring-brand-500';
 
   async function submit() {
     if (!text.trim()) return;
@@ -85,8 +85,8 @@ export function PasteReviewForm({
     <div className="card mb-4 p-5">
       <div className="flex items-start gap-3">
         <div className="min-w-0 flex-1">
-          <h3 className="text-sm font-semibold text-jungle-800">{d.pasteTitle}</h3>
-          <p className="mt-1 text-xs leading-relaxed text-jungle-500">{d.pasteLead}</p>
+          <h3 className="text-sm font-semibold text-brand-700">{d.pasteTitle}</h3>
+          <p className="mt-1 text-xs leading-relaxed text-ink-500">{d.pasteLead}</p>
         </div>
         <button type="button" className="btn-ghost shrink-0" onClick={() => setOpen(false)}>
           ✕
@@ -95,7 +95,7 @@ export function PasteReviewForm({
 
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
         <label className="block">
-          <span className="text-xs font-medium text-jungle-700">{d.pasteSite}</span>
+          <span className="text-xs font-medium text-ink-700">{d.pasteSite}</span>
           <select
             className={`mt-1 ${field}`}
             value={source}
@@ -110,7 +110,7 @@ export function PasteReviewForm({
         </label>
 
         <label className="block">
-          <span className="text-xs font-medium text-jungle-700">{d.pasteRating}</span>
+          <span className="text-xs font-medium text-ink-700">{d.pasteRating}</span>
           <select
             className={`mt-1 ${field}`}
             value={rating}
@@ -127,7 +127,7 @@ export function PasteReviewForm({
       </div>
 
       <label className="mt-3 block">
-        <span className="text-xs font-medium text-jungle-700">{d.pasteText}</span>
+        <span className="text-xs font-medium text-ink-700">{d.pasteText}</span>
         <textarea
           className={`mt-1 min-h-[110px] ${field}`}
           value={text}
@@ -138,9 +138,9 @@ export function PasteReviewForm({
 
       <div className="mt-3 grid gap-3 sm:grid-cols-2">
         <label className="block">
-          <span className="text-xs font-medium text-jungle-700">
+          <span className="text-xs font-medium text-ink-700">
             {d.pasteAuthor}
-            <span className="ml-2 font-normal text-jungle-400">{d.pasteOptional}</span>
+            <span className="ml-2 font-normal text-ink-400">{d.pasteOptional}</span>
           </span>
           <input
             className={`mt-1 ${field}`}
@@ -149,9 +149,9 @@ export function PasteReviewForm({
           />
         </label>
         <label className="block">
-          <span className="text-xs font-medium text-jungle-700">
+          <span className="text-xs font-medium text-ink-700">
             {d.pasteDate}
-            <span className="ml-2 font-normal text-jungle-400">{d.pasteOptional}</span>
+            <span className="ml-2 font-normal text-ink-400">{d.pasteOptional}</span>
           </span>
           <input
             type="date"
@@ -172,7 +172,7 @@ export function PasteReviewForm({
           {busy ? d.pasteSubmitting : d.pasteSubmit}
         </button>
         {note ? (
-          <span className={`text-xs ${note.ok ? 'text-emerald-700' : 'text-red-600'}`}>
+          <span className={`text-xs ${note.ok ? 'text-ink-700' : 'text-brand-600'}`}>
             {note.text}
           </span>
         ) : null}

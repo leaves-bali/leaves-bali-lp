@@ -6,7 +6,7 @@ export function StarRating({ rating }: { rating: number }) {
       title={`${rating} / 5`}
     >
       {[1, 2, 3, 4, 5].map((n) => (
-        <span key={n} className={n <= rating ? 'text-amber-500' : 'text-jungle-200'}>
+        <span key={n} className={n <= rating ? 'text-amber-500' : 'text-ink-200'}>
           ★
         </span>
       ))}

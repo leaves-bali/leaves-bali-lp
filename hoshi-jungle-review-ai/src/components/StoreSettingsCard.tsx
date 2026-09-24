@@ -100,17 +100,17 @@ export function StoreSettingsCard({
   }
 
   const field =
-    'w-full rounded-lg border border-jungle-200 px-3 py-2 text-sm outline-none ' +
-    'focus:border-jungle-500 focus:ring-1 focus:ring-jungle-500';
+    'w-full rounded-lg border border-ink-200 px-3 py-2 text-sm outline-none ' +
+    'focus:border-brand-500 focus:ring-1 focus:ring-brand-500';
 
   return (
     <div className="card p-5">
-      <h3 className="text-sm font-semibold text-jungle-800">{d.storeSettingsTitle}</h3>
-      <p className="mt-1 text-xs leading-relaxed text-jungle-500">{d.storeSettingsLead}</p>
+      <h3 className="text-sm font-semibold text-brand-700">{d.storeSettingsTitle}</h3>
+      <p className="mt-1 text-xs leading-relaxed text-ink-500">{d.storeSettingsLead}</p>
 
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
         <label className="block">
-          <span className="text-xs font-medium text-jungle-700">{d.fieldStoreName}</span>
+          <span className="text-xs font-medium text-ink-700">{d.fieldStoreName}</span>
           <input
             className={`mt-1 ${field}`}
             value={value.name}
@@ -118,9 +118,9 @@ export function StoreSettingsCard({
           />
         </label>
         <label className="block">
-          <span className="text-xs font-medium text-jungle-700">
+          <span className="text-xs font-medium text-ink-700">
             {d.fieldAreaLabel}
-            <span className="ml-2 font-normal text-jungle-400">{d.usesDefault}</span>
+            <span className="ml-2 font-normal text-ink-400">{d.usesDefault}</span>
           </span>
           <input
             className={`mt-1 ${field}`}
@@ -129,9 +129,9 @@ export function StoreSettingsCard({
           />
         </label>
         <label className="block">
-          <span className="text-xs font-medium text-jungle-700">
+          <span className="text-xs font-medium text-ink-700">
             {d.fieldSignature}
-            <span className="ml-2 font-normal text-jungle-400">{d.usesDefault}</span>
+            <span className="ml-2 font-normal text-ink-400">{d.usesDefault}</span>
           </span>
           <input
             className={`mt-1 ${field}`}
@@ -140,9 +140,9 @@ export function StoreSettingsCard({
           />
         </label>
         <label className="block">
-          <span className="text-xs font-medium text-jungle-700">
+          <span className="text-xs font-medium text-ink-700">
             {d.fieldContactEmail}
-            <span className="ml-2 font-normal text-jungle-400">{d.usesDefault}</span>
+            <span className="ml-2 font-normal text-ink-400">{d.usesDefault}</span>
           </span>
           <input
             type="email"
@@ -155,8 +155,8 @@ export function StoreSettingsCard({
 
       {/* --- お店の魅力：AIが触れてよい範囲そのもの --- */}
       <div className="mt-5">
-        <span className="text-xs font-medium text-jungle-700">{d.fieldHighlights}</span>
-        <p className="mt-1 text-xs text-jungle-500">{d.highlightsHint}</p>
+        <span className="text-xs font-medium text-ink-700">{d.fieldHighlights}</span>
+        <p className="mt-1 text-xs text-ink-500">{d.highlightsHint}</p>
         <div className="mt-2 space-y-2">
           {value.highlights.map((h, i) => (
             <div key={i} className="flex gap-2">
@@ -192,14 +192,14 @@ export function StoreSettingsCard({
       </div>
 
       {/* --- 自動公開 --- */}
-      <div className="mt-6 rounded-lg border border-jungle-100 bg-sand-50 p-4">
-        <h4 className="text-sm font-semibold text-jungle-800">{d.autoPublishTitle}</h4>
-        <p className="mt-1 text-xs leading-relaxed text-jungle-500">{d.autoPublishLead}</p>
+      <div className="mt-6 rounded-lg border border-ink-100 bg-ink-50 p-4">
+        <h4 className="text-sm font-semibold text-brand-700">{d.autoPublishTitle}</h4>
+        <p className="mt-1 text-xs leading-relaxed text-ink-500">{d.autoPublishLead}</p>
 
-        <label className="mt-3 flex items-center gap-2 text-sm font-medium text-jungle-700">
+        <label className="mt-3 flex items-center gap-2 text-sm font-medium text-ink-700">
           <input
             type="checkbox"
-            className="h-4 w-4 accent-jungle-600"
+            className="h-4 w-4 accent-brand-600"
             checked={value.autoPublishEnabled}
             onChange={(e) => set('autoPublishEnabled', e.target.checked)}
           />
@@ -209,7 +209,7 @@ export function StoreSettingsCard({
         {value.autoPublishEnabled ? (
           <div className="mt-3 space-y-3">
             <label className="block">
-              <span className="text-xs font-medium text-jungle-700">{d.autoPublishMinRating}</span>
+              <span className="text-xs font-medium text-ink-700">{d.autoPublishMinRating}</span>
               <select
                 className={`mt-1 ${field}`}
                 value={value.autoPublishMinRating}
@@ -224,13 +224,13 @@ export function StoreSettingsCard({
             </label>
 
             <div>
-              <span className="text-xs font-medium text-jungle-700">{d.autoPublishLangs}</span>
+              <span className="text-xs font-medium text-ink-700">{d.autoPublishLangs}</span>
               <div className="mt-2 flex flex-wrap gap-3">
                 {AUTO_PUBLISHABLE_LANGUAGES.map((l) => (
-                  <label key={l} className="flex items-center gap-1.5 text-sm text-jungle-700">
+                  <label key={l} className="flex items-center gap-1.5 text-sm text-ink-700">
                     <input
                       type="checkbox"
-                      className="h-4 w-4 accent-jungle-600"
+                      className="h-4 w-4 accent-brand-600"
                       checked={value.autoPublishLanguages.includes(l)}
                       onChange={(e) =>
                         set(
@@ -257,7 +257,7 @@ export function StoreSettingsCard({
           {saving ? d.saving : d.save}
         </button>
         {note ? (
-          <span className={`text-xs ${note.ok ? 'text-emerald-700' : 'text-red-600'}`}>
+          <span className={`text-xs ${note.ok ? 'text-ink-700' : 'text-brand-600'}`}>
             {note.text}
           </span>
         ) : null}

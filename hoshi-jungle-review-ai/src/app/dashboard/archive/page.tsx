@@ -18,12 +18,12 @@ export default async function ArchivePage() {
   return (
     <section>
       <div className="mb-6">
-        <h2 className="text-xl font-bold text-jungle-800">{d.archiveTitle}</h2>
-        <p className="mt-1 text-sm text-jungle-500">{d.archiveLead}</p>
+        <h2 className="text-xl font-bold text-brand-700">{d.archiveTitle}</h2>
+        <p className="mt-1 text-sm text-ink-500">{d.archiveLead}</p>
       </div>
 
       {rows.length === 0 ? (
-        <div className="card p-10 text-center text-sm text-jungle-500">{d.emptyArchive}</div>
+        <div className="card p-10 text-center text-sm text-ink-500">{d.emptyArchive}</div>
       ) : (
         <div className="space-y-4">
           {rows.map((row) => (

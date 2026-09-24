@@ -213,15 +213,15 @@ export function ReviewCard({
       }`}
     >
       {/* --- クチコミ本体 --- */}
-      <header className="border-b border-jungle-100 bg-sand-50 px-5 py-4">
+      <header className="border-b border-ink-100 bg-ink-50 px-5 py-4">
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
           <StarRating rating={row.rating} />
-          <span className="text-sm font-medium text-jungle-800">
+          <span className="text-sm font-medium text-brand-700">
             {row.reviewer_display_name ?? d.anonymous}
           </span>
           <span
             className={`badge ${
-              isPriorityLanguage ? 'bg-amber-100 text-amber-800' : 'bg-jungle-100 text-jungle-600'
+              isPriorityLanguage ? 'bg-amber-100 text-amber-800' : 'bg-brand-100 text-ink-600'
             }`}
           >
             {row.language === 'other' ? d.reviewLang.other : LANGUAGE_LABELS[row.language]}
@@ -229,17 +229,17 @@ export function ReviewCard({
           {status ? (
             <span className={`badge ${STATUS_STYLES[status]}`}>{d.status[status]}</span>
           ) : (
-            <span className="badge bg-jungle-50 text-jungle-400">{d.noReplyYet}</span>
+            <span className="badge bg-brand-50 text-ink-400">{d.noReplyYet}</span>
           )}
           {row.google_create_time ? (
-            <time className="ml-auto text-xs text-jungle-400">
+            <time className="ml-auto text-xs text-ink-400">
               {new Date(row.google_create_time).toLocaleDateString()}
             </time>
           ) : null}
         </div>
 
-        <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-jungle-700">
-          {row.text?.trim() || <span className="italic text-jungle-400">{d.noReviewText}</span>}
+        <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-ink-700">
+          {row.text?.trim() || <span className="italic text-ink-400">{d.noReviewText}</span>}
         </p>
       </header>
 
@@ -258,13 +258,13 @@ export function ReviewCard({
       {/* --- 返信案 --- */}
       <div className="px-5 py-4">
         {!hasReply ? (
-          <p className="text-sm text-jungle-500">{d.noReplyYet}</p>
+          <p className="text-sm text-ink-500">{d.noReplyYet}</p>
         ) : (
           <>
             <div className="mb-2 flex items-center justify-between">
               <label
                 htmlFor={`reply-${row.reply_id}`}
-                className="text-xs font-medium text-jungle-600"
+                className="text-xs font-medium text-ink-600"
               >
                 {status === 'published'
                   ? d.replyPublished
@@ -272,16 +272,16 @@ export function ReviewCard({
                     ? d.replyEdited
                     : d.replyDraft}
                 {row.regenerated_count ? (
-                  <span className="ml-1 text-jungle-400">· {row.regenerated_count}×</span>
+                  <span className="ml-1 text-ink-400">· {row.regenerated_count}×</span>
                 ) : null}
               </label>
               <span
                 className={`text-xs ${
                   text.length > REPLY_MAX_LENGTH
-                    ? 'font-medium text-red-600'
+                    ? 'font-medium text-brand-600'
                     : text.length > REPLY_RECOMMENDED_LENGTH
                       ? 'text-amber-600'
-                      : 'text-jungle-400'
+                      : 'text-ink-400'
                 }`}
               >
                 {text.length} / {REPLY_MAX_LENGTH}
@@ -304,15 +304,15 @@ export function ReviewCard({
                       className={[
                         'rounded-full border px-3 py-1 text-xs font-medium transition',
                         active
-                          ? 'border-jungle-600 bg-jungle-600 text-white'
-                          : 'border-jungle-200 bg-white text-jungle-600 hover:bg-jungle-50',
+                          ? 'border-brand-600 bg-brand-600 text-white'
+                          : 'border-ink-200 bg-white text-ink-600 hover:bg-brand-50',
                       ].join(' ')}
                     >
                       {styleLabel(key)}
                     </button>
                   );
                 })}
-                <span className="self-center pl-1 text-[11px] text-jungle-400">
+                <span className="self-center pl-1 text-[11px] text-ink-400">
                   {style ? styleHint(style) : d.edited}
                 </span>
               </div>
@@ -327,21 +327,21 @@ export function ReviewCard({
               }}
               readOnly={readOnly || status === 'published'}
               rows={6}
-              className="w-full resize-y rounded-lg border border-jungle-200 bg-white p-3 text-sm leading-relaxed
-                         text-jungle-800 outline-none focus:border-jungle-500 focus:ring-1 focus:ring-jungle-500
-                         read-only:bg-sand-50 read-only:text-jungle-600"
+              className="w-full resize-y rounded-lg border border-ink-200 bg-white p-3 text-sm leading-relaxed
+                         text-brand-700 outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500
+                         read-only:bg-ink-50 read-only:text-ink-600"
             />
 
             {row.publish_error ? (
-              <p className="mt-2 rounded bg-red-50 px-3 py-2 text-xs text-red-800">
+              <p className="mt-2 rounded bg-brand-50 px-3 py-2 text-xs text-brand-800">
                 {d.publishFailed}: {row.publish_error}
               </p>
             ) : null}
             {error ? (
-              <p className="mt-2 rounded bg-red-50 px-3 py-2 text-xs text-red-800">{error}</p>
+              <p className="mt-2 rounded bg-brand-50 px-3 py-2 text-xs text-brand-800">{error}</p>
             ) : null}
             {notice ? (
-              <p className="mt-2 rounded bg-emerald-50 px-3 py-2 text-xs text-emerald-800">
+              <p className="mt-2 rounded bg-ink-50 px-3 py-2 text-xs text-ink-800">
                 {notice}
               </p>
             ) : null}
@@ -399,7 +399,7 @@ export function ReviewCard({
                   type="button"
                   onClick={handleSkip}
                   disabled={busy !== null}
-                  className="btn-ghost ml-auto text-jungle-400"
+                  className="btn-ghost ml-auto text-ink-400"
                 >
                   {d.skip}
                 </button>
@@ -407,7 +407,7 @@ export function ReviewCard({
             ) : null}
 
             {status === 'published' && row.published_at ? (
-              <p className="mt-3 text-xs text-jungle-500">
+              <p className="mt-3 text-xs text-ink-500">
                 {d.publishedAt}: {new Date(row.published_at).toLocaleString()}
               </p>
             ) : null}

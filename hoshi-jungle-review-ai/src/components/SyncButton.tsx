@@ -81,8 +81,8 @@ export function SyncButton({ lang }: { lang: UiLang }) {
 
   return (
     <div className="flex items-center gap-3">
-      {progress ? <span className="text-xs text-jungle-500">{progress}</span> : null}
-      {message ? <span className="text-xs text-jungle-600">{message}</span> : null}
+      {progress ? <span className="text-xs text-ink-500">{progress}</span> : null}
+      {message ? <span className="text-xs text-ink-600">{message}</span> : null}
       <button
         type="button"
         onClick={handleClick}

@@ -115,7 +115,7 @@ export function UiLangSwitcher({
   return (
     <div className="inline-flex flex-col items-center gap-0.5">
       <div
-        className="inline-flex overflow-hidden rounded-full border border-jungle-200 bg-white"
+        className="inline-flex overflow-hidden rounded-full border border-ink-200 bg-white"
         role="group"
         aria-label="Display language"
       >
@@ -130,8 +130,8 @@ export function UiLangSwitcher({
               // 共用端末はタッチ操作も多い。指で押せる大きさを確保する。
               'px-3 py-1.5 text-xs font-medium transition',
               lang === current
-                ? 'bg-jungle-600 text-white'
-                : 'text-jungle-600 hover:bg-jungle-50',
+                ? 'bg-brand-600 text-white'
+                : 'text-ink-600 hover:bg-brand-50',
             ].join(' ')}
           >
             {UI_LANG_LABELS[lang]}
@@ -140,7 +140,7 @@ export function UiLangSwitcher({
       </div>
 
       {showHint ? (
-        <p className="text-[10px] leading-tight text-jungle-400">
+        <p className="text-[10px] leading-tight text-ink-400">
           {t(current).langRevertHint(UI_LANG_LABELS[fallback], MAX_AGE_SECONDS / 60)}
         </p>
       ) : null}

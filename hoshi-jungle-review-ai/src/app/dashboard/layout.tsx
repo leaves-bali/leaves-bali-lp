@@ -51,18 +51,18 @@ export default async function DashboardLayout({
 
   return (
     <div className="min-h-screen">
-      <header className="border-b border-jungle-100 bg-white">
+      <header className="border-b border-ink-100 bg-white">
         <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-4 px-6 py-4">
           <div className="min-w-0">
-            <p className="text-[11px] font-medium tracking-widest text-jungle-400">
+            <p className="text-[11px] font-medium tracking-widest text-ink-400">
               {d.appName}
             </p>
-            <h1 className="truncate text-lg font-bold text-jungle-800">{location.name}</h1>
+            <h1 className="truncate text-lg font-bold text-brand-700">{location.name}</h1>
           </div>
           <div className="ml-auto flex items-center gap-3">
             <span
               className={`badge ${
-                isOwner ? 'bg-jungle-100 text-jungle-700' : 'bg-sand-200 text-jungle-700'
+                isOwner ? 'bg-brand-100 text-ink-700' : 'bg-ink-100 text-ink-700'
               }`}
 
             >
@@ -73,14 +73,14 @@ export default async function DashboardLayout({
             {isOwner ? (
               <Link
                 href="/dashboard/settings"
-                className="text-xs text-jungle-500 hover:text-jungle-700"
+                className="text-xs text-ink-500 hover:text-ink-900"
               >
                 {d.passcodeAdmin}
               </Link>
             ) : null}
             <Link
               href="/api/auth/logout"
-              className="text-xs text-jungle-400 hover:text-jungle-600"
+              className="text-xs text-ink-400 hover:text-ink-800"
               prefetch={false}
             >
               {d.logout}
@@ -97,7 +97,7 @@ export default async function DashboardLayout({
       </header>
 
       {user?.token_revoked_at ? (
-        <div className="border-b border-red-200 bg-red-50 px-6 py-3 text-center text-sm text-red-800">
+        <div className="border-b border-brand-200 bg-brand-50 px-6 py-3 text-center text-sm text-brand-800">
           {d.reauthNeeded}
           <Link href="/api/auth/google?returnTo=/dashboard" className="ml-2 font-medium underline" prefetch={false}>
             {d.reauthLink}
@@ -114,7 +114,7 @@ export default async function DashboardLayout({
       <main className="mx-auto max-w-5xl px-6 py-8">{children}</main>
 
       <footer className="mx-auto max-w-5xl px-6 pb-10">
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-jungle-400">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-ink-400">
           <span>
             {d.lastSync}:{' '}
             {location.last_synced_at
@@ -155,13 +155,13 @@ function NavLink({
   return (
     <Link
       href={href}
-      className="group relative px-4 py-3 text-sm font-medium text-jungle-600 hover:text-jungle-800"
+      className="group relative px-4 py-3 text-sm font-medium text-ink-600 hover:text-brand-800"
     >
       {label}
       {count === undefined ? null : (
         <span
           className={`ml-2 rounded-full px-2 py-0.5 text-xs ${
-            highlight && count > 0 ? 'bg-amber-100 text-amber-800' : 'bg-jungle-50 text-jungle-500'
+            highlight && count > 0 ? 'bg-amber-100 text-amber-800' : 'bg-brand-50 text-ink-500'
           }`}
         >
           {count}

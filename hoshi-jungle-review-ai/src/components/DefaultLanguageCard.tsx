@@ -56,12 +56,12 @@ export function DefaultLanguageCard({
 
   return (
     <div className="card p-5">
-      <h3 className="text-sm font-semibold text-jungle-800">{d.defaultLangTitle}</h3>
-      <p className="mt-1 text-xs leading-relaxed text-jungle-500">{d.defaultLangLead}</p>
+      <h3 className="text-sm font-semibold text-brand-700">{d.defaultLangTitle}</h3>
+      <p className="mt-1 text-xs leading-relaxed text-ink-500">{d.defaultLangLead}</p>
 
       <div className="mt-3 flex flex-wrap items-center gap-2">
         <div
-          className="inline-flex overflow-hidden rounded-full border border-jungle-200 bg-white"
+          className="inline-flex overflow-hidden rounded-full border border-ink-200 bg-white"
           role="group"
           aria-label={d.defaultLangTitle}
         >
@@ -74,7 +74,7 @@ export function DefaultLanguageCard({
               aria-pressed={l === value}
               className={[
                 'px-3 py-1.5 text-xs font-medium transition',
-                l === value ? 'bg-jungle-600 text-white' : 'text-jungle-600 hover:bg-jungle-50',
+                l === value ? 'bg-brand-600 text-white' : 'text-ink-600 hover:bg-brand-50',
               ].join(' ')}
             >
               {UI_LANG_LABELS[l]}
@@ -82,9 +82,9 @@ export function DefaultLanguageCard({
           ))}
         </div>
 
-        {saving ? <span className="text-xs text-jungle-400">{d.defaultLangSaving}</span> : null}
+        {saving ? <span className="text-xs text-ink-400">{d.defaultLangSaving}</span> : null}
         {note ? (
-          <span className={`text-xs ${note.ok ? 'text-emerald-700' : 'text-red-600'}`}>
+          <span className={`text-xs ${note.ok ? 'text-ink-700' : 'text-brand-600'}`}>
             {note.text}
           </span>
         ) : null}

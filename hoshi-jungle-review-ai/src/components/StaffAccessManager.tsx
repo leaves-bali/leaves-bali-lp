@@ -139,25 +139,25 @@ export function StaffAccessManager({
     <div className="space-y-4">
       {/* --- 発行結果（一度だけ表示） --- */}
       {issued ? (
-        <div className="card border-emerald-300 bg-emerald-50 p-5">
-          <h3 className="text-sm font-semibold text-emerald-900">
+        <div className="card border-brand-200 bg-brand-50 p-5">
+          <h3 className="text-sm font-semibold text-brand-700">
             {issued.rotated ? d.rotatedTitle : d.issuedTitle}
             <span className="ml-2 font-normal">（{issued.label}）</span>
           </h3>
-          <p className="mt-1 text-xs font-medium text-emerald-800">
+          <p className="mt-1 text-xs font-medium text-brand-800">
             {d.onceOnly}
           </p>
 
           <dl className="mt-4 space-y-3">
             <div>
-              <dt className="text-xs text-emerald-700">{d.staffUrlLabel}</dt>
-              <dd className="mt-1 break-all rounded bg-white px-3 py-2 font-mono text-sm text-jungle-800">
+              <dt className="text-xs text-ink-700">{d.staffUrlLabel}</dt>
+              <dd className="mt-1 break-all rounded bg-white px-3 py-2 font-mono text-sm text-brand-700">
                 {staffUrl}
               </dd>
             </div>
             <div>
-              <dt className="text-xs text-emerald-700">{d.passcode}</dt>
-              <dd className="mt-1 rounded bg-white px-3 py-3 text-center font-mono text-2xl tracking-widest text-jungle-900">
+              <dt className="text-xs text-ink-700">{d.passcode}</dt>
+              <dd className="mt-1 rounded bg-white px-3 py-3 text-center font-mono text-2xl tracking-widest text-ink-900">
                 {issued.passcode}
               </dd>
             </div>
@@ -179,13 +179,13 @@ export function StaffAccessManager({
       ) : null}
 
       {error ? (
-        <div className="card border-red-200 bg-red-50 p-4 text-sm text-red-800">{error}</div>
+        <div className="card border-brand-200 bg-brand-50 p-4 text-sm text-brand-800">{error}</div>
       ) : null}
 
       {/* --- 新規発行 --- */}
       <div className="card p-5">
-        <h3 className="text-sm font-semibold text-jungle-800">{d.issueNew}</h3>
-        <p className="mt-1 text-xs text-jungle-500">
+        <h3 className="text-sm font-semibold text-brand-700">{d.issueNew}</h3>
+        <p className="mt-1 text-xs text-ink-500">
           {d.issueNewHint}
         </p>
         <div className="mt-3 flex flex-wrap gap-2">
@@ -194,15 +194,15 @@ export function StaffAccessManager({
             value={label}
             onChange={(e) => setLabel(e.target.value)}
             placeholder={d.labelPlaceholder}
-            className="min-w-0 flex-1 rounded-lg border border-jungle-200 px-3 py-2 text-sm
-                       outline-none focus:border-jungle-500 focus:ring-1 focus:ring-jungle-500"
+            className="min-w-0 flex-1 rounded-lg border border-ink-200 px-3 py-2 text-sm
+                       outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
           />
           <select
             value={newLang}
             onChange={(e) => setNewLang(e.target.value as UiLang | '')}
             aria-label={d.passcodeLangLabel}
-            className="rounded-lg border border-jungle-200 bg-white px-3 py-2 text-sm
-                       outline-none focus:border-jungle-500 focus:ring-1 focus:ring-jungle-500"
+            className="rounded-lg border border-ink-200 bg-white px-3 py-2 text-sm
+                       outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
           >
             <option value="">{d.passcodeLangInherit}</option>
             {UI_LANGUAGES.map((l) => (
@@ -226,28 +226,28 @@ export function StaffAccessManager({
             {busy === 'new' ? d.issuing : d.issue}
           </button>
         </div>
-        <p className="mt-2 text-xs leading-relaxed text-jungle-500">{d.passcodeLangHint}</p>
+        <p className="mt-2 text-xs leading-relaxed text-ink-500">{d.passcodeLangHint}</p>
       </div>
 
       {/* --- 発行済み一覧 --- */}
       {items.length > 0 ? (
-        <div className="card divide-y divide-jungle-100">
+        <div className="card divide-y divide-ink-100">
           {items.map((item) => (
             <div key={item.staff_access_id} className="flex flex-wrap items-center gap-3 p-4">
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium text-jungle-800">
+                <p className="text-sm font-medium text-brand-700">
                   {item.label}
                   <span
                     className={`badge ml-2 ${
                       item.is_active
-                        ? 'bg-emerald-100 text-emerald-800'
-                        : 'bg-jungle-100 text-jungle-400'
+                        ? 'bg-brand-600 text-white'
+                        : 'bg-ink-100 text-ink-600'
                     }`}
                   >
                     {item.is_active ? d.activeLabel : d.inactiveLabel}
                   </span>
                 </p>
-                <p className="mt-0.5 text-xs text-jungle-400">
+                <p className="mt-0.5 text-xs text-ink-400">
                   {d.lastUsed}:{' '}
                   {item.last_used_at
                     ? new Date(item.last_used_at).toLocaleString()
@@ -258,7 +258,7 @@ export function StaffAccessManager({
                 </p>
               </div>
               <div className="flex items-center gap-2">
-                <label className="flex items-center gap-1.5 text-xs text-jungle-500">
+                <label className="flex items-center gap-1.5 text-xs text-ink-500">
                   <span className="sr-only sm:not-sr-only">{d.langColumn}</span>
                   <select
                     value={item.ui_lang ?? ''}
@@ -268,8 +268,8 @@ export function StaffAccessManager({
                       })
                     }
                     disabled={busy !== null}
-                    className="rounded-lg border border-jungle-200 bg-white px-2 py-1.5 text-xs
-                               outline-none focus:border-jungle-500 focus:ring-1 focus:ring-jungle-500"
+                    className="rounded-lg border border-ink-200 bg-white px-2 py-1.5 text-xs
+                               outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
                   >
                     <option value="">{d.passcodeLangInherit}</option>
                     {UI_LANGUAGES.map((l) => (
@@ -300,7 +300,7 @@ export function StaffAccessManager({
           ))}
         </div>
       ) : (
-        <div className="card p-8 text-center text-sm text-jungle-500">
+        <div className="card p-8 text-center text-sm text-ink-500">
           {d.noPasscodes}
         </div>
       )}

@@ -41,8 +41,8 @@ export default async function InboxPage({
   return (
     <section>
       <div className="mb-6">
-        <h2 className="text-xl font-bold text-jungle-800">{d.inboxTitle}</h2>
-        <p className="mt-1 text-sm text-jungle-500">{d.inboxLead}</p>
+        <h2 className="text-xl font-bold text-brand-700">{d.inboxTitle}</h2>
+        <p className="mt-1 text-sm text-ink-500">{d.inboxLead}</p>
       </div>
 
       {plan?.otherSitesEnabled && primaryLocation ? (
@@ -60,7 +60,7 @@ export default async function InboxPage({
       </div>
 
       {rows.length === 0 ? (
-        <div className="card p-10 text-center text-sm text-jungle-500">{d.emptyInbox}</div>
+        <div className="card p-10 text-center text-sm text-ink-500">{d.emptyInbox}</div>
       ) : (
         <div className="space-y-4">
           {rows.map((row) => (

@@ -38,12 +38,12 @@ export default async function ReportPage() {
   return (
     <section>
       <div className="mb-6">
-        <h2 className="text-xl font-bold text-jungle-800">{d.reportTitle}</h2>
-        <p className="mt-1 text-sm text-jungle-500">{d.reportLead}</p>
+        <h2 className="text-xl font-bold text-brand-700">{d.reportTitle}</h2>
+        <p className="mt-1 text-sm text-ink-500">{d.reportLead}</p>
       </div>
 
       {reports.length === 0 ? (
-        <div className="card p-10 text-center text-sm text-jungle-500">{d.reportEmpty}</div>
+        <div className="card p-10 text-center text-sm text-ink-500">{d.reportEmpty}</div>
       ) : (
         <div className="space-y-6">
           {reports.map((report) => (
@@ -62,8 +62,8 @@ function ReportCard({ report, lang }: { report: MonthlyReportRow; lang: UiLang }
   return (
     <article className="card p-6">
       <header className="flex flex-wrap items-baseline gap-3">
-        <h3 className="text-lg font-bold text-jungle-800">{formatPeriod(report.period, lang)}</h3>
-        <span className="text-xs text-jungle-400">{d.reportPeriodLabel}</span>
+        <h3 className="text-lg font-bold text-brand-700">{formatPeriod(report.period, lang)}</h3>
+        <span className="text-xs text-ink-400">{d.reportPeriodLabel}</span>
       </header>
 
       {/* --- 数える部分 ------------------------------------------------ */}
@@ -95,12 +95,12 @@ function ReportCard({ report, lang }: { report: MonthlyReportRow; lang: UiLang }
 
       {Object.keys(report.by_language).length > 0 ? (
         <div className="mt-4">
-          <p className="text-xs font-medium text-jungle-700">{d.reportByLanguage}</p>
+          <p className="text-xs font-medium text-ink-700">{d.reportByLanguage}</p>
           <ul className="mt-1 flex flex-wrap gap-2">
             {Object.entries(report.by_language)
               .sort((a, b) => b[1] - a[1])
               .map(([code, count]) => (
-                <li key={code} className="badge bg-jungle-50 text-jungle-600">
+                <li key={code} className="badge bg-brand-50 text-ink-600">
                   {code}: {count}
                   {d.reportCountSuffix}
                 </li>
@@ -133,11 +133,11 @@ function ReportCard({ report, lang }: { report: MonthlyReportRow; lang: UiLang }
 
       {report.next_actions.length > 0 ? (
         <div className="mt-5">
-          <p className="text-sm font-semibold text-jungle-800">{d.reportNextActions}</p>
+          <p className="text-sm font-semibold text-brand-700">{d.reportNextActions}</p>
           <ol className="mt-2 space-y-2">
             {report.next_actions.map((action, index) => (
-              <li key={index} className="flex gap-2 text-sm leading-relaxed text-jungle-700">
-                <span className="shrink-0 font-semibold text-jungle-400">{index + 1}.</span>
+              <li key={index} className="flex gap-2 text-sm leading-relaxed text-ink-700">
+                <span className="shrink-0 font-semibold text-ink-400">{index + 1}.</span>
                 <span>{action}</span>
               </li>
             ))}
@@ -145,7 +145,7 @@ function ReportCard({ report, lang }: { report: MonthlyReportRow; lang: UiLang }
         </div>
       ) : null}
 
-      <p className="mt-5 border-t border-jungle-100 pt-3 text-xs leading-relaxed text-jungle-400">
+      <p className="mt-5 border-t border-ink-100 pt-3 text-xs leading-relaxed text-ink-400">
         {d.reportSourceNote}
       </p>
     </article>
@@ -162,10 +162,10 @@ function Metric({
   previous: string;
 }) {
   return (
-    <div className="rounded-lg bg-jungle-50 px-4 py-3">
-      <p className="text-xs text-jungle-500">{label}</p>
-      <p className="mt-1 text-2xl font-bold text-jungle-800">{value}</p>
-      <p className="mt-1 text-xs text-jungle-400">{previous}</p>
+    <div className="rounded-lg bg-brand-50 px-4 py-3">
+      <p className="text-xs text-ink-500">{label}</p>
+      <p className="mt-1 text-2xl font-bold text-brand-700">{value}</p>
+      <p className="mt-1 text-xs text-ink-400">{previous}</p>
     </div>
   );
 }
@@ -183,18 +183,18 @@ function ThemeList({
 }) {
   return (
     <div>
-      <p className="text-sm font-semibold text-jungle-800">{title}</p>
+      <p className="text-sm font-semibold text-brand-700">{title}</p>
       {themes.length === 0 ? (
-        <p className="mt-2 text-xs leading-relaxed text-jungle-400">{empty}</p>
+        <p className="mt-2 text-xs leading-relaxed text-ink-400">{empty}</p>
       ) : (
         <ul className="mt-2 space-y-1">
           {themes.map((theme) => (
             <li
               key={theme.topic}
-              className="flex items-baseline justify-between gap-3 text-sm text-jungle-700"
+              className="flex items-baseline justify-between gap-3 text-sm text-ink-700"
             >
               <span>{theme.topic}</span>
-              <span className="shrink-0 text-xs text-jungle-400">
+              <span className="shrink-0 text-xs text-ink-400">
                 {theme.count}
                 {suffix}
               </span>

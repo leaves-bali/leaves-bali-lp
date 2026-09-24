@@ -47,28 +47,28 @@ export default async function HomePage({
         </div>
 
         <div className="mb-8 text-center">
-          <p className="text-sm font-medium tracking-widest text-jungle-500">HOSHI JUNGLE</p>
-          <h1 className="mt-2 text-3xl font-bold text-jungle-800">Review AI</h1>
-          <p className="mt-3 text-sm leading-relaxed text-jungle-600">{d.landingLead}</p>
+          <p className="text-sm font-medium tracking-widest text-ink-500">HOSHI JUNGLE</p>
+          <h1 className="mt-2 text-3xl font-bold text-brand-700">Review AI</h1>
+          <p className="mt-3 text-sm leading-relaxed text-ink-600">{d.landingLead}</p>
         </div>
 
         {error ? (
-          <div className="card mb-6 border-red-200 bg-red-50 p-4 text-sm text-red-800">
+          <div className="card mb-6 border-brand-200 bg-brand-50 p-4 text-sm text-brand-800">
             {error}
           </div>
         ) : null}
 
         <div className="card p-6">
-          <h2 className="text-sm font-semibold text-jungle-800">{d.forStaff}</h2>
-          <p className="mt-1 text-xs text-jungle-500">{d.forStaffHint}</p>
+          <h2 className="text-sm font-semibold text-brand-700">{d.forStaff}</h2>
+          <p className="mt-1 text-xs text-ink-500">{d.forStaffHint}</p>
           <Link href="/staff" className="btn-primary mt-4 w-full">
             {d.enterWithPasscode}
           </Link>
         </div>
 
         <div className="card mt-4 p-6">
-          <h2 className="text-sm font-semibold text-jungle-800">{d.forOwner}</h2>
-          <p className="mt-1 text-xs text-jungle-500">{d.forOwnerHint}</p>
+          <h2 className="text-sm font-semibold text-brand-700">{d.forOwner}</h2>
+          <p className="mt-1 text-xs text-ink-500">{d.forOwnerHint}</p>
           <Link
             href="/api/auth/google?returnTo=/onboarding"
             className="btn-secondary mt-4 w-full"
@@ -76,7 +76,7 @@ export default async function HomePage({
           >
             {d.signInWithGoogle}
           </Link>
-          <p className="mt-3 text-[11px] leading-relaxed text-jungle-400">
+          <p className="mt-3 text-[11px] leading-relaxed text-ink-400">
             {d.ownerAccountNote}
           </p>
         </div>

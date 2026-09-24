@@ -126,8 +126,8 @@ export function SetupWizard({ userEmail, lang }: { userEmail: string; lang: UiLa
   if (summary) {
     return (
       <div className="card p-6">
-        <p className="text-xs text-jungle-400">{d.stepOf(3, 3)}</p>
-        <h2 className="mt-1 text-lg font-semibold text-jungle-800">{d.setupDone}</h2>
+        <p className="text-xs text-ink-400">{d.stepOf(3, 3)}</p>
+        <h2 className="mt-1 text-lg font-semibold text-brand-700">{d.setupDone}</h2>
         <dl className="mt-5 grid grid-cols-3 gap-4 text-center">
           <Stat label={d.statFetched} value={summary.reviewsFetched} />
           <Stat label={d.statNew} value={summary.reviewsNew} />
@@ -148,7 +148,7 @@ export function SetupWizard({ userEmail, lang }: { userEmail: string; lang: UiLa
             </ul>
           </div>
         ) : null}
-        <p className="mt-5 text-sm text-jungle-600">
+        <p className="mt-5 text-sm text-ink-600">
           {d.afterSetupNote}
         </p>
         <button
@@ -165,20 +165,20 @@ export function SetupWizard({ userEmail, lang }: { userEmail: string; lang: UiLa
   // --- ステップ 2: ロケーション選択 -----------------------------------------
   return (
     <div className="card p-6">
-      <p className="text-xs text-jungle-400">{d.stepOf(2, 3)}</p>
-      <h2 className="mt-1 text-lg font-semibold text-jungle-800">
+      <p className="text-xs text-ink-400">{d.stepOf(2, 3)}</p>
+      <h2 className="mt-1 text-lg font-semibold text-brand-700">
         {d.stepSelectLocation}
       </h2>
-      <p className="mt-1 text-xs text-jungle-500">{d.loggedInAs}: {userEmail}</p>
+      <p className="mt-1 text-xs text-ink-500">{d.loggedInAs}: {userEmail}</p>
 
       {loadError ? (
-        <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">
+        <div className="mt-4 rounded-lg border border-brand-200 bg-brand-50 p-3 text-sm text-brand-800">
           {loadError}
         </div>
       ) : null}
 
       {locations === null && !loadError ? (
-        <p className="mt-6 text-sm text-jungle-500">{d.loadingLocations}</p>
+        <p className="mt-6 text-sm text-ink-500">{d.loadingLocations}</p>
       ) : null}
 
       {locations && locations.length === 0 ? (
@@ -193,8 +193,8 @@ export function SetupWizard({ userEmail, lang }: { userEmail: string; lang: UiLa
             key={location.googleLocationId}
             className={`flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition ${
               selected === location.googleLocationId
-                ? 'border-jungle-500 bg-jungle-50'
-                : 'border-jungle-100 hover:bg-sand-50'
+                ? 'border-brand-500 bg-brand-50'
+                : 'border-ink-100 hover:bg-ink-50'
             }`}
           >
             <input
@@ -205,16 +205,16 @@ export function SetupWizard({ userEmail, lang }: { userEmail: string; lang: UiLa
               onChange={() => setSelected(location.googleLocationId)}
             />
             <span className="min-w-0">
-              <span className="block text-sm font-medium text-jungle-800">
+              <span className="block text-sm font-medium text-brand-700">
                 {location.name}
                 {location.alreadyRegistered ? (
-                  <span className="badge ml-2 bg-jungle-100 text-jungle-600">{d.alreadyRegistered}</span>
+                  <span className="badge ml-2 bg-brand-100 text-ink-600">{d.alreadyRegistered}</span>
                 ) : null}
               </span>
               {location.address ? (
-                <span className="mt-0.5 block text-xs text-jungle-500">{location.address}</span>
+                <span className="mt-0.5 block text-xs text-ink-500">{location.address}</span>
               ) : null}
-              <span className="mt-0.5 block text-[11px] text-jungle-400">
+              <span className="mt-0.5 block text-[11px] text-ink-400">
                 {location.accountLabel}
               </span>
             </span>
@@ -231,7 +231,7 @@ export function SetupWizard({ userEmail, lang }: { userEmail: string; lang: UiLa
         {submitting ? d.fetchingReviews : d.completeSetup}
       </button>
       {submitting ? (
-        <p className="mt-2 text-center text-xs text-jungle-500">
+        <p className="mt-2 text-center text-xs text-ink-500">
           {progress ?? d.firstSyncNote}
         </p>
       ) : null}
@@ -241,9 +241,9 @@ export function SetupWizard({ userEmail, lang }: { userEmail: string; lang: UiLa
 
 function Stat({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-lg bg-sand-50 p-3">
-      <dt className="text-[11px] text-jungle-500">{label}</dt>
-      <dd className="mt-1 text-xl font-bold text-jungle-800">{value}</dd>
+    <div className="rounded-lg bg-ink-50 p-3">
+      <dt className="text-[11px] text-ink-500">{label}</dt>
+      <dd className="mt-1 text-xl font-bold text-brand-700">{value}</dd>
     </div>
   );
 }

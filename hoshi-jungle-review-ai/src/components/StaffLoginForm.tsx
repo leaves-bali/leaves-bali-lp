@@ -55,7 +55,7 @@ export function StaffLoginForm({ lang }: { lang: UiLang }) {
 
   return (
     <form onSubmit={handleSubmit} className="card p-6">
-      <label htmlFor="passcode" className="block text-xs font-medium text-jungle-600">
+      <label htmlFor="passcode" className="block text-xs font-medium text-ink-600">
         {d.passcode}
       </label>
       <input
@@ -69,21 +69,21 @@ export function StaffLoginForm({ lang }: { lang: UiLang }) {
         value={passcode}
         onChange={(e) => handleChange(e.target.value)}
         placeholder="HJ-XXXX-XXXX"
-        className="mt-2 w-full rounded-lg border border-jungle-200 bg-white px-3 py-2.5 text-center
-                   font-mono text-lg tracking-widest text-jungle-800 outline-none
-                   focus:border-jungle-500 focus:ring-1 focus:ring-jungle-500"
+        className="mt-2 w-full rounded-lg border border-ink-200 bg-white px-3 py-2.5 text-center
+                   font-mono text-lg tracking-widest text-brand-700 outline-none
+                   focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
       />
 
       <button
         type="button"
         onClick={() => setReveal((v) => !v)}
-        className="mt-2 text-xs text-jungle-400 hover:text-jungle-600"
+        className="mt-2 text-xs text-ink-400 hover:text-ink-800"
       >
         {reveal ? d.hidePasscode : d.showPasscode}
       </button>
 
       {error ? (
-        <p className="mt-3 rounded bg-red-50 px-3 py-2 text-xs text-red-800">{error}</p>
+        <p className="mt-3 rounded bg-brand-50 px-3 py-2 text-xs text-brand-800">{error}</p>
       ) : null}
 
       <button

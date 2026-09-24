@@ -48,10 +48,18 @@ export const STATUS_LABELS: Record<ReplyStatus, string> = {
   skipped: '返信しない',
 };
 
+/**
+ * 赤白の 2 色だけで状態を描き分ける。
+ *
+ * 色数が減ったぶん、**塗り**と**枠線**で形を変えて区別している。
+ * いちばん間違えてはいけないのは「公開済みかどうか」なので、
+ * 公開済みだけを塗りつぶしの赤にした。遠目でも他と混ざらない。
+ * 失敗は同じ赤でも白抜き＋枠線にして、公開済みと取り違えないようにしている。
+ */
 export const STATUS_STYLES: Record<ReplyStatus, string> = {
-  draft: 'bg-jungle-100 text-jungle-700',
-  edited: 'bg-blue-100 text-blue-800',
-  published: 'bg-emerald-100 text-emerald-800',
-  failed: 'bg-red-100 text-red-800',
-  skipped: 'bg-jungle-50 text-jungle-400',
+  draft: 'bg-ink-100 text-ink-700',
+  edited: 'bg-ink-200 text-ink-800',
+  published: 'bg-brand-600 text-white',
+  failed: 'border border-brand-600 bg-white text-brand-700',
+  skipped: 'bg-ink-50 text-ink-500',
 };

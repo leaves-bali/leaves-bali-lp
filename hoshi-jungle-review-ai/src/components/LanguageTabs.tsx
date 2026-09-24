@@ -52,10 +52,10 @@ export function LanguageTabs({
               isActive
                 ? isPriority
                   ? 'border-amber-500 bg-amber-500 text-white'
-                  : 'border-jungle-600 bg-jungle-600 text-white'
+                  : 'border-brand-600 bg-brand-600 text-white'
                 : isPriority
                   ? 'border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100'
-                  : 'border-jungle-200 bg-white text-jungle-700 hover:bg-jungle-50',
+                  : 'border-ink-200 bg-white text-ink-700 hover:bg-brand-50',
             ].join(' ')}
           >
             {tab.label}

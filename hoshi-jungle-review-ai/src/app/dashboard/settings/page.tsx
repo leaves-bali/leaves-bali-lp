@@ -59,8 +59,8 @@ export default async function SettingsPage() {
   return (
     <section>
       <div className="mb-6">
-        <h2 className="text-xl font-bold text-jungle-800">{d.passcodeTitle}</h2>
-        <p className="mt-1 text-sm leading-relaxed text-jungle-500">
+        <h2 className="text-xl font-bold text-brand-700">{d.passcodeTitle}</h2>
+        <p className="mt-1 text-sm leading-relaxed text-ink-500">
           {d.passcodeLead}
         </p>
       </div>
@@ -113,19 +113,19 @@ export default async function SettingsPage() {
       />
 
       <div className="card mt-6 p-5">
-        <h3 className="text-sm font-semibold text-jungle-800">{d.securityStatus}</h3>
+        <h3 className="text-sm font-semibold text-brand-700">{d.securityStatus}</h3>
         <dl className="mt-3 grid grid-cols-2 gap-4 text-sm">
           <div>
-            <dt className="text-xs text-jungle-500">{d.activePasscodes}</dt>
-            <dd className="mt-0.5 font-bold text-jungle-800">
+            <dt className="text-xs text-ink-500">{d.activePasscodes}</dt>
+            <dd className="mt-0.5 font-bold text-brand-700">
               {(items ?? []).filter((i) => i.is_active).length}
             </dd>
           </div>
           <div>
-            <dt className="text-xs text-jungle-500">{d.failedLogins24h}</dt>
+            <dt className="text-xs text-ink-500">{d.failedLogins24h}</dt>
             <dd
               className={`mt-0.5 font-bold ${
-                (recentFailures ?? 0) > 20 ? 'text-red-600' : 'text-jungle-800'
+                (recentFailures ?? 0) > 20 ? 'text-brand-600' : 'text-brand-700'
               }`}
             >
               {recentFailures ?? 0}

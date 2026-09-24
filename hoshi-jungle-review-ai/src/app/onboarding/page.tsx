@@ -29,10 +29,10 @@ export default async function OnboardingPage() {
     <main className="mx-auto min-h-screen w-full max-w-2xl px-6 py-12">
       <header className="mb-10 flex flex-wrap items-start gap-4">
         <div>
-          <p className="text-xs font-medium tracking-widest text-jungle-500">
+          <p className="text-xs font-medium tracking-widest text-ink-500">
             HOSHI JUNGLE REVIEW AI
           </p>
-          <h1 className="mt-1 text-2xl font-bold text-jungle-800">{d.setupTitle}</h1>
+          <h1 className="mt-1 text-2xl font-bold text-brand-700">{d.setupTitle}</h1>
         </div>
         <div className="ml-auto">
           <UiLangSwitcher current={uiLang} fallback={fallbackLang} />
@@ -44,15 +44,15 @@ export default async function OnboardingPage() {
       ) : (
         <div className="card p-6">
           <div className="flex items-center gap-3">
-            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-jungle-600 text-xs font-bold text-white">
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-600 text-xs font-bold text-white">
               1
             </span>
             <div>
-              <p className="text-xs text-jungle-400">{d.stepOf(1, 3)}</p>
-              <h2 className="text-base font-semibold text-jungle-800">{d.stepGoogleLogin}</h2>
+              <p className="text-xs text-ink-400">{d.stepOf(1, 3)}</p>
+              <h2 className="text-base font-semibold text-brand-700">{d.stepGoogleLogin}</h2>
             </div>
           </div>
-          <p className="mt-3 text-sm text-jungle-600">{d.stepGoogleHint}</p>
+          <p className="mt-3 text-sm text-ink-600">{d.stepGoogleHint}</p>
           <Link
             href="/api/auth/google?returnTo=/onboarding"
             className="btn-primary mt-5"

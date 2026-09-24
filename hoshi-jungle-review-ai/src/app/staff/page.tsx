@@ -27,16 +27,16 @@ export default async function StaffLoginPage() {
         </div>
 
         <div className="mb-8 text-center">
-          <p className="text-sm font-medium tracking-widest text-jungle-500">HOSHI JUNGLE</p>
-          <h1 className="mt-2 text-2xl font-bold text-jungle-800">Review AI</h1>
-          <p className="mt-2 text-sm text-jungle-600">{d.staffLogin}</p>
+          <p className="text-sm font-medium tracking-widest text-ink-500">HOSHI JUNGLE</p>
+          <h1 className="mt-2 text-2xl font-bold text-brand-700">Review AI</h1>
+          <p className="mt-2 text-sm text-ink-600">{d.staffLogin}</p>
         </div>
 
         <StaffLoginForm lang={uiLang} />
 
-        <p className="mt-6 text-center text-xs text-jungle-400">{d.askAdmin}</p>
+        <p className="mt-6 text-center text-xs text-ink-400">{d.askAdmin}</p>
         <p className="mt-4 text-center">
-          <Link href="/" className="text-xs text-jungle-400 underline hover:text-jungle-600">
+          <Link href="/" className="text-xs text-ink-400 underline hover:text-ink-800">
             {d.ownerLinkHere}
           </Link>
         </p>
