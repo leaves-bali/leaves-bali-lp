@@ -63,7 +63,9 @@ export function SetupWizard({ userEmail, lang }: { userEmail: string; lang: UiLa
     return () => {
       cancelled = true;
     };
-  }, []);
+    // d は t(lang) が返す固定の辞書なので参照は変わらない。
+    // 依存に入れても再実行されず、ロケーション取得は入室時の1回で済む。
+  }, [d]);
 
   async function handleSubmit() {
     const location = locations?.find((l) => l.googleLocationId === selected);

@@ -226,6 +226,11 @@ export function ReviewCard({
           >
             {row.language === 'other' ? d.reviewLang.other : LANGUAGE_LABELS[row.language]}
           </span>
+          {/* Google以外は、どのサイトのクチコミかが分からないと貼り戻す先が分からない。
+              Google は既定なので表示しない（全件に同じ印が付くと情報にならない）。 */}
+          {canPublish ? null : (
+            <span className="badge bg-ink-100 text-ink-700">{SOURCE_LABELS[row.source]}</span>
+          )}
           {status ? (
             <span className={`badge ${STATUS_STYLES[status]}`}>{d.status[status]}</span>
           ) : (

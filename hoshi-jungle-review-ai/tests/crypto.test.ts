@@ -17,7 +17,8 @@ test('同じ平文でも毎回異なる暗号文になる（IV がランダム�
 });
 
 test('改ざんされた暗号文は復号に失敗する', () => {
-  const [iv, ciphertext, tag] = encryptToken('secret').split(':');
+  // 暗号文の部分だけを差し替える。IV と認証タグはそのまま使う。
+  const [iv, , tag] = encryptToken('secret').split(':');
   const tampered = [iv, Buffer.from('tampered').toString('base64'), tag].join(':');
   assert.throws(() => decryptToken(tampered));
 });
