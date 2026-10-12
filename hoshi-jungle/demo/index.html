@@ -5,232 +5,396 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <!-- 先方へ個別にお渡しするデモのため、検索エンジンには載せない -->
 <meta name="robots" content="noindex, nofollow">
-<title>Review AI 体験デモ</title>
+<title>Leaves Reply 体験デモ｜Hoshi Jungle</title>
 <style>
-  /* 実際のアプリ（Tailwind の brand / ink パレット）と同じ配色をそのまま使う。
-     見た目が違うと「デモと本番は別物」という印象になり、体験の意味が薄れるため。
+  /* Hoshi Jungle 向けの体験デモ。お客さまに渡しているURLはこのファイル1つだけ（HANDOFF.md）。
+     デザインと文言は leaves-reply の実際の管理画面・public/demo/index.html とそろえている。
+     片方だけ直さないこと。
 
-     小さい文字はすべて背景との比が 4.5:1 以上（実測値は
-     hoshi-jungle-review-ai/tailwind.config.ts に記載）。 */
+     配色は実アプリの Tailwind（brand / ink）にそろえる。
+     小さい文字は背景との比 4.5:1 以上（tailwind.config.ts の実測値）。 */
   :root {
-    color-scheme: light;   /* 実アプリ（globals.css）と同じく light 固定 */
+    color-scheme: light;
     --brand:#c8102e; --brand-600:#b00c26; --brand-700:#93091f;
     --brand-50:#fdf1f1; --brand-100:#fadbdc;
-    --head:#93091f;                       /* 見出し（白地で 9.13:1） */
-    --ink-900:#111111; --ink:#333333;     /* 本文・ラベル */
-    --muted:#6f6f6f;                      /* いちばん薄い文字（白地で 5.02:1） */
-    --line:#dcdcdc;                       /* 枠線 */
-    --bg:#f7f7f7; --bg-2:#ededed;         /* 地 */
-    /* 要確認だけは赤から外す。赤の中に赤で警告を描くと埋もれるため。 */
-    --warn:#8a5a11; --warn-bg:#fdf6e7; --warn-line:#e8d3a6;
-    --crit:#93091f; --crit-bg:#fdf1f1; --crit-line:#f4b8b9;
-    /* 「済み」は緑をやめて無彩色に。文言（公開済み）で意味は伝わる。 */
-    --ok:#333333; --ok-bg:#ededed;
-    --brass:#8a6d1f;                      /* 星 */
-    --sans: ui-sans-serif, system-ui, "Hiragino Sans", "Noto Sans JP", sans-serif;
+    --ink-900:#111111; --ink-700:#333333; --ink-600:#444444; --ink-500:#5a5a5a; --ink-400:#6f6f6f;
+    --line:#e7e2e2; --soft:#f3f1f0; --bg:#f7f5f4;
+    --blue:#4a6fb5;
+    --up:#1d6b37; --up-bg:#e5f3e9;
+    --gold:#b8860b;
+    --crit:#b3261e; --crit-bg:#fdeeee; --crit-line:#efb1ad;
+    --radius:18px;
+    --shadow:0 1px 2px rgba(60,20,25,.04), 0 6px 18px -8px rgba(60,20,25,.12);
+    --sans: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Noto Sans CJK JP", "Yu Gothic UI", Meiryo, system-ui, sans-serif;
   }
-  * { box-sizing: border-box; margin:0; padding:0; }
-  html, body { height:100%; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  html, body { min-height:100%; }
   body {
-    font-family: var(--sans); background: var(--bg); color: var(--ink-900);
-    -webkit-font-smoothing: antialiased; font-size:15px; line-height:1.7;
+    font-family:var(--sans); color:var(--ink-900); background:var(--bg);
+    -webkit-font-smoothing:antialiased; font-size:15px; line-height:1.7;
   }
-  button, input, textarea { font: inherit; color: inherit; }
+  button, input, textarea, select { font:inherit; color:inherit; }
+  button { cursor:pointer; }
+  svg { display:block; }
 
-  /* ---- デモ帯 ---- */
+  /* ---- デモ帯（画面写真には写さない） ---- */
   .demobar {
-    background: var(--ink-900); color:#f0f0f0; font-size:12px;
-    padding:8px 16px; display:flex; gap:12px; align-items:center;
-    flex-wrap:wrap; justify-content:center; text-align:center;
+    background:var(--ink-900); color:#f0f0f0; font-size:12px; padding:7px 16px;
+    display:flex; gap:12px; align-items:center; justify-content:center; flex-wrap:wrap; text-align:center;
   }
-  .demobar b { color:#8dc5a4; font-weight:700; }
   .demobar button {
-    background:none; border:1px solid #3a5a48; color:#9dbcab;
-    border-radius:999px; padding:2px 11px; font-size:11px; cursor:pointer;
+    background:none; border:1px solid #555; color:#ddd; border-radius:999px;
+    padding:1px 11px; font-size:11px;
   }
-  .demobar button:hover { background:#22362b; color:#cfe3d7; }
+  .demobar button:hover { background:#2a2a2a; }
 
-  /* ---- 共通パーツ（実アプリの .card / .btn-* と同じ見た目） ---- */
-  .card { border:1px solid var(--brand-100); background:#fff; border-radius:12px; box-shadow:0 1px 2px rgba(25,57,43,.05); }
-  .btn {
-    display:inline-flex; align-items:center; justify-content:center; gap:8px;
-    border-radius:8px; padding:8px 16px; font-size:14px; font-weight:500;
-    border:1px solid transparent; cursor:pointer; transition:background .15s, color .15s;
+  /* ---- 骨組み ---- */
+  .shell { display:flex; min-height:calc(100vh - 34px); }
+  .side {
+    width:294px; flex-shrink:0; color:#fff; display:flex; flex-direction:column;
+    padding:30px 18px 22px;
+    background:linear-gradient(180deg,#d4405a 0%,#c01933 45%,#ad0f2a 100%);
   }
-  .btn:disabled { opacity:.5; cursor:not-allowed; }
+  .logo { display:flex; align-items:baseline; gap:12px; padding:0 10px; }
+  .logo .k { font-size:12px; font-weight:600; letter-spacing:.3em; opacity:.92; }
+  .logo .v { font-size:23px; font-weight:800; letter-spacing:.01em; }
+  .store {
+    margin-top:28px; display:flex; gap:12px; align-items:center; padding:11px 12px;
+    border:1px solid rgba(255,255,255,.35); background:rgba(255,255,255,.12); border-radius:14px;
+  }
+  .store .ic {
+    width:44px; height:44px; border-radius:10px; background:#fff; color:var(--brand-600);
+    display:flex; align-items:center; justify-content:center; font-weight:800; font-size:18px;
+  }
+  .store .n { font-weight:700; font-size:15.5px; line-height:1.35; }
+  .store .a { font-size:12.5px; opacity:.9; }
+  .menu-k { margin:34px 12px 10px; font-size:12px; font-weight:700; letter-spacing:.22em; opacity:.9; }
+  .nav { display:flex; flex-direction:column; gap:4px; }
+  .nav button {
+    display:flex; align-items:center; gap:14px; width:100%; text-align:left;
+    background:none; border:none; color:#fff; border-radius:12px; padding:12px 14px;
+    font-size:16px; font-weight:500; white-space:nowrap;
+  }
+  .nav button:hover { background:rgba(255,255,255,.12); }
+  .nav button[aria-current="page"] { background:#fff; color:var(--brand-600); font-weight:700; box-shadow:0 4px 14px -6px rgba(0,0,0,.35); }
+  .nav svg { width:20px; height:20px; flex-shrink:0; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+  .nav .cnt {
+    margin-left:auto; min-width:26px; height:26px; padding:0 7px; border-radius:999px;
+    display:inline-flex; align-items:center; justify-content:center; font-size:13px; font-weight:700;
+    background:rgba(255,255,255,.22); color:#fff;
+  }
+  .nav .cnt.hot { background:#fff; color:var(--brand-600); }
+  .nav button[aria-current="page"] .cnt { background:var(--brand-600); color:#fff; }
+  .side-foot {
+    margin-top:auto; border-top:1px solid rgba(255,255,255,.28); padding:18px 10px 0;
+    display:flex; gap:12px; align-items:center;
+  }
+  .side-foot .ic {
+    width:38px; height:38px; border-radius:50%; background:rgba(255,255,255,.18);
+    display:flex; align-items:center; justify-content:center; font-size:14px;
+  }
+  .side-foot .n { font-weight:700; font-size:15px; line-height:1.3; }
+  .side-foot .s { font-size:13px; display:flex; align-items:center; gap:6px; }
+  .side-foot .dot { width:8px; height:8px; border-radius:50%; background:#3ddc84; box-shadow:0 0 0 2px rgba(255,255,255,.35); }
+
+  .main {
+    flex:1; min-width:0; padding:30px 34px 60px;
+    background:linear-gradient(180deg,#f6dfe3 0px,#f6e9eb 220px,var(--bg) 520px);
+  }
+  .inner { max-width:1100px; }
+
+  /* ---- 上段 ---- */
+  .top { display:flex; align-items:flex-end; gap:16px; flex-wrap:wrap; margin-bottom:22px; }
+  .top .date { font-size:15px; color:var(--ink-500); }
+  .top h1 { font-size:32px; font-weight:700; line-height:1.35; letter-spacing:.02em; margin-top:2px; }
+  .top h1 span { display:inline-block; }
+  .sync { margin-left:auto; display:flex; align-items:center; gap:14px; }
+  .sync .last { font-size:14px; color:var(--ink-500); }
+  .btn {
+    display:inline-flex; align-items:center; justify-content:center; gap:8px; border-radius:12px;
+    padding:10px 18px; font-size:15px; font-weight:600; border:1px solid transparent;
+    transition:background .15s, box-shadow .15s;
+  }
+  .btn:disabled { opacity:.55; cursor:not-allowed; }
+  .btn svg { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+  .btn-white { background:#fff; border-color:#ece6e6; color:var(--ink-700); box-shadow:0 2px 8px -4px rgba(0,0,0,.12); }
+  .btn-white:not(:disabled):hover { background:var(--brand-50); }
   .btn-primary { background:var(--brand-600); color:#fff; }
   .btn-primary:not(:disabled):hover { background:var(--brand-700); }
-  .btn-secondary { border-color:var(--line); background:#fff; color:var(--ink); }
-  .btn-secondary:not(:disabled):hover { background:var(--brand-50); }
-  /* 主ボタン（Googleに公開）と同じ赤にしない。同じ強さで並ぶと、
-     いちばん押してほしい操作が埋もれる。 */
-  .btn-ghost { background:none; color:var(--ink); }
-  .btn-ghost:not(:disabled):hover { background:var(--brand-50); }
-  .badge { display:inline-flex; align-items:center; border-radius:999px; padding:2px 10px; font-size:12px; font-weight:500; }
+  .btn-sub { background:#fff; border-color:#ddd6d6; color:var(--ink-700); }
+  .btn-sub:not(:disabled):hover { background:var(--brand-50); }
+  .btn-ghost { background:none; color:var(--ink-600); }
+  .btn-ghost:not(:disabled):hover { background:var(--soft); }
+  .spin { animation:spin 0.8s linear infinite; }
+  @keyframes spin { to { transform:rotate(360deg); } }
 
-  /* ---- 言語切替 ---- */
-  .langs { display:inline-flex; border:1px solid var(--line); background:#fff; border-radius:999px; overflow:hidden; }
-  .langs button { background:none; border:none; padding:6px 12px; font-size:12px; font-weight:500; color:var(--brand-600); cursor:pointer; }
-  .langs button:hover { background:var(--brand-50); }
-  .langs button[aria-pressed="true"] { background:var(--brand-600); color:#fff; }
-
-  /* ---- ログイン画面 ---- */
-  .login { min-height:calc(100vh - 100px); display:flex; align-items:center; justify-content:center; padding:40px 20px; }
-  .login-inner { width:100%; max-width:360px; }
-  .login .eyebrow { font-size:12px; font-weight:500; letter-spacing:.18em; color:var(--brand); text-align:center; }
-  .login h1 { font-size:26px; font-weight:700; color:var(--head); text-align:center; margin-top:6px; }
-  .login .sub { font-size:14px; color:var(--brand-600); text-align:center; margin-top:6px; }
-  .field { display:block; font-size:13px; font-weight:500; color:var(--ink); margin-bottom:6px; }
-  .input {
-    width:100%; border:1px solid var(--line); border-radius:10px; padding:13px 14px;
-    font-size:18px; letter-spacing:.12em; text-align:center; background:#fff; outline:none;
+  /* ---- 数字のカード ---- */
+  .card { background:#fff; border-radius:var(--radius); box-shadow:var(--shadow); border:1px solid #f0eaea; }
+  .kpis { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+  .kpi { padding:22px 24px 20px; position:relative; min-height:150px; display:flex; flex-direction:column; }
+  .kpi.hot { border:2px solid var(--brand-600); }
+  .kpi .l { font-size:15px; color:var(--ink-600); }
+  .kpi.hot .l { color:var(--ink-900); font-weight:700; }
+  .kpi .v { margin-top:6px; font-size:46px; font-weight:800; line-height:1.15; letter-spacing:-.01em; }
+  .kpi.hot .v { color:var(--brand-600); }
+  .kpi .v small { font-size:15px; font-weight:500; color:var(--ink-500); margin-left:6px; }
+  .kpi .sub { margin-top:auto; padding-top:8px; display:flex; align-items:center; gap:10px; font-size:14px; color:var(--ink-500); flex-wrap:wrap; }
+  .up { display:inline-flex; align-items:center; gap:4px; background:var(--up-bg); color:var(--up); font-weight:700; font-size:13.5px; border-radius:999px; padding:2px 10px; }
+  .pill-crit {
+    display:inline-flex; align-items:center; gap:6px; background:var(--crit); color:#fff;
+    font-size:14px; font-weight:700; border-radius:999px; padding:3px 12px 3px 8px;
   }
-  .input:focus { border-color:var(--brand); box-shadow:0 0 0 3px var(--brand-100); }
-  .hintbox { margin-top:12px; background:var(--brand-50); border:1px dashed var(--line); border-radius:8px; padding:10px 12px; font-size:12px; color:var(--ink); }
-  .hintbox code { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-weight:700; letter-spacing:.06em; }
-  .hintbox button { margin-top:6px; background:none; border:none; color:var(--brand-600); font-size:12px; text-decoration:underline; cursor:pointer; padding:0; }
-  .err { margin-top:10px; background:#fdecea; border:1px solid #f3c9c4; color:#9b3730; border-radius:8px; padding:9px 12px; font-size:13px; }
-  .muted { font-size:12px; color:var(--muted); text-align:center; margin-top:18px; line-height:1.7; }
+  .pill-crit i { width:17px; height:17px; border-radius:50%; background:#fff; color:var(--crit); font-style:normal; font-size:12px; font-weight:900; display:inline-flex; align-items:center; justify-content:center; }
+  .kpi .go { margin-left:auto; background:none; border:none; color:var(--brand-600); font-weight:700; font-size:15px; display:inline-flex; gap:4px; align-items:center; }
+  .kpi .go:hover { text-decoration:underline; }
+  .spark { position:absolute; right:24px; top:56px; width:92px; height:40px; }
 
-  /* ---- ヘッダー ---- */
-  header.app { background:#fff; border-bottom:1px solid var(--brand-100); }
-  .hrow { max-width:1000px; margin:0 auto; padding:14px 20px; display:flex; gap:14px; align-items:center; flex-wrap:wrap; }
-  .hname .k { font-size:11px; font-weight:500; letter-spacing:.16em; color:var(--muted); }
-  .hname .v { font-size:18px; font-weight:700; color:var(--head); }
-  .hright { margin-left:auto; display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
-  .hright .link { font-size:12px; color:var(--muted); text-decoration:none; cursor:pointer; background:none; border:none; }
-  .hright .link:hover { color:var(--brand-600); }
-  nav.tabs { max-width:1000px; margin:0 auto; padding:0 20px; display:flex; gap:2px; flex-wrap:wrap; }
-  nav.tabs button {
-    background:none; border:none; cursor:pointer; padding:10px 14px; font-size:14px; font-weight:600;
-    color:var(--muted); border-bottom:2px solid transparent; margin-bottom:-1px;
+  /* ---- 週ごとのグラフ ---- */
+  .chart { margin-top:24px; padding:22px 26px 20px; }
+  .chart-h { display:flex; align-items:baseline; gap:16px; flex-wrap:wrap; }
+  .chart-h h2 { font-size:18px; font-weight:700; }
+  .chart-h .s { font-size:14px; color:var(--ink-500); }
+  .legend { margin-left:auto; display:flex; gap:16px; font-size:14px; color:var(--ink-600); }
+  .legend i { display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:6px; vertical-align:0; }
+  .plot { position:relative; height:280px; margin:22px 0 0 34px; }
+  .grid { position:absolute; inset:0 0 30px 0; }
+  .grid .g { position:absolute; left:0; right:0; border-top:1px dashed #e6e0e0; }
+  .grid .g.base { border-top:1px solid #cfc8c8; }
+  .grid .g span { position:absolute; left:-34px; top:-10px; width:24px; text-align:right; font-size:13px; color:var(--ink-500); }
+  .bars { position:absolute; inset:0 0 30px 0; display:flex; justify-content:space-around; align-items:flex-end; }
+  .bar { width:7%; max-width:40px; display:flex; flex-direction:column; align-items:center; position:relative; height:100%; justify-content:flex-end; }
+  .bar .t { font-size:14px; font-weight:700; margin-bottom:4px; }
+  .bar .u { width:100%; background:var(--blue); border-radius:3px 3px 0 0; }
+  .bar .r { width:100%; background:var(--brand-600); border-top:2px solid #fff; }
+  .bar .x { position:absolute; bottom:-30px; font-size:13.5px; color:var(--ink-500); white-space:nowrap; }
+
+  /* ---- 下段：一覧と詳細 ---- */
+  .duo { margin-top:24px; display:grid; grid-template-columns:minmax(300px,380px) 1fr; gap:20px; align-items:start; }
+  .list-h { padding:18px 20px 10px; display:flex; align-items:baseline; gap:12px; }
+  .list-h h2 { font-size:17px; font-weight:700; }
+  .list-h .s { font-size:13.5px; color:var(--ink-500); }
+  .rows { list-style:none; padding:0 10px 10px; }
+  .rows button {
+    width:100%; text-align:left; background:none; border:none; border-radius:12px; padding:12px 10px;
+    display:flex; gap:12px; align-items:flex-start;
   }
-  nav.tabs button:hover { color:var(--ink); }
-  nav.tabs button[aria-selected="true"] { color:var(--head); border-bottom-color:var(--brand-600); }
-  nav.tabs .n { margin-left:6px; font-weight:500; color:var(--muted); font-variant-numeric:tabular-nums; }
-  nav.tabs button.warnTab[aria-selected="true"] { color:var(--warn); border-bottom-color:var(--warn); }
+  .rows button:hover { background:var(--soft); }
+  .rows button[aria-current="true"] { background:var(--brand-50); box-shadow:inset 3px 0 0 var(--brand-600); }
+  .rows .meta { min-width:0; flex:1; }
+  .rows .line1 { display:flex; gap:8px; align-items:center; }
+  .rows .nm { font-weight:700; font-size:14.5px; }
+  .rows .ago { margin-left:auto; font-size:12.5px; color:var(--ink-400); white-space:nowrap; }
+  .rows .ex { font-size:13.5px; color:var(--ink-600); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .rows .line3 { display:flex; gap:8px; align-items:center; margin-top:4px; }
+  .chip { display:inline-flex; align-items:center; border-radius:999px; padding:1px 9px; font-size:12px; font-weight:600; }
+  .chip.crit { background:var(--crit-bg); color:var(--crit); }
+  .chip.wait { background:var(--soft); color:var(--ink-700); }
+  .chip.done { background:var(--up-bg); color:var(--up); }
+  .chip.skip { background:var(--soft); color:var(--ink-400); }
 
-  main { max-width:1000px; margin:0 auto; padding:22px 20px 60px; }
-
-  /* ---- 言語フィルタ ---- */
-  .filters { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:16px; }
-  .filters button {
-    background:#fff; border:1px solid var(--line); border-radius:999px; padding:5px 13px;
-    font-size:12.5px; font-weight:500; color:var(--brand-600); cursor:pointer;
+  /* ---- クチコミのカード ---- */
+  .rv { padding:24px 26px 24px; }
+  .rv-head { display:flex; gap:16px; align-items:center; }
+  .av {
+    width:52px; height:52px; border-radius:50%; flex-shrink:0; background:var(--soft); border:1px solid #e3dede;
+    display:flex; align-items:center; justify-content:center; font-weight:700; font-size:17px; color:var(--ink-700);
   }
-  .filters button:hover { background:var(--brand-50); }
-  .filters button[aria-pressed="true"] { background:var(--brand-600); border-color:var(--brand-600); color:#fff; }
-
-  /* ---- レビューカード ---- */
-  .list { display:flex; flex-direction:column; gap:14px; }
-  .rev { padding:20px; }
-  .rev.attn { border-left:3px solid var(--warn); }
-  .rev.attn.crit { border-left-color:var(--crit); }
-  .rev.done { background:var(--bg); }
-  .rtop { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:9px; }
-  .stars { color:var(--brass); font-size:14px; letter-spacing:1px; }
-  .stars .off { color:var(--brand-100); }
-  .who { font-weight:700; font-size:14.5px; }
-  .when { margin-left:auto; font-size:12px; color:var(--muted); }
-  .b-lang { background:var(--brand-100); color:var(--ink); }
-  .b-draft { background:var(--bg-2); color:var(--ink); }
-  .b-done { background:var(--ok-bg); color:var(--ok); }
-  .b-skip { background:var(--brand-100); color:var(--muted); }
-  .rtext { font-size:14.5px; white-space:pre-wrap; }
-
+  .rows .av { width:38px; height:38px; font-size:14px; }
+  .rv-head .nm { font-size:21px; font-weight:700; line-height:1.3; }
+  .rv-head .sub { display:flex; gap:12px; align-items:center; font-size:15px; color:var(--ink-500); flex-wrap:wrap; }
+  .stars { letter-spacing:2px; font-size:16px; color:var(--gold); }
+  .stars.low { color:var(--crit); }
+  .stars .off { color:#d9d4d4; }
+  .rv-head .ago { margin-left:auto; align-self:flex-start; font-size:15px; color:var(--ink-500); white-space:nowrap; }
+  .rv-text { margin-top:16px; font-size:18px; line-height:1.85; white-space:pre-wrap; }
+  .trans { margin-top:16px; background:var(--soft); border-radius:14px; padding:14px 18px; }
+  .trans .k { font-size:13.5px; font-weight:700; color:var(--ink-500); }
+  .trans p { margin-top:4px; font-size:15.5px; line-height:1.85; color:var(--ink-600); }
   .alert {
-    margin-top:12px; padding:10px 13px; border-radius:8px; font-size:12.5px; line-height:1.65;
-    background:var(--warn-bg); border:1px solid var(--warn-line); color:var(--warn);
+    margin-top:16px; display:flex; gap:14px; padding:15px 18px 15px 18px;
+    background:var(--crit-bg); border:1px solid var(--crit-line); border-left:6px solid var(--crit); border-radius:14px;
   }
-  .alert.crit { background:var(--crit-bg); border-color:var(--crit-line); color:var(--crit); }
-  .alert b { font-weight:700; }
-
-  .reply { margin-top:16px; }
-  .rhead { display:flex; align-items:baseline; gap:10px; font-size:12px; color:var(--muted); font-weight:600; margin-bottom:8px; }
-  .rhead .count { margin-left:auto; font-variant-numeric:tabular-nums; font-family:ui-monospace,Menlo,monospace; font-size:11px; }
-  .picker { display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin-bottom:9px; }
-  .picker button {
-    background:#fff; border:1px solid var(--line); border-radius:999px; padding:4px 13px;
-    font-size:12px; font-weight:600; color:var(--brand-600); cursor:pointer;
-  }
-  .picker button:hover { background:var(--brand-50); }
-  .picker button[aria-pressed="true"] { background:var(--brand-600); border-color:var(--brand-600); color:#fff; }
-  .picker .hint { font-size:11.5px; color:var(--muted); padding-left:4px; }
+  .alert svg { width:22px; height:22px; flex-shrink:0; margin-top:3px; fill:none; stroke:var(--crit); stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round; }
+  .alert b { display:block; color:var(--crit); font-size:16px; }
+  .alert p { font-size:15px; line-height:1.85; color:var(--ink-700); }
+  .reply { margin-top:20px; }
+  .reply-h { display:flex; align-items:center; gap:10px; }
+  .reply-h b { font-size:15.5px; }
+  .ai { background:var(--brand-50); color:var(--brand-600); font-weight:800; font-size:12px; border-radius:999px; padding:1px 9px; letter-spacing:.04em; }
+  .reply-h .count { margin-left:auto; font-size:14px; color:var(--ink-500); font-variant-numeric:tabular-nums; }
+  .seg-row { display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-top:12px; }
+  .seg { display:inline-flex; background:var(--soft); border-radius:12px; padding:4px; gap:2px; }
+  .seg button { background:none; border:none; border-radius:9px; padding:7px 22px; font-size:15.5px; color:var(--ink-600); }
+  .seg button:hover { color:var(--ink-900); }
+  .seg button[aria-pressed="true"] { background:#fff; color:var(--ink-900); font-weight:700; box-shadow:0 1px 4px rgba(0,0,0,.12); }
+  .seg-row .hint { font-size:13px; color:var(--ink-400); }
   textarea {
-    width:100%; min-height:100px; resize:vertical; overflow:hidden;
-    border:1px solid var(--line); border-radius:10px; padding:13px 14px;
-    font-size:14px; line-height:1.85; background:var(--bg); outline:none; white-space:pre-wrap;
+    display:block; width:100%; margin-top:14px; min-height:96px; resize:vertical; overflow:hidden;
+    border:1px solid #ddd6d6; border-radius:14px; padding:14px 18px; background:#fff;
+    font-size:16px; line-height:1.9; outline:none;
   }
-  textarea:focus { border-color:var(--brand); box-shadow:0 0 0 3px var(--brand-100); background:#fff; }
-  textarea[readonly] { background:var(--bg-2); color:var(--ink); }
-  .acts { display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; align-items:center; }
+  textarea:focus { border-color:var(--brand); box-shadow:0 0 0 3px var(--brand-100); }
+  textarea[readonly] { background:var(--soft); color:var(--ink-700); }
+  .acts { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:14px; }
   .acts .right { margin-left:auto; }
-  .note-ok { margin-top:12px; font-size:13px; color:var(--ok); font-weight:600; }
-  .empty { padding:48px 20px; text-align:center; color:var(--muted); font-size:14px; }
+  .note { margin-top:12px; font-size:14px; color:var(--up); font-weight:600; }
+  .note.muted { color:var(--ink-500); font-weight:500; }
+
+  /* ---- ほかの画面 ---- */
+  .page-h h1 { font-size:28px; font-weight:700; }
+  .page-h p { margin-top:6px; font-size:15px; color:var(--ink-600); max-width:720px; }
+  .page-h { margin-bottom:20px; }
+  .tabs { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; }
+  .tabs button, .filters button {
+    background:#fff; border:1px solid #e4dede; border-radius:999px; padding:6px 16px; font-size:14px; color:var(--ink-700);
+  }
+  .tabs button[aria-pressed="true"], .filters button[aria-pressed="true"] { background:var(--brand-600); border-color:var(--brand-600); color:#fff; font-weight:700; }
+  .filters { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:18px; }
+  .filters button { padding:4px 13px; font-size:13px; }
+  .stack { display:flex; flex-direction:column; gap:18px; max-width:860px; }
+  .empty { padding:48px 20px; text-align:center; color:var(--ink-500); }
+  .tiles { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+  .tile { padding:18px 20px; }
+  .tile .l { font-size:14px; color:var(--ink-600); }
+  .tile .v { font-size:34px; font-weight:800; margin-top:4px; }
+  .tile .v small { font-size:14px; font-weight:500; color:var(--ink-500); margin-left:4px; }
+  .box { padding:22px 24px; }
+  .box h2 { font-size:17px; font-weight:700; }
+  .box ul { margin:10px 0 0 1.2em; font-size:15px; color:var(--ink-700); }
+  .box li { margin-bottom:4px; }
+  .fine { font-size:13px; color:var(--ink-500); margin-top:12px; }
+  .form { display:grid; gap:20px; max-width:720px; }
+  .form label.k { display:block; font-size:14px; font-weight:700; color:var(--ink-700); margin-bottom:8px; }
+  .form input[type=text] { width:100%; border:1px solid #ddd6d6; border-radius:12px; padding:11px 14px; background:#fff; outline:none; }
+  .form input[type=text]:focus { border-color:var(--brand); box-shadow:0 0 0 3px var(--brand-100); }
+  .form textarea { margin-top:0; font-size:15px; min-height:80px; }
+  .radios { display:flex; gap:8px; flex-wrap:wrap; }
+  .radios label { display:inline-flex; align-items:center; gap:8px; background:#fff; border:1px solid #e4dede; border-radius:12px; padding:9px 14px; cursor:pointer; font-size:15px; }
+  .radios label:has(input:checked) { border-color:var(--brand-600); box-shadow:inset 0 0 0 1px var(--brand-600); background:var(--brand-50); }
+  .radios input { accent-color:var(--brand-600); }
 
   /* ---- トースト ---- */
   .toast {
     position:fixed; left:50%; bottom:calc(22px + env(safe-area-inset-bottom,0px));
-    transform:translateX(-50%) translateY(14px);
-    background:var(--ink-900); color:#fff; padding:11px 20px; border-radius:999px;
-    font-size:13px; font-weight:600; opacity:0; pointer-events:none;
-    transition:opacity .18s, transform .18s; z-index:60;
-    max-width:calc(100vw - 40px); text-align:center; box-shadow:0 8px 24px -10px rgba(0,0,0,.4);
+    transform:translateX(-50%) translateY(14px); background:var(--ink-900); color:#fff;
+    padding:11px 20px; border-radius:999px; font-size:13.5px; font-weight:600; opacity:0; pointer-events:none;
+    transition:opacity .18s, transform .18s; z-index:60; max-width:calc(100vw - 40px); text-align:center;
   }
   .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
 
-  @media (max-width:560px) {
-    .when { margin-left:0; width:100%; }
-    .hrow { padding:12px 16px; }
-    main { padding:18px 16px 60px; }
+  /* ---- 狭い画面：左の帯を上の帯に変える ---- */
+  /* 中の長い1行（クチコミの抜粋）で列が広がり、横にはみ出すのを防ぐ */
+  .duo > * { min-width:0; }
+  @media (max-width:1100px) {
+    .duo { grid-template-columns:minmax(0,1fr); }
   }
-  @media (prefers-reduced-motion: reduce) { * { transition:none !important; } }
+  @media (max-width:860px) {
+    .shell { flex-direction:column; }
+    .side { width:auto; padding:16px 0 18px; }
+    .logo { padding:0 22px; gap:10px; }
+    .logo .k { font-size:11px; }
+    .logo .v { font-size:22px; }
+    .store, .menu-k, .side-foot { display:none; }
+    .nav { flex-direction:row; gap:8px; overflow-x:auto; padding:14px 22px 0; scrollbar-width:none; }
+    .nav::-webkit-scrollbar { display:none; }
+    .nav button { width:auto; padding:9px 14px; gap:10px; font-size:15px; }
+    .nav .cnt { margin-left:2px; }
+    .main { padding:22px 18px 60px; background:linear-gradient(180deg,#f6e3e6 0px,var(--bg) 360px); }
+    .top { display:block; margin-bottom:20px; }
+    .top h1 { font-size:26px; }
+    .sync { margin:12px 0 0; }
+    .kpis { gap:12px; }
+    .kpi { padding:16px 16px 14px; min-height:0; border-radius:16px; }
+    .kpi .v { font-size:36px; }
+    .kpi .l { font-size:14px; }
+    .kpi .sub { font-size:13px; gap:8px; }
+    .kpi .go { margin-left:auto; }
+    .spark { display:none; }
+    .chart { padding:18px 16px 16px; }
+    .legend { margin-left:0; width:100%; justify-content:flex-end; }
+    .plot { height:220px; margin-left:26px; }
+    .grid .g span { left:-28px; font-size:11px; }
+    .bar .x { font-size:10px; transform:rotate(-35deg); transform-origin:top center; bottom:-34px; }
+    .bar .t { font-size:12px; }
+    .rv { padding:18px 16px; }
+    .rv-head .nm { font-size:18px; }
+    .rv-text { font-size:16px; }
+    .seg button { padding:6px 16px; }
+    .tiles { grid-template-columns:1fr; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition:none !important; animation:none !important; } }
 
-  /* ---- JavaScript が動かない環境向けの案内 ----
-     LINE などのアプリ内ファイルプレビューはスクリプトを実行しないため、
-     何も出ない真っ白な画面になる。原因が分かる案内を必ず出す。 */
+  /* JavaScript が動かない環境（LINE などのファイルプレビュー）向けの案内 */
   .nojs { max-width:460px; margin:48px auto; padding:0 20px; }
-  .nojs .box { padding:26px 24px; }
-  .nojs h2 { font-size:19px; font-weight:700; color:var(--head); margin-bottom:10px; }
-  .nojs p { font-size:14px; color:var(--ink); margin-bottom:12px; }
-  .nojs ol { margin:0 0 14px 20px; font-size:14px; color:var(--ink); }
-  .nojs li { margin-bottom:6px; }
-  .nojs .en { margin-top:18px; padding-top:16px; border-top:1px solid var(--brand-100); font-size:13px; color:var(--muted); }
+  .nojs .card { padding:26px 24px; }
+  .nojs h2 { font-size:19px; color:var(--brand-700); margin-bottom:10px; }
+  .nojs p, .nojs ol { font-size:14px; margin-bottom:12px; }
+  .nojs ol { margin-left:20px; }
+  .nojs .en { margin-top:16px; padding-top:14px; border-top:1px solid var(--line); font-size:13px; color:var(--ink-500); }
+
+  /* ---- Hoshi Jungle 版だけにあるもの ---- */
+  .langs { display:inline-flex; border:1px solid rgba(255,255,255,.5); background:#fff; border-radius:999px; overflow:hidden; }
+  .langs button { background:none; border:none; padding:6px 12px; font-size:12px; font-weight:600; color:var(--ink-600); white-space:nowrap; }
+  .langs button:hover { background:var(--brand-50); }
+  .langs button[aria-pressed="true"] { background:var(--brand-600); color:#fff; }
+  .side-ctl { margin-top:12px; display:flex; flex-direction:column; align-items:flex-start; gap:8px; }
+  .side-ctl .out { background:none; border:none; color:#fff; font-size:12px; opacity:.9; padding:0; }
+  .side-ctl .out:hover { text-decoration:underline; }
+  .chip.attn { background:#fdf3e2; color:#7a4b06; }
+  .alert.attn { background:#fdf6e7; border-color:#e8d3a6; border-left-color:#a16207; }
+  .alert.attn svg { stroke:#a16207; }
+  .alert.attn b { color:#7a4b06; }
+  /* ログイン画面 */
+  .login { min-height:calc(100vh - 34px); display:flex; align-items:center; justify-content:center; padding:40px 20px;
+           background:linear-gradient(180deg,#f6dfe3 0px,#f6e9eb 260px,var(--bg) 620px); }
+  .login-in { width:100%; max-width:380px; }
+  .login .brand { text-align:center; }
+  .login .brand .k { font-size:12px; font-weight:600; letter-spacing:.3em; color:var(--ink-500); }
+  .login .brand .v { font-size:30px; font-weight:800; color:var(--brand-600); line-height:1.2; }
+  .login .brand .s { margin-top:6px; font-size:15px; color:var(--ink-600); }
+  .login .card { padding:22px; margin-top:22px; }
+  .login label { display:block; font-size:14px; font-weight:700; color:var(--ink-700); margin-bottom:8px; }
+  .login input { width:100%; border:1px solid #ddd6d6; border-radius:12px; padding:13px 14px; font-size:18px; letter-spacing:.12em; text-align:center; outline:none; }
+  .login input:focus { border-color:var(--brand); box-shadow:0 0 0 3px var(--brand-100); }
+  .login .btn-primary { width:100%; margin-top:14px; }
+  .login .hintbox { margin-top:12px; background:var(--brand-50); border:1px dashed #e4c8c9; border-radius:10px; padding:10px 12px; font-size:13px; color:var(--ink-700); }
+  .login .hintbox code { font-family:ui-monospace,Menlo,monospace; font-weight:700; letter-spacing:.06em; }
+  .login .hintbox button { display:block; margin-top:4px; background:none; border:none; color:var(--brand-600); text-decoration:underline; padding:0; font-size:13px; }
+  .login .err { margin-top:10px; background:#fdeeee; border:1px solid var(--crit-line); color:var(--crit); border-radius:10px; padding:9px 12px; font-size:13px; }
+  .login .muted { margin-top:18px; text-align:center; font-size:13px; color:var(--ink-500); }
+  .login .lw { display:flex; justify-content:center; margin-bottom:22px; }
+  .login .langs { border-color:#e4dede; }
+  @media (max-width:860px) {
+    .side-ctl { flex-direction:row; align-items:center; padding:12px 22px 0; flex-wrap:wrap; }
+  }
 </style>
 </head>
 <body>
 
-<div class="demobar">
+<div class="demobar" id="demobar">
   <span id="demoNote"></span>
   <button type="button" id="loginViewBtn"></button>
   <button type="button" id="resetBtn"></button>
 </div>
 
 <noscript>
-  <div class="nojs"><div class="card box">
+  <div class="nojs"><div class="card">
     <h2>ブラウザで開いてください</h2>
-    <p>
-      この体験デモは操作できるページのため、JavaScript が必要です。
-      LINE やメールアプリの「プレビュー」では動かず、白い画面になります。
-    </p>
+    <p>この体験デモは操作できるページのため、JavaScript が必要です。LINE やメールアプリの「プレビュー」では動かず、白い画面になります。</p>
     <ol>
       <li>画面右上の「⋯」または共有ボタンを押す</li>
       <li>「他のアプリで開く」「ブラウザで開く」を選ぶ</li>
       <li>Safari / Chrome で開くと操作できます</li>
     </ol>
-    <p style="margin-bottom:0;">
-      うまくいかない場合は、送信元にリンク（URL）での共有をご依頼ください。
-    </p>
     <div class="en">
       <b>Please open this in a web browser.</b><br>
-      This is an interactive demo and needs JavaScript. In-app file previews
-      (LINE, mail apps) do not run it, so the page appears blank.
+      This is an interactive demo and needs JavaScript. In-app file previews (LINE, mail apps) do not run it.
       Use “Open in browser” from the share menu, or ask the sender for a link.
     </div>
   </div></div>
 </noscript>
 
-<div id="app"></div>
+<div id="root"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -240,582 +404,575 @@
   var SIGN = "Hoshi Jungle Team";
   var DEMO_PASSCODE = "HJ-DEMO-2026";
   var MAX = 4096;
+  var MIN_PER_REPLY = 4;
 
   /* ------------------------------------------------------------------ *
-   * 画面の文言。実アプリ src/lib/i18n.ts の文言をそのまま写している。
-   * デモと本番で言い回しが違うと、体験した印象と実物がズレるため。
+   * 画面の文言。実アプリ（leaves-reply の src/lib/i18n.ts）の言い回しに合わせている。
+   * デモと本番で言葉が違うと、触った印象と実物がずれる。
    * ------------------------------------------------------------------ */
   var DICT = {
     ja: {
-      demoNote: "これは体験用のデモです。Google には一切投稿されません。",
-      reset: "最初から",
-      loginView: "ログイン画面を見る",
-      appName: "HOSHI JUNGLE REVIEW AI",
-      staffLogin: "スタッフ用ログイン",
-      passcode: "パスコード",
-      enter: "入室する",
-      askAdmin: "パスコードが分からない場合は、ホテルの管理者に確認してください。",
-      demoPass: "デモ用パスコード",
-      fillIt: "入力する",
-      errPasscodeWrong: "パスコードが違います。",
-      staff: "スタッフ",
-      frontDesk: "フロントデスク用",
-      logout: "ログアウト",
-      syncNow: "今すぐ同期",
-      syncing: "同期中…",
-      autoHourly: "毎時自動で取得しています",
-      quota: "今月の返信案 残り",
-      cases: "件",
-      navInbox: "未返信",
-      navAttention: "要確認",
-      navArchive: "履歴",
-      filterAll: "すべて",
-      needsCheck: "要確認",
-      replyDraft: "AIが作成した返信案",
-      replyEdited: "返信案（編集済み）",
-      replyPublished: "公開した返信",
-      publish: "Googleに公開",
-      publishing: "公開中…",
-      regenerate: "AIで作り直す",
-      regenerating: "生成中…",
-      skip: "返信しない",
-      styleWarm: "丁寧", styleStandard: "標準", styleConcise: "簡潔",
-      styleWarmHint: "気持ちを込めた、いちばん厚い言い方",
-      styleStandardHint: "丁寧さと簡潔さのバランス型",
-      styleConciseHint: "短く要点だけ。忙しい日向け",
-      edited: "編集済み（どの案にも一致しません）",
-      publishedNotice: "Google に公開しました。（デモなので実際には投稿されていません）",
-      regeneratedNotice: "3つの返信案を作り直しました。",
-      skippedNotice: "このクチコミには返信しない設定にしました。",
-      emptyReply: "返信が空です。文章を入れてください。",
-      skippedBody: "このクチコミには返信しない設定にしました。",
-      emptyInbox: "未返信のクチコミはありません。",
-      emptyAttention: "要確認のクチコミはありません。",
-      emptyArchive: "まだ履歴がありません。",
-      reasonLowRating: "低評価（1〜2つ星）のため、公開前に必ず内容を確認してください",
-      reasonIndonesian: "インドネシア語のため、現地スタッフによる表現確認が必要です",
-      reasonAiFlagged: "AI が要確認と判定しました（返金の要求・金銭トラブルの主張）。AI は返金を約束していません",
-      locale: "ja-JP"
+      demoNote:"これは体験用のデモです。Google には一切投稿されません。", reset:"最初から", loginView:"ログイン画面を見る",
+      staffLogin:"スタッフ用ログイン", passcode:"パスコード", enter:"入室する", demoPass:"デモ用パスコード", fillIt:"入力する",
+      errPasscode:"パスコードが違います。", askAdmin:"パスコードが分からない場合は、ホテルの管理者に確認してください。",
+      menu:"MENU", navHome:"ホーム", navReviews:"クチコミ", navLow:"低評価・要対応", role:"スタッフ · フロントデスク",
+      autoImporting:"自動取り込み中", logout:"ログアウト",
+      greet:function (h) { return h >= 5 && h < 11 ? "おはようございます。" : h >= 11 && h < 17 ? "こんにちは。" : "こんばんは。"; },
+      greetTail:"今日もおつかれさまです", sep:"",
+      date:function (d) { return (d.getMonth() + 1) + "月" + d.getDate() + "日（" + "日月火水木金土".charAt(d.getDay()) + "）"; },
+      lastImport:"最終取り込み", syncNow:"今すぐ取り込む", syncing:"取り込み中…",
+      syncDone:"新しいクチコミはありませんでした（デモ）",
+      kpiPending:"返信待ち", unit:"件", lowCount:function (n) { return "低評価 " + n + "件"; }, replyNow:"返信する →",
+      kpiRate:"返信率（直近4週）", prev4:function (p) { return "その前の4週 " + p + "%"; },
+      kpiAvg:"平均評価", total:function (n) { return "全" + n + "件"; },
+      kpiTime:"短くできた時間（目安）", hours:"時間", timeNote:function (n, m) { return "直近4週に公開した返信" + n + "件 × " + m + "分"; },
+      weekly:"週ごとのクチコミと返信", last8:"直近8週間", replied:"返信済み", unreplied:"未返信",
+      week:function (m, d) { return m + "/" + d + "週"; },
+      recent:"クチコミ", newest:"新しい順", statusDone:"返信済み", statusOpen:"未返信", skip:"返信しない",
+      reviewsLead:"Googleマップに届いたクチコミと、AIが用意した返信案です。内容を確かめて公開ボタンを押すまで、どこにも投稿されません。",
+      lowLead:"★1〜2のクチコミと、確認が必要なクチコミです。自動では公開されません。内容を確かめてから公開してください。",
+      tabOpen:"未返信", tabDone:"対応済み", allLangs:"すべての言語", emptyOpen:"未返信のクチコミはありません。", emptyDone:"まだありません。",
+      translation:"クチコミの日本語訳（AI）", lowAlert:function (n) { return "★" + n + "の低評価・要対応"; }, needsCheck:"要確認",
+      draft:"返信案", published:"公開した返信", edited:"編集済み（どの案にも一致しません）", pick:"返信案の言い方",
+      styles:{ warm:"丁寧", standard:"標準", concise:"簡潔" },
+      hints:{ warm:"気持ちを込めた、いちばん厚い言い方", standard:"丁寧さと簡潔さのバランス型", concise:"短く要点だけ。忙しい日向け" },
+      publish:"Googleに公開", publishing:"公開中…", save:"下書きを保存", regen:"AIで作り直す", regenerating:"生成中…",
+      saveFirst:"先に「下書きを保存」を押してから公開してください。",
+      publishedNote:"Google に公開しました。（デモなので実際には投稿されていません）",
+      savedNote:"下書きを保存しました（デモなので、どこにも保存されません）",
+      regenNote:"3つの返信案を作り直しました。", skippedNote:"このクチコミには返信しない設定にしました。",
+      emptyReply:"返信が空です。文章を入れてください。", switchConfirm:"編集した内容が失われます。別の案に切り替えますか？",
+      today:"今日", yesterday:"昨日", daysAgo:function (n) { return n + "日前"; }, resetDone:"最初の状態に戻しました",
+      reasons:{
+        lowRating:"低評価（1〜2つ星）のため、公開前に必ず内容を確認してください",
+        indonesian:"インドネシア語のため、現地スタッフによる表現確認が必要です",
+        refund:"返金の要求があります。返金はAIが約束しないようにしています。ホテルで内容を確認してから公開してください。"
+      }
     },
     en: {
-      demoNote: "This is a hands-on demo. Nothing is ever posted to Google.",
-      reset: "Start over",
-      loginView: "See the sign-in screen",
-      appName: "HOSHI JUNGLE REVIEW AI",
-      staffLogin: "Staff sign-in",
-      passcode: "Passcode",
-      enter: "Enter",
-      askAdmin: "If you don't know the passcode, ask your hotel administrator.",
-      demoPass: "Demo passcode",
-      fillIt: "Fill it in",
-      errPasscodeWrong: "That passcode is not correct.",
-      staff: "Staff",
-      frontDesk: "Front desk",
-      logout: "Sign out",
-      syncNow: "Sync now",
-      syncing: "Syncing…",
-      autoHourly: "Syncs automatically every hour",
-      quota: "Drafts left this month",
-      cases: "",
-      navInbox: "To reply",
-      navAttention: "Needs check",
-      navArchive: "History",
-      filterAll: "All",
-      needsCheck: "Needs check",
-      replyDraft: "AI draft reply",
-      replyEdited: "Reply (edited)",
-      replyPublished: "Published reply",
-      publish: "Publish to Google",
-      publishing: "Publishing…",
-      regenerate: "Rewrite with AI",
-      regenerating: "Writing…",
-      skip: "Don't reply",
-      styleWarm: "Warm", styleStandard: "Standard", styleConcise: "Short",
-      styleWarmHint: "The fullest, most personal wording",
-      styleStandardHint: "Balanced — polite but not long",
-      styleConciseHint: "Short and to the point, for busy days",
-      edited: "Edited — no longer matches any draft",
-      publishedNotice: "Published to Google. (Demo — nothing was actually posted)",
-      regeneratedNotice: "Three new drafts written.",
-      skippedNotice: "Marked as no reply needed.",
-      emptyReply: "The reply is empty. Please write something.",
-      skippedBody: "Marked as no reply needed.",
-      emptyInbox: "Nothing left to reply to.",
-      emptyAttention: "Nothing needs checking.",
-      emptyArchive: "No history yet.",
-      reasonLowRating: "Low rating (1–2 stars) — please read carefully before publishing",
-      reasonIndonesian: "Indonesian — please have local staff check the wording",
-      reasonAiFlagged: "Flagged by the AI (refund request / billing dispute). The AI has not promised a refund",
-      locale: "en-GB"
+      demoNote:"This is a hands-on demo. Nothing is ever posted to Google.", reset:"Start over", loginView:"See the sign-in screen",
+      staffLogin:"Staff sign-in", passcode:"Passcode", enter:"Enter", demoPass:"Demo passcode", fillIt:"Fill it in",
+      errPasscode:"That passcode is not correct.", askAdmin:"If you don't know the passcode, ask your hotel administrator.",
+      menu:"MENU", navHome:"Home", navReviews:"Reviews", navLow:"Needs attention", role:"Staff · Front desk",
+      autoImporting:"Auto-import on", logout:"Sign out",
+      greet:function (h) { return h >= 5 && h < 12 ? "Good morning." : h >= 12 && h < 17 ? "Good afternoon." : "Good evening."; },
+      greetTail:"Thanks for your work today", sep:" ",
+      date:function (d) { try { return d.toLocaleDateString("en-GB", { weekday:"long", day:"numeric", month:"long" }); } catch (e) { return ""; } },
+      lastImport:"Last import", syncNow:"Sync now", syncing:"Syncing…",
+      syncDone:"No new reviews (demo)",
+      kpiPending:"Waiting for a reply", unit:"", lowCount:function (n) { return n + " low rating" + (n === 1 ? "" : "s"); }, replyNow:"Reply →",
+      kpiRate:"Reply rate (last 4 weeks)", prev4:function (p) { return "Previous 4 weeks " + p + "%"; },
+      kpiAvg:"Average rating", total:function (n) { return n + " reviews"; },
+      kpiTime:"Time saved (estimate)", hours:"hours", timeNote:function (n, m) { return n + " replies published in 4 weeks × " + m + " min"; },
+      weekly:"Reviews and replies by week", last8:"Last 8 weeks", replied:"Replied", unreplied:"Not replied",
+      week:function (m, d) { return d + "/" + m; },
+      recent:"Reviews", newest:"Newest first", statusDone:"Replied", statusOpen:"Not replied", skip:"Don't reply",
+      reviewsLead:"Reviews from Google Maps and the replies the AI has drafted. Nothing is posted until you check it and press Publish.",
+      lowLead:"1–2 star reviews and reviews that need a closer look. These are never published automatically — please check them first.",
+      tabOpen:"To reply", tabDone:"Done", allLangs:"All languages", emptyOpen:"Nothing left to reply to.", emptyDone:"Nothing yet.",
+      translation:"English translation of the review (AI)", lowAlert:function (n) { return n + "-star review — needs attention"; }, needsCheck:"Needs check",
+      draft:"Draft reply", published:"Published reply", edited:"Edited — no longer matches any draft", pick:"Reply style",
+      styles:{ warm:"Warm", standard:"Standard", concise:"Short" },
+      hints:{ warm:"The fullest, most personal wording", standard:"Balanced — polite but not long", concise:"Short and to the point, for busy days" },
+      publish:"Publish to Google", publishing:"Publishing…", save:"Save draft", regen:"Rewrite with AI", regenerating:"Writing…",
+      saveFirst:"Please press “Save draft” before publishing.",
+      publishedNote:"Published to Google. (Demo — nothing was actually posted)",
+      savedNote:"Draft saved (demo — nothing is stored)",
+      regenNote:"Three new drafts written.", skippedNote:"Marked as no reply needed.",
+      emptyReply:"The reply is empty. Please write something.", switchConfirm:"Your edits will be lost. Switch to another draft?",
+      today:"Today", yesterday:"Yesterday", daysAgo:function (n) { return n + " days ago"; }, resetDone:"Back to the start",
+      reasons:{
+        lowRating:"Low rating (1–2 stars) — please read carefully before publishing",
+        indonesian:"Indonesian — please have local staff check the wording",
+        refund:"Refund request. The AI never promises refunds. Please check the facts at the hotel before publishing."
+      }
     },
     id: {
-      demoNote: "Ini demo untuk dicoba langsung. Tidak ada yang diterbitkan ke Google.",
-      reset: "Mulai lagi",
-      loginView: "Lihat layar masuk",
-      appName: "HOSHI JUNGLE REVIEW AI",
-      staffLogin: "Masuk sebagai staf",
-      passcode: "Kode akses",
-      enter: "Masuk",
-      askAdmin: "Jika tidak tahu kode aksesnya, tanyakan kepada admin hotel.",
-      demoPass: "Kode akses demo",
-      fillIt: "Isikan",
-      errPasscodeWrong: "Kode akses salah.",
-      staff: "Staf",
-      frontDesk: "Resepsionis",
-      logout: "Keluar",
-      syncNow: "Sinkronkan sekarang",
-      syncing: "Menyinkronkan…",
-      autoHourly: "Diperbarui otomatis setiap jam",
-      quota: "Sisa draf bulan ini",
-      cases: "",
-      navInbox: "Belum dibalas",
-      navAttention: "Perlu dicek",
-      navArchive: "Riwayat",
-      filterAll: "Semua",
-      needsCheck: "Perlu dicek",
-      replyDraft: "Draf balasan dari AI",
-      replyEdited: "Balasan (sudah disunting)",
-      replyPublished: "Balasan yang terbit",
-      publish: "Terbitkan ke Google",
-      publishing: "Menerbitkan…",
-      regenerate: "Tulis ulang dengan AI",
-      regenerating: "Menulis…",
-      skip: "Tidak dibalas",
-      styleWarm: "Hangat", styleStandard: "Standar", styleConcise: "Singkat",
-      styleWarmHint: "Paling hangat dan personal",
-      styleStandardHint: "Seimbang — sopan tapi tidak panjang",
-      styleConciseHint: "Singkat dan langsung, untuk hari sibuk",
-      edited: "Sudah disunting — tidak cocok dengan draf mana pun",
-      publishedNotice: "Terbit di Google. (Demo — tidak benar-benar dikirim)",
-      regeneratedNotice: "Tiga draf baru telah ditulis.",
-      skippedNotice: "Ditandai tidak perlu dibalas.",
-      emptyReply: "Balasan masih kosong. Silakan tulis isinya.",
-      skippedBody: "Ditandai tidak perlu dibalas.",
-      emptyInbox: "Tidak ada yang perlu dibalas.",
-      emptyAttention: "Tidak ada yang perlu dicek.",
-      emptyArchive: "Belum ada riwayat.",
-      reasonLowRating: "Bintang rendah (1–2) — mohon baca teliti sebelum menerbitkan",
-      reasonIndonesian: "Bahasa Indonesia — mohon staf lokal memeriksa pilihan katanya",
-      reasonAiFlagged: "Ditandai AI (permintaan refund / sengketa tagihan). AI tidak menjanjikan refund",
-      locale: "id-ID"
+      demoNote:"Ini demo untuk dicoba langsung. Tidak ada yang diterbitkan ke Google.", reset:"Mulai lagi", loginView:"Lihat layar masuk",
+      staffLogin:"Masuk sebagai staf", passcode:"Kode akses", enter:"Masuk", demoPass:"Kode akses demo", fillIt:"Isikan",
+      errPasscode:"Kode akses salah.", askAdmin:"Jika tidak tahu kode aksesnya, tanyakan kepada admin hotel.",
+      menu:"MENU", navHome:"Beranda", navReviews:"Ulasan", navLow:"Perlu ditangani", role:"Staf · Resepsionis",
+      autoImporting:"Impor otomatis aktif", logout:"Keluar",
+      greet:function (h) { return h >= 5 && h < 11 ? "Selamat pagi." : h >= 11 && h < 15 ? "Selamat siang." : h >= 15 && h < 18 ? "Selamat sore." : "Selamat malam."; },
+      greetTail:"Terima kasih atas kerja keras hari ini", sep:" ",
+      date:function (d) { try { return d.toLocaleDateString("id-ID", { weekday:"long", day:"numeric", month:"long" }); } catch (e) { return ""; } },
+      lastImport:"Impor terakhir", syncNow:"Sinkronkan sekarang", syncing:"Menyinkronkan…",
+      syncDone:"Tidak ada ulasan baru (demo)",
+      kpiPending:"Menunggu balasan", unit:"", lowCount:function (n) { return n + " rating rendah"; }, replyNow:"Balas →",
+      kpiRate:"Tingkat balasan (4 minggu)", prev4:function (p) { return "4 minggu sebelumnya " + p + "%"; },
+      kpiAvg:"Rating rata-rata", total:function (n) { return n + " ulasan"; },
+      kpiTime:"Waktu yang dihemat (perkiraan)", hours:"jam", timeNote:function (n, m) { return n + " balasan terbit dalam 4 minggu × " + m + " menit"; },
+      weekly:"Ulasan dan balasan per minggu", last8:"8 minggu terakhir", replied:"Sudah dibalas", unreplied:"Belum dibalas",
+      week:function (m, d) { return d + "/" + m; },
+      recent:"Ulasan", newest:"Terbaru", statusDone:"Sudah dibalas", statusOpen:"Belum dibalas", skip:"Tidak dibalas",
+      reviewsLead:"Ulasan dari Google Maps dan draf balasan dari AI. Tidak ada yang terbit sebelum Anda memeriksa dan menekan tombol Terbitkan.",
+      lowLead:"Ulasan bintang 1–2 dan ulasan yang perlu dicek. Tidak pernah terbit otomatis — mohon periksa dulu.",
+      tabOpen:"Belum dibalas", tabDone:"Selesai", allLangs:"Semua bahasa", emptyOpen:"Tidak ada yang perlu dibalas.", emptyDone:"Belum ada.",
+      translation:"Terjemahan ulasan (AI)", lowAlert:function (n) { return "Bintang " + n + " — perlu ditangani"; }, needsCheck:"Perlu dicek",
+      draft:"Draf balasan", published:"Balasan yang terbit", edited:"Sudah disunting — tidak cocok dengan draf mana pun", pick:"Gaya balasan",
+      styles:{ warm:"Hangat", standard:"Standar", concise:"Singkat" },
+      hints:{ warm:"Paling hangat dan personal", standard:"Seimbang — sopan tapi tidak panjang", concise:"Singkat dan langsung, untuk hari sibuk" },
+      publish:"Terbitkan ke Google", publishing:"Menerbitkan…", save:"Simpan draf", regen:"Tulis ulang dengan AI", regenerating:"Menulis…",
+      saveFirst:"Tekan “Simpan draf” dulu sebelum menerbitkan.",
+      publishedNote:"Terbit di Google. (Demo — tidak benar-benar dikirim)",
+      savedNote:"Draf disimpan (demo — tidak ada yang tersimpan)",
+      regenNote:"Tiga draf baru telah ditulis.", skippedNote:"Ditandai tidak perlu dibalas.",
+      emptyReply:"Balasan masih kosong. Silakan tulis isinya.", switchConfirm:"Suntingan Anda akan hilang. Ganti ke draf lain?",
+      today:"Hari ini", yesterday:"Kemarin", daysAgo:function (n) { return n + " hari lalu"; }, resetDone:"Kembali ke awal",
+      reasons:{
+        lowRating:"Bintang rendah (1–2) — mohon baca teliti sebelum menerbitkan",
+        indonesian:"Bahasa Indonesia — mohon staf lokal memeriksa pilihan katanya",
+        refund:"Ada permintaan refund. AI tidak pernah menjanjikan refund. Mohon cek faktanya di hotel sebelum menerbitkan."
+      }
     }
   };
-
-  var UI_LANGS = [["ja","日本語"],["en","English"],["id","Indonesia"]];
-  var LANG_LABEL = { ja:"日本語", en:"English", id:"Bahasa Indonesia", zh:"中文", ko:"한국어" };
+  var UI_LANGS = [["ja", "日本語"], ["en", "English"], ["id", "Indonesia"]];
+  var LANG = { ja:"日本語", en:"English", zh:"中文", ko:"한국어", id:"Bahasa Indonesia" };
 
   /* ------------------------------------------------------------------ *
-   * サンプルのクチコミ。1件につき3案（丁寧・標準・簡潔）を持つ。
-   * 長さだけを変えた3案では選ぶ意味がないため、言い方の温度を変えてある。
+   * サンプルのクチコミ（ホテル）。1件につき3案（丁寧・標準・簡潔）。
+   * tr はクチコミの訳（日・英・尼）。実アプリと同じく、クチコミと同じ言語の欄は無い。
    * ------------------------------------------------------------------ */
   var SEED = [
-    { id:"r1", lang:"ja", rating:5, who:"田中 美咲", date:"2026-09-12", reason:null,
-      text:"プールからの景色が最高でした。スタッフの方もとても親切です。また行きたいです。",
-      options:[
-        { style:"warm", text:"田中様、うれしいお言葉をありがとうございます。\n プールからの景色を気に入っていただけたこと、そして応対を「親切」と言っていただけたことが、何よりの励みになります。\nまたお会いできる日を楽しみにお待ちしております。\n\n"+SIGN },
-        { style:"standard", text:"田中様、ありがとうございます。\nプールからの眺めを気に入っていただけて、私たちもうれしく思います。\nまたのお越しをお待ちしております。\n\n"+SIGN },
-        { style:"concise", text:"田中様、ありがとうございます。\nまたお越しいただける日を楽しみにしております。\n\n"+SIGN }
-      ] },
-    { id:"r2", lang:"id", rating:5, who:"Putu Ayu", date:"2026-09-11", reason:"reasonIndonesian",
-      text:"Tempatnya bagus dan pelayanannya ramah. Sarapannya juga enak.",
-      options:[
-        { style:"warm", text:"Terima kasih banyak, Putu.\nSenang sekali mendengar bahwa suasana, pelayanan, dan sarapan kami berkesan untuk Anda. Itulah yang paling kami jaga di sini.\nKami tunggu kedatangan Anda berikutnya.\n\n"+SIGN },
-        { style:"standard", text:"Terima kasih banyak, Putu.\nSenang mendengar Anda menikmati suasana dan pelayanan kami.\nKami tunggu kedatangan Anda berikutnya.\n\n"+SIGN },
-        { style:"concise", text:"Terima kasih, Putu.\nSampai jumpa lagi di Hoshi Jungle.\n\n"+SIGN }
-      ] },
-    { id:"r3", lang:"en", rating:2, who:"Michael R.", date:"2026-09-10", reason:"reasonLowRating",
-      text:"The room wasn't clean when we arrived and the AC didn't work.",
-      options:[
-        { style:"warm", text:"Michael, I am sorry.\nThe room should have been clean, and the air conditioning should have been working. Neither was, and that is on us — not on the day you arrived, and not on any day.\nWe are putting both right. Please write to stay@hoshijungle.com; we would like to hear the details from you.\n\n"+SIGN },
-        { style:"standard", text:"Michael, I am sorry.\nThe room should have been clean and the air conditioning should have been working. We are putting both right.\nPlease contact us at stay@hoshijungle.com.\n\n"+SIGN },
-        { style:"concise", text:"Michael, I am sorry — that should not have happened.\nWe are putting it right. Please contact us at stay@hoshijungle.com.\n\n"+SIGN }
-      ] },
-    { id:"r4", lang:"zh", rating:4, who:"王 小美", date:"2026-09-09", reason:null,
-      text:"位置很好，早餐也不错。房间的隔音可以再好一点。",
-      options:[
-        { style:"warm", text:"王女士，感謝您抽空留下評價。\n很高興位置與早餐讓您滿意。關於房間隔音，您說得對，這是我們仍在改善的地方，會認真對待。\n期待再次為您服務。\n\n"+SIGN },
-        { style:"standard", text:"王女士，感謝您的評價。\n很高興位置與早餐讓您滿意。房間隔音的部分，我們會繼續改善。\n期待再次見到您。\n\n"+SIGN },
-        { style:"concise", text:"王女士，感謝您的評價。\n隔音的問題我們會改善。期待您再次光臨。\n\n"+SIGN }
-      ] },
-    { id:"r5", lang:"ko", rating:5, who:"김민준", date:"2026-09-08", reason:null,
-      text:"직원분들이 정말 친절했어요. 수영장 전망이 최고입니다.",
-      options:[
-        { style:"warm", text:"민준님, 따뜻한 후기 감사합니다.\n친절했다는 말씀, 그리고 수영장에서 본 풍경을 좋아해 주셨다는 말씀이 저희에게 큰 힘이 됩니다.\n다시 뵐 수 있기를 기다리겠습니다.\n\n"+SIGN },
-        { style:"standard", text:"민준님, 감사합니다.\n수영장 전망을 마음에 들어 하셨다니 저희도 기쁩니다.\n다시 찾아주시기를 기다리겠습니다.\n\n"+SIGN },
-        { style:"concise", text:"민준님, 감사합니다.\n다시 뵙기를 기다리겠습니다.\n\n"+SIGN }
-      ] },
-    { id:"r6", lang:"en", rating:1, who:"Sarah L.", date:"2026-09-07", reason:"reasonAiFlagged", crit:true,
+    { id:"r1", who:"Sarah L.", lang:"en", rating:1, ago:0, low:true, reasons:["lowRating", "refund"],
       text:"Charged twice for the airport transfer. No reply to my emails for a week. I want a refund.",
-      options:[
-        { style:"warm", text:"Sarah, I am sorry — for the double charge, and for leaving you without an answer for a week. Waiting that long for a reply is not something we can defend.\nWe are checking the transfer booking now and will come back to you.\nPlease write to stay@hoshijungle.com so we can reach you directly.\n\n"+SIGN },
-        { style:"standard", text:"Sarah, I am sorry — for the double charge and for the week of silence.\nWe are checking the booking now.\nPlease write to stay@hoshijungle.com so we can reach you directly.\n\n"+SIGN },
-        { style:"concise", text:"Sarah, I am sorry. A week without a reply is not acceptable.\nWe are checking the booking now — please write to stay@hoshijungle.com.\n\n"+SIGN }
-      ] },
-    { id:"r7", lang:"en", rating:5, who:"James", date:"2026-09-05", reason:null,
+      tr:{ ja:"空港送迎の料金を二重に請求された。1週間メールを送っても返事がない。返金してほしい。",
+           id:"Saya ditagih dua kali untuk antar-jemput bandara. Email saya tidak dibalas selama seminggu. Saya minta uang saya dikembalikan." },
+      options:{
+        warm:"Sarah, I am sorry — for the double charge, and for leaving you without an answer for a week. Waiting that long for a reply is not something we can defend.\nWe are checking the transfer booking now and will come back to you.\nPlease write to stay@hoshijungle.com so we can reach you directly.\n\n" + SIGN,
+        standard:"Sarah, I am sorry — for the double charge and for the week of silence.\nWe are checking the booking now.\nPlease write to stay@hoshijungle.com so we can reach you directly.\n\n" + SIGN,
+        concise:"Sarah, I am sorry. A week without a reply is not acceptable.\nWe are checking the booking now — please write to stay@hoshijungle.com.\n\n" + SIGN
+      } },
+    { id:"r2", who:"田中 美咲", lang:"ja", rating:5, ago:1,
+      text:"プールからの景色が最高でした。スタッフの方もとても親切です。また行きたいです。",
+      tr:{ en:"The view from the pool was amazing. The staff were very kind too. I'd love to come back.",
+           id:"Pemandangan dari kolam renangnya luar biasa. Stafnya juga sangat ramah. Saya ingin datang lagi." },
+      options:{
+        warm:"田中様、うれしいお言葉をありがとうございます。\nプールからの景色を気に入っていただけたこと、そして応対を「親切」と言っていただけたことが、何よりの励みになります。\nまたお会いできる日を楽しみにお待ちしております。\n\n" + SIGN,
+        standard:"田中様、ありがとうございます。\nプールからの眺めを気に入っていただけて、私たちもうれしく思います。\nまたのお越しをお待ちしております。\n\n" + SIGN,
+        concise:"田中様、ありがとうございます。\nまたお越しいただける日を楽しみにしております。\n\n" + SIGN
+      } },
+    { id:"r3", who:"Michael R.", lang:"en", rating:2, ago:2, low:true, reasons:["lowRating"],
+      text:"The room wasn't clean when we arrived and the AC didn't work.",
+      tr:{ ja:"到着したとき部屋がきれいではなく、エアコンも動かなかった。",
+           id:"Kamarnya tidak bersih saat kami tiba dan AC-nya tidak berfungsi." },
+      options:{
+        warm:"Michael, I am sorry.\nThe room should have been clean, and the air conditioning should have been working. Neither was, and that is on us.\nPlease write to stay@hoshijungle.com; we would like to hear the details from you.\n\n" + SIGN,
+        standard:"Michael, I am sorry.\nThe room should have been clean and the air conditioning should have been working.\nPlease contact us at stay@hoshijungle.com.\n\n" + SIGN,
+        concise:"Michael, I am sorry — that should not have happened.\nPlease contact us at stay@hoshijungle.com.\n\n" + SIGN
+      } },
+    { id:"r4", who:"Putu Ayu", lang:"id", rating:5, ago:3, reasons:["indonesian"],
+      text:"Tempatnya bagus dan pelayanannya ramah. Sarapannya juga enak.",
+      tr:{ ja:"素敵な場所で、サービスも親切でした。朝食もおいしかったです。",
+           en:"Lovely place and friendly service. The breakfast was good too." },
+      options:{
+        warm:"Terima kasih banyak, Putu.\nSenang sekali mendengar bahwa suasana, pelayanan, dan sarapan kami berkesan untuk Anda.\nKami tunggu kedatangan Anda berikutnya.\n\n" + SIGN,
+        standard:"Terima kasih banyak, Putu.\nSenang mendengar Anda menikmati suasana dan pelayanan kami.\nKami tunggu kedatangan Anda berikutnya.\n\n" + SIGN,
+        concise:"Terima kasih, Putu.\nSampai jumpa lagi di Hoshi Jungle.\n\n" + SIGN
+      } },
+    { id:"r5", who:"王 小美", lang:"zh", rating:4, ago:4,
+      text:"位置很好，早餐也不错。房间的隔音可以再好一点。",
+      tr:{ ja:"立地が良く、朝食もよかった。部屋の防音はもう少し良くてもいいと思う。",
+           en:"Great location and the breakfast was good. The soundproofing in the room could be better.",
+           id:"Lokasinya bagus dan sarapannya juga enak. Kedap suara kamarnya bisa lebih baik lagi." },
+      options:{
+        warm:"王小美您好，感谢您抽空留下评价。\n很高兴位置和早餐让您满意。关于房间隔音，您说得对，我们会认真对待这一点。\n期待再次为您服务。\n\n" + SIGN,
+        standard:"王小美您好，感谢您的评价。\n很高兴位置和早餐让您满意。房间隔音的意见，我们会认真参考。\n期待再次见到您。\n\n" + SIGN,
+        concise:"王小美您好，感谢您的评价。\n期待您再次光临。\n\n" + SIGN
+      } },
+    { id:"r6", who:"김민준", lang:"ko", rating:5, ago:6,
+      text:"직원분들이 정말 친절했어요. 수영장 전망이 최고입니다.",
+      tr:{ ja:"スタッフの方々が本当に親切でした。プールからの眺めが最高です。",
+           en:"The staff were really kind. The pool view is the best.",
+           id:"Stafnya sangat ramah. Pemandangan kolam renangnya terbaik." },
+      options:{
+        warm:"민준님, 따뜻한 후기 감사합니다.\n친절했다는 말씀, 그리고 수영장에서 본 풍경을 좋아해 주셨다는 말씀이 저희에게 큰 힘이 됩니다.\n다시 뵐 수 있기를 기다리겠습니다.\n\n" + SIGN,
+        standard:"민준님, 감사합니다.\n수영장 전망을 마음에 들어 하셨다니 저희도 기쁩니다.\n다시 찾아주시기를 기다리겠습니다.\n\n" + SIGN,
+        concise:"민준님, 감사합니다.\n다시 뵙기를 기다리겠습니다.\n\n" + SIGN
+      } },
+    /* 返信済み */
+    { id:"h1", who:"James", lang:"en", rating:5, ago:7, done:true,
       text:"Perfect stay. The staff made it.",
-      options:[
-        { style:"warm", text:"Thank you, James.\nBeing told that the people are what made the stay is the best thing anyone can say about us.\nYou are welcome back any time.\n\n"+SIGN },
-        { style:"standard", text:"Thank you, James.\nThat is the compliment we value most. You are welcome back any time.\n\n"+SIGN },
-        { style:"concise", text:"Thank you, James. You are welcome back any time.\n\n"+SIGN }
-      ] }
+      tr:{ ja:"完璧な滞在でした。スタッフのおかげです。", id:"Menginap yang sempurna. Stafnya yang membuatnya istimewa." },
+      reply:"Thank you, James.\nThat is the compliment we value most. You are welcome back any time.\n\n" + SIGN },
+    { id:"h2", who:"佐々木 綾", lang:"ja", rating:5, ago:9, done:true,
+      text:"朝食のフルーツが新鮮でおいしかったです。",
+      tr:{ en:"The fruit at breakfast was fresh and delicious.", id:"Buah saat sarapan segar dan enak." },
+      reply:"佐々木様、ありがとうございます。\n朝食を楽しんでいただけてうれしいです。またお会いできる日をお待ちしております。\n\n" + SIGN }
   ];
+
+  var WEEK_TOTAL   = [8, 8, 8, 9, 9, 10, 10, 7];
+  var WEEK_REPLIED = [5, 6, 4, 7, 8,  9,  8, 3];
 
   /* ---------------------- 状態 ---------------------- */
   var S;
-  function freshState() {
-    return {
-      lang: detectLang(),
-      // 開いた瞬間から中身が見える状態で始める。
-      // 実物はパスコード入室だが、デモで最初に入力を求めると
-      // そこで止まってしまい、肝心の画面に辿り着かない人が出る。
-      // ログイン画面は上部のリンクからいつでも見られるようにしてある。
-      signedIn: true,
-      loginError: null,
-      view: "inbox",          // inbox | attention | archive
-      filter: "all",          // all | ja | en | id | zh | ko
-      quota: 64,
-      busy: null,
-      reviews: SEED.map(function (r) {
-        var std = r.options.filter(function (o) { return o.style === "standard"; })[0];
-        return {
-          id:r.id, lang:r.lang, rating:r.rating, who:r.who, date:r.date,
-          reason:r.reason, crit:!!r.crit, text:r.text, options:r.options,
-          selected:"standard", body:std.text, status:"draft"   // draft | published | skipped
-        };
-      })
-    };
-  }
   function detectLang() {
-    var tags = (navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language || "ja"]);
+    var tags = navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language || "ja"];
     for (var i = 0; i < tags.length; i++) {
       var base = String(tags[i]).toLowerCase().split("-")[0];
       if (DICT[base]) return base;
     }
     return "ja";
   }
+  function fresh(lang) {
+    return {
+      lang:lang || detectLang(),
+      // 開いた瞬間から中身が見える状態で始める。最初にパスコードを求めると、
+      // そこで止まって肝心の画面に辿り着かない人が出る。ログイン画面は上の帯から見られる。
+      signedIn:true, loginError:false,
+      view:"home", tab:"open", filter:"all", pick:null, busy:null,
+      lastSync:new Date(), replied:WEEK_REPLIED.slice(),
+      reviews:SEED.map(function (r) {
+        return {
+          id:r.id, who:r.who, lang:r.lang, rating:r.rating, ago:r.ago, low:!!r.low, reasons:r.reasons || [],
+          text:r.text, tr:r.tr || {}, options:r.options || null, dirty:false,
+          status:r.done ? "published" : "draft", selected:r.done ? null : "standard",
+          body:r.done ? r.reply : r.options.standard
+        };
+      })
+    };
+  }
   function d() { return DICT[S.lang] || DICT.ja; }
 
   /* ---------------------- 小道具 ---------------------- */
   function esc(t) {
-    return String(t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
-                    .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+    return String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   }
+  function byId(id) { for (var i = 0; i < S.reviews.length; i++) if (S.reviews[i].id === id) return S.reviews[i]; return null; }
+  function isOpen(r) { return r.status === "draft"; }
+  function open() { return S.reviews.filter(isOpen); }
+  function needsAttention(r) { return r.reasons.length > 0; }
+  function sum(a, f, t) { var s = 0; for (var i = f; i < t; i++) s += a[i]; return s; }
+  function pad(n) { return (n < 10 ? "0" : "") + n; }
+  function agoText(n) { var t = d(); return n === 0 ? t.today : n === 1 ? t.yesterday : t.daysAgo(n); }
   function stars(n) {
-    var out = "";
-    for (var i = 1; i <= 5; i++) out += (i <= n ? "★" : '<span class="off">★</span>');
-    return out;
+    var s = "";
+    for (var i = 1; i <= 5; i++) s += i <= n ? "★" : '<span class="off">★</span>';
+    return '<span class="stars' + (n <= 2 ? " low" : "") + '" aria-label="' + n + ' / 5">' + s + "</span>";
   }
-  function fmtDate(iso) {
-    try {
-      return new Date(iso + "T00:00:00").toLocaleDateString(d().locale, { month:"short", day:"numeric" });
-    } catch (e) { return iso; }
+  var ICON = {
+    home:'<path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
+    inbox:'<path d="M3 5h18v14H3zM3 13h5l1.5 2.5h5L16 13h5"/>',
+    warn:'<path d="M12 3 2 20h20zM12 10v4.5M12 17.2v.3"/>',
+    sync:'<path d="M20 12a8 8 0 0 1-14 5.3M4 12A8 8 0 0 1 18 6.7M18 3v4h-4M6 21v-4h4"/>'
+  };
+  function svg(name, cls) { return '<svg viewBox="0 0 24 24" aria-hidden="true"' + (cls ? ' class="' + cls + '"' : "") + ">" + ICON[name] + "</svg>"; }
+  function langSwitcher() {
+    return '<div class="langs" role="group" aria-label="Display language">' + UI_LANGS.map(function (p) {
+      return '<button type="button" data-setlang="' + p[0] + '" aria-pressed="' + (S.lang === p[0]) + '">' + p[1] + "</button>";
+    }).join("") + "</div>";
   }
   var toastEl = document.getElementById("toast"), toastT;
   function toast(msg) {
-    toastEl.textContent = msg;
-    toastEl.classList.add("show");
+    toastEl.textContent = msg; toastEl.classList.add("show");
     clearTimeout(toastT);
     toastT = setTimeout(function () { toastEl.classList.remove("show"); }, 2800);
-  }
-  function langSwitcher() {
-    return '<div class="langs" role="group" aria-label="Display language">' +
-      UI_LANGS.map(function (p) {
-        return '<button type="button" data-setlang="' + p[0] + '" aria-pressed="' +
-               (S.lang === p[0]) + '">' + p[1] + "</button>";
-      }).join("") + "</div>";
-  }
-
-  /* ---------------------- 絞り込み ---------------------- */
-  function inView(r, view) {
-    if (view === "archive") return r.status === "published" || r.status === "skipped";
-    if (r.status !== "draft") return false;
-    if (view === "attention") return !!r.reason;
-    return true;                                  // inbox = 未返信すべて（要確認も含む）
-  }
-  function counts() {
-    var c = { inbox:0, attention:0, archive:0 };
-    S.reviews.forEach(function (r) {
-      if (inView(r, "inbox")) c.inbox++;
-      if (inView(r, "attention")) c.attention++;
-      if (inView(r, "archive")) c.archive++;
-    });
-    return c;
-  }
-  function visible() {
-    return S.reviews.filter(function (r) {
-      if (!inView(r, S.view)) return false;
-      if (S.filter !== "all" && r.lang !== S.filter) return false;
-      return true;
-    });
   }
 
   /* ---------------------- ログイン画面 ---------------------- */
   function loginHTML() {
     var t = d();
-    return '' +
-    '<div class="login"><div class="login-inner">' +
-      '<div style="display:flex;justify-content:center;margin-bottom:22px;">' + langSwitcher() + '</div>' +
-      '<p class="eyebrow">HOSHI JUNGLE</p>' +
-      '<h1>Review AI</h1>' +
-      '<p class="sub">' + esc(t.staffLogin) + '</p>' +
-      '<div class="card" style="padding:20px;margin-top:22px;">' +
-        '<label class="field" for="pc">' + esc(t.passcode) + '</label>' +
-        '<input class="input" id="pc" type="text" autocomplete="off" spellcheck="false" placeholder="HJ-XXXX-XXXX">' +
-        (S.loginError ? '<div class="err">' + esc(t.errPasscodeWrong) + '</div>' : '') +
-        '<button type="button" class="btn btn-primary" id="enterBtn" style="width:100%;margin-top:14px;">' +
-          esc(t.enter) + '</button>' +
-        '<div class="hintbox">' + esc(t.demoPass) + ': <code>' + DEMO_PASSCODE + '</code><br>' +
-          '<button type="button" id="fillBtn">' + esc(t.fillIt) + '</button></div>' +
-      '</div>' +
-      '<p class="muted">' + esc(t.askAdmin) + '</p>' +
-    '</div></div>';
+    return '<div class="login"><div class="login-in">' +
+      '<div class="lw">' + langSwitcher() + "</div>" +
+      '<div class="brand"><p class="k">HOSHI JUNGLE</p><p class="v">Leaves Reply</p><p class="s">' + esc(t.staffLogin) + "</p></div>" +
+      '<div class="card"><label for="pc">' + esc(t.passcode) + "</label>" +
+        '<input id="pc" type="text" autocomplete="off" spellcheck="false" placeholder="HJ-XXXX-XXXX">' +
+        (S.loginError ? '<div class="err">' + esc(t.errPasscode) + "</div>" : "") +
+        '<button type="button" class="btn btn-primary" id="enterBtn">' + esc(t.enter) + "</button>" +
+        '<div class="hintbox">' + esc(t.demoPass) + ": <code>" + DEMO_PASSCODE + "</code>" +
+          '<button type="button" id="fillBtn">' + esc(t.fillIt) + "</button></div>" +
+      "</div>" +
+      '<p class="muted">' + esc(t.askAdmin) + "</p>" +
+    "</div></div>";
   }
 
-  /* ---------------------- ダッシュボード ---------------------- */
-  function dashHTML() {
-    var t = d(), c = counts(), list = visible();
-
-    var langsPresent = ["all"];
-    ["ja","en","id","zh","ko"].forEach(function (L) {
-      if (S.reviews.some(function (r) { return r.lang === L; })) langsPresent.push(L);
-    });
-
-    var head = '' +
-      '<header class="app">' +
-        '<div class="hrow">' +
-          '<div class="hname"><div class="k">' + esc(t.appName) + '</div>' +
-            '<div class="v">Hoshi Jungle</div></div>' +
-          '<div class="hright">' +
-            '<span class="badge b-draft">' + esc(t.staff) + ' · ' + esc(t.frontDesk) + '</span>' +
-            '<span class="badge b-lang">' + esc(t.quota) + ' ' + S.quota + (t.cases ? " " + t.cases : "") + '</span>' +
-            langSwitcher() +
-            '<button type="button" class="btn btn-secondary" id="syncBtn">' +
-              (S.busy === "sync" ? esc(t.syncing) : esc(t.syncNow)) + '</button>' +
-            '<button type="button" class="link" id="logoutBtn">' + esc(t.logout) + '</button>' +
-          '</div>' +
-        '</div>' +
-        '<nav class="tabs">' +
-          tab("inbox", t.navInbox, c.inbox, false) +
-          tab("attention", t.navAttention, c.attention, true) +
-          tab("archive", t.navArchive, c.archive, false) +
-        '</nav>' +
-      '</header>';
-
-    var filters = '<div class="filters">' + langsPresent.map(function (L) {
-      return '<button type="button" data-filter="' + L + '" aria-pressed="' + (S.filter === L) + '">' +
-             esc(L === "all" ? t.filterAll : LANG_LABEL[L]) + '</button>';
-    }).join("") + '</div>';
-
-    var emptyMsg = S.view === "attention" ? t.emptyAttention
-                 : S.view === "archive"   ? t.emptyArchive : t.emptyInbox;
-
-    var body = list.length
-      ? '<div class="list">' + list.map(cardHTML).join("") + '</div>'
-      : '<div class="card empty">' + esc(emptyMsg) + '</div>';
-
-    return head + '<main>' + filters + body +
-      '<p style="margin-top:18px;font-size:12px;color:var(--muted);">' + esc(t.autoHourly) + '</p></main>';
-  }
-
-  function tab(key, label, n, warn) {
-    return '<button type="button" data-view="' + key + '"' +
-           (warn ? ' class="warnTab"' : '') +
-           ' aria-selected="' + (S.view === key) + '">' + esc(label) +
-           '<span class="n">' + n + "</span></button>";
-  }
-
-  function cardHTML(r) {
-    var t = d();
-    var done = r.status === "published", skipped = r.status === "skipped";
-    var cls = "card rev" + (r.reason && !done && !skipped ? " attn" : "") +
-              (r.crit && !done && !skipped ? " crit" : "") + (done || skipped ? " done" : "");
-
-    var statusBadge = done ? '<span class="badge b-done">' + esc(t.replyPublished) + '</span>'
-      : skipped ? '<span class="badge b-skip">' + esc(t.skip) + '</span>'
-      : '<span class="badge b-draft">' + esc(t.replyDraft) + '</span>';
-
-    var alertHTML = (r.reason && !done && !skipped)
-      ? '<div class="alert' + (r.crit ? " crit" : "") + '"><b>' + esc(t.needsCheck) + '</b> — ' +
-        esc(t[r.reason]) + '</div>' : "";
-
-    var replyHTML;
-    if (skipped) {
-      replyHTML = '<p class="note-ok" style="color:var(--muted);">' + esc(t.skippedBody) + '</p>';
-    } else {
-      var heading = done ? t.replyPublished : (r.selected ? t.replyDraft : t.replyEdited);
-      var hint = r.selected ? t[styleHintKey(r.selected)] : t.edited;
-      replyHTML = '<div class="reply">' +
-        '<div class="rhead"><span>' + esc(heading) + '</span>' +
-          '<span class="count" data-count="' + r.id + '">' + r.body.length + " / " + MAX + '</span></div>' +
-        (done ? "" :
-          '<div class="picker">' +
-            r.options.map(function (o) {
-              return '<button type="button" data-pick="' + o.style + '" data-id="' + r.id + '" aria-pressed="' +
-                     (r.selected === o.style) + '">' + esc(t[styleKey(o.style)]) + "</button>";
-            }).join("") +
-            '<span class="hint">' + esc(hint) + '</span>' +
-          '</div>') +
-        '<textarea data-id="' + r.id + '"' + (done ? " readonly" : "") + ' aria-label="' + esc(t.replyDraft) + '">' +
-          esc(r.body) + '</textarea>' +
-        (done
-          ? '<p class="note-ok">' + esc(t.publishedNotice) + '</p>'
-          : '<div class="acts">' +
-              '<button type="button" class="btn btn-primary" data-do="publish" data-id="' + r.id + '">' +
-                (S.busy === "pub:" + r.id ? esc(t.publishing) : esc(t.publish)) + '</button>' +
-              '<button type="button" class="btn btn-secondary" data-do="regen" data-id="' + r.id + '"' +
-                (S.busy === "gen:" + r.id ? " disabled" : "") + '>' +
-                (S.busy === "gen:" + r.id ? esc(t.regenerating) : esc(t.regenerate)) + '</button>' +
-              '<button type="button" class="btn btn-ghost right" data-do="skip" data-id="' + r.id + '">' +
-                esc(t.skip) + '</button>' +
-            '</div>') +
-      '</div>';
+  /* ---------------------- 左の帯 ---------------------- */
+  function sideHTML() {
+    var t = d(), w = open().length, att = open().filter(needsAttention).length;
+    function item(key, icon, label, n, hot) {
+      return '<button type="button" data-view="' + key + '"' + (S.view === key ? ' aria-current="page"' : "") + ">" +
+        svg(icon) + "<span>" + esc(label) + "</span>" +
+        (n ? '<span class="cnt' + (hot ? " hot" : "") + '">' + n + "</span>" : "") + "</button>";
     }
-
-    return '<article class="' + cls + '">' +
-      '<div class="rtop">' +
-        '<span class="stars" aria-label="' + r.rating + ' / 5">' + stars(r.rating) + '</span>' +
-        '<span class="who">' + esc(r.who) + '</span>' +
-        '<span class="badge b-lang">' + esc(LANG_LABEL[r.lang]) + '</span>' +
-        statusBadge +
-        '<time class="when">' + esc(fmtDate(r.date)) + '</time>' +
-      '</div>' +
-      '<p class="rtext">' + esc(r.text) + '</p>' +
-      alertHTML + replyHTML +
-    '</article>';
+    return '<div class="logo"><span class="k">LEAVES</span><span class="v">Reply</span></div>' +
+      '<div class="store"><div class="ic">H</div><div><div class="n">Hoshi Jungle</div><div class="a">Bali</div></div></div>' +
+      '<p class="menu-k">' + t.menu + "</p>" +
+      '<nav class="nav" aria-label="' + t.menu + '">' +
+        item("home", "home", t.navHome) +
+        item("reviews", "inbox", t.navReviews, w) +
+        item("low", "warn", t.navLow, att, true) +
+      "</nav>" +
+      '<div class="side-foot"><div class="ic">S</div><div><div class="n">' + esc(t.role) + "</div>" +
+        '<div class="s"><span class="dot"></span>' + esc(t.autoImporting) + "</div></div></div>" +
+      '<div class="side-ctl">' + langSwitcher() + '<button type="button" class="out" id="logoutBtn">' + esc(t.logout) + "</button></div>";
   }
 
-  function styleKey(s) { return s === "warm" ? "styleWarm" : s === "concise" ? "styleConcise" : "styleStandard"; }
-  function styleHintKey(s) { return s === "warm" ? "styleWarmHint" : s === "concise" ? "styleConciseHint" : "styleStandardHint"; }
+  /* ---------------------- ホーム ---------------------- */
+  function weekLabels() {
+    var t = d(), x = new Date(); x.setHours(0, 0, 0, 0);
+    x.setDate(x.getDate() - ((x.getDay() + 6) % 7));
+    var out = [];
+    for (var i = 7; i >= 0; i--) {
+      var w = new Date(x); w.setDate(x.getDate() - i * 7);
+      out.push(t.week(w.getMonth() + 1, w.getDate()));
+    }
+    return out;
+  }
+  function delta(v, suffix) {
+    return '<span class="up">' + (v > 0 ? "▲" : v < 0 ? "▼" : "±") + " " + Math.abs(v) + (suffix || "") + "</span>";
+  }
+  function homeHTML() {
+    var t = d(), now = new Date(), w = open().length, low = open().filter(function (r) { return r.low; }).length;
+    var rec = sum(S.replied, 4, 8), recT = sum(WEEK_TOTAL, 4, 8);
+    var prev = sum(S.replied, 0, 4), prevT = sum(WEEK_TOTAL, 0, 4);
+    var rate = Math.round(rec / recT * 100), prevRate = Math.round(prev / prevT * 100);
+
+    var top = '<div class="top"><div><p class="date">' + esc(t.date(now)) + "</p>" +
+        "<h1><span>" + esc(t.greet(now.getHours())) + "</span>" + t.sep + "<span>" + esc(t.greetTail) + "</span></h1></div>" +
+      '<div class="sync"><span class="last">' + esc(t.lastImport) + " " + S.lastSync.getHours() + ":" + pad(S.lastSync.getMinutes()) + "</span>" +
+        '<button type="button" class="btn btn-white" id="syncBtn"' + (S.busy === "sync" ? " disabled" : "") + ">" +
+          svg("sync", S.busy === "sync" ? "spin" : "") + esc(S.busy === "sync" ? t.syncing : t.syncNow) + "</button></div></div>";
+
+    var kpis = '<div class="kpis">' +
+      '<div class="card kpi hot"><p class="l">' + esc(t.kpiPending) + '</p><p class="v">' + w + (t.unit ? "<small>" + t.unit + "</small>" : "") + "</p>" +
+        '<div class="sub">' + (low ? '<span class="pill-crit"><i>!</i>' + esc(t.lowCount(low)) + "</span>" : "") +
+        (w ? '<button type="button" class="go" data-view="' + (low ? "low" : "reviews") + '">' + esc(t.replyNow) + "</button>" : "") + "</div></div>" +
+      '<div class="card kpi"><p class="l">' + esc(t.kpiRate) + '</p><p class="v">' + rate + "<small>%</small></p>" +
+        '<div class="sub">' + delta(rate - prevRate, "pt") + esc(t.prev4(prevRate)) + "</div></div>" +
+      '<div class="card kpi"><p class="l">' + esc(t.kpiAvg) + '</p><p class="v">4.3<small>★</small></p>' +
+        '<div class="sub">' + delta(0.1) + esc(t.total(128)) + "</div></div>" +
+      '<div class="card kpi"><p class="l">' + esc(t.kpiTime) + '</p><p class="v">' + (rec * MIN_PER_REPLY / 60).toFixed(1) + "<small>" + esc(t.hours) + "</small></p>" +
+        '<div class="sub">' + esc(t.timeNote(rec, MIN_PER_REPLY)) + "</div></div>" +
+    "</div>";
+
+    var labels = weekLabels(), topV = 12;
+    var bars = WEEK_TOTAL.map(function (tot, i) {
+      var r = S.replied[i], u = tot - r;
+      return '<div class="bar"><span class="t">' + tot + "</span>" +
+        '<span class="u" style="height:' + (u / topV * 100) + '%"></span>' +
+        '<span class="r" style="height:' + (r / topV * 100) + '%"></span>' +
+        '<span class="x">' + esc(labels[i]) + "</span></div>";
+    }).join("");
+    var grid = [12, 8, 4, 0].map(function (v) {
+      return '<div class="g' + (v === 0 ? " base" : "") + '" style="top:' + ((12 - v) / 12 * 100) + '%"><span>' + v + "</span></div>";
+    }).join("");
+    var chart = '<section class="card chart" aria-label="' + esc(t.weekly) + '">' +
+      '<div class="chart-h"><h2>' + esc(t.weekly) + '</h2><span class="s">' + esc(t.last8) + "</span>" +
+        '<div class="legend"><span><i style="background:var(--brand-600)"></i>' + esc(t.replied) + '</span><span><i style="background:var(--blue)"></i>' + esc(t.unreplied) + "</span></div></div>" +
+      '<div class="plot"><div class="grid">' + grid + '</div><div class="bars">' + bars + "</div></div></section>";
+
+    var sorted = S.reviews.slice().sort(function (a, b) { return a.ago - b.ago; });
+    if (!S.pick) {
+      var first = sorted.filter(function (r) { return isOpen(r) && r.low; })[0] || sorted[0];
+      S.pick = first.id;
+    }
+    var rows = sorted.map(function (r) {
+      var chip = r.status === "published" ? '<span class="chip done">' + esc(t.statusDone) + "</span>"
+        : r.status === "skipped" ? '<span class="chip skip">' + esc(t.skip) + "</span>"
+        : r.low ? '<span class="chip crit">' + esc(t.navLow) + "</span>"
+        : needsAttention(r) ? '<span class="chip attn">' + esc(t.needsCheck) + "</span>"
+        : '<span class="chip wait">' + esc(t.statusOpen) + "</span>";
+      return '<li><button type="button" data-pick="' + r.id + '"' + (S.pick === r.id ? ' aria-current="true"' : "") + ">" +
+        '<span class="av">' + esc(r.who.charAt(0).toUpperCase()) + "</span>" +
+        '<span class="meta"><span class="line1"><span class="nm">' + esc(r.who) + "</span>" + stars(r.rating) +
+          '<span class="ago">' + esc(agoText(r.ago)) + "</span></span>" +
+        '<span class="ex" style="display:block">' + esc(r.text) + "</span>" +
+        '<span class="line3">' + chip + '<span style="font-size:12px;color:var(--ink-400)">' + LANG[r.lang] + "</span></span></span>" +
+      "</button></li>";
+    }).join("");
+    return top + kpis + chart + '<div class="duo">' +
+      '<section class="card"><div class="list-h"><h2>' + esc(t.recent) + '</h2><span class="s">' + esc(t.newest) + '</span></div><ul class="rows">' + rows + "</ul></section>" +
+      cardHTML(byId(S.pick)) + "</div>";
+  }
+
+  /* ---------------------- クチコミ1件 ---------------------- */
+  function cardHTML(r) {
+    var t = d(), done = r.status === "published", skipped = r.status === "skipped", isOpenCard = !done && !skipped;
+    var head = '<div class="rv-head"><span class="av">' + esc(r.who.charAt(0).toUpperCase()) + "</span>" +
+      '<div><div class="nm">' + esc(r.who) + '</div><div class="sub">' + stars(r.rating) +
+        "<span>" + LANG[r.lang] + "</span><span>・Google</span></div></div>" +
+      '<span class="ago">' + esc(agoText(r.ago)) + "</span></div>";
+    var body = '<p class="rv-text">' + esc(r.text) + "</p>";
+    var tr = r.lang !== S.lang && r.tr[S.lang]
+      ? '<div class="trans"><p class="k">' + esc(t.translation) + "</p><p>" + esc(r.tr[S.lang]) + "</p></div>" : "";
+    var alert = needsAttention(r) && isOpenCard
+      ? '<div class="alert' + (r.low ? "" : " attn") + '">' + svg("warn") + "<div><b>" + esc(r.low ? t.lowAlert(r.rating) : t.needsCheck) + "</b>" +
+          r.reasons.map(function (k) { return "<p>" + esc(t.reasons[k]) + "</p>"; }).join("") + "</div></div>"
+      : "";
+
+    var reply;
+    if (skipped) {
+      reply = '<p class="note muted">' + esc(t.skippedNote) + "</p>";
+    } else {
+      var label = done ? t.published : t.draft;
+      var seg = isOpenCard
+        ? '<div class="seg-row"><div class="seg" role="group" aria-label="' + esc(t.pick) + '">' +
+            ["warm", "standard", "concise"].map(function (k) {
+              return '<button type="button" data-style="' + k + '" data-id="' + r.id + '" aria-pressed="' + (r.selected === k) + '">' + esc(t.styles[k]) + "</button>";
+            }).join("") +
+          '</div><span class="hint">' + esc(r.selected ? t.hints[r.selected] : t.edited) + "</span></div>"
+        : "";
+      reply = '<div class="reply"><div class="reply-h"><b>' + esc(label) + "</b>" + (isOpenCard ? '<span class="ai">AI</span>' : "") +
+          '<span class="count" data-count="' + r.id + '">' + r.body.length + " / " + MAX + "</span></div>" + seg +
+        '<textarea data-id="' + r.id + '" aria-label="' + esc(label) + '"' + (done ? " readonly" : "") + ">" + esc(r.body) + "</textarea>" +
+        (done
+          ? '<p class="note">' + esc(t.publishedNote) + "</p>"
+          : '<div class="acts">' +
+              '<button type="button" class="btn btn-primary" data-do="publish" data-id="' + r.id + '"' +
+                (S.busy || r.dirty ? " disabled" : "") + (r.dirty ? ' title="' + esc(t.saveFirst) + '"' : "") + ">" +
+                esc(S.busy === "pub:" + r.id ? t.publishing : t.publish) + "</button>" +
+              '<button type="button" class="btn btn-sub" data-do="save" data-id="' + r.id + '"' + (S.busy || !r.dirty ? " disabled" : "") + ">" + esc(t.save) + "</button>" +
+              '<button type="button" class="btn btn-sub" data-do="regen" data-id="' + r.id + '"' + (S.busy ? " disabled" : "") + ">" +
+                esc(S.busy === "gen:" + r.id ? t.regenerating : t.regen) + "</button>" +
+              '<button type="button" class="btn btn-ghost right" data-do="skip" data-id="' + r.id + '"' + (S.busy ? " disabled" : "") + ">" + esc(t.skip) + "</button>" +
+            "</div>") +
+      "</div>";
+    }
+    return '<article class="card rv" data-card="' + r.id + '">' + head + body + tr + alert + reply + "</article>";
+  }
+
+  /* ---------------------- 一覧・要対応 ---------------------- */
+  function reviewsHTML() {
+    var t = d(), w = open().length, dn = S.reviews.length - w;
+    var langs = ["all"];
+    ["ja", "en", "id", "zh", "ko"].forEach(function (L) {
+      if (S.reviews.some(function (r) { return r.lang === L; })) langs.push(L);
+    });
+    var list = S.reviews.filter(function (r) {
+      if ((S.tab === "open") !== isOpen(r)) return false;
+      return S.filter === "all" || r.lang === S.filter;
+    });
+    return '<div class="page-h"><h1>' + esc(t.navReviews) + "</h1><p>" + esc(t.reviewsLead) + "</p></div>" +
+      '<div class="tabs">' +
+        '<button type="button" data-tab="open" aria-pressed="' + (S.tab === "open") + '">' + esc(t.tabOpen) + " " + w + "</button>" +
+        '<button type="button" data-tab="done" aria-pressed="' + (S.tab === "done") + '">' + esc(t.tabDone) + " " + dn + "</button></div>" +
+      '<div class="filters">' + langs.map(function (L) {
+        return '<button type="button" data-filter="' + L + '" aria-pressed="' + (S.filter === L) + '">' + esc(L === "all" ? t.allLangs : LANG[L]) + "</button>";
+      }).join("") + "</div>" +
+      '<div class="stack">' + (list.length ? list.map(cardHTML).join("")
+        : '<div class="card empty">' + esc(S.tab === "open" ? t.emptyOpen : t.emptyDone) + "</div>") + "</div>";
+  }
+  function lowHTML() {
+    var t = d();
+    var list = S.reviews.filter(needsAttention)
+      .sort(function (a, b) { return (isOpen(a) ? 0 : 1) - (isOpen(b) ? 0 : 1); });
+    return '<div class="page-h"><h1>' + esc(t.navLow) + "</h1><p>" + esc(t.lowLead) + "</p></div>" +
+      '<div class="stack">' + list.map(cardHTML).join("") + "</div>";
+  }
 
   /* ---------------------- 描画 ---------------------- */
-  var appEl = document.getElementById("app");
+  var root = document.getElementById("root");
   function render() {
+    var t = d();
     document.documentElement.lang = S.lang;
-    document.getElementById("demoNote").textContent = d().demoNote;
-    document.getElementById("resetBtn").textContent = d().reset;
+    document.getElementById("demoNote").textContent = t.demoNote;
+    document.getElementById("resetBtn").textContent = t.reset;
     var lv = document.getElementById("loginViewBtn");
-    lv.textContent = d().loginView;
-    lv.hidden = !S.signedIn;   // ログイン画面を見ているときは出さない
-    appEl.innerHTML = S.signedIn ? dashHTML() : loginHTML();
+    lv.textContent = t.loginView; lv.hidden = !S.signedIn;
+    if (!S.signedIn) {
+      root.innerHTML = loginHTML();
+      var pc = document.getElementById("pc"); if (pc) pc.focus();
+      return;
+    }
+    root.innerHTML = '<div class="shell"><aside class="side">' + sideHTML() + '</aside>' +
+      '<main class="main"><div class="inner">' +
+        (S.view === "reviews" ? reviewsHTML() : S.view === "low" ? lowHTML() : homeHTML()) +
+      "</div></main></div>";
     autosize();
-    var pc = document.getElementById("pc");
-    if (pc) pc.focus();
   }
   function autosize() {
-    Array.prototype.forEach.call(appEl.querySelectorAll("textarea"), function (ta) {
-      ta.style.height = "auto";
-      ta.style.height = (ta.scrollHeight + 2) + "px";
+    Array.prototype.forEach.call(root.querySelectorAll("textarea[data-id]"), function (ta) {
+      ta.style.height = "auto"; ta.style.height = (ta.scrollHeight + 2) + "px";
     });
   }
-  function byId(id) { return S.reviews.filter(function (r) { return r.id === id; })[0]; }
 
   /* ---------------------- 操作 ---------------------- */
   document.addEventListener("click", function (e) {
     var el = e.target.closest ? e.target.closest("button") : null;
     if (!el) return;
+    var t = d();
 
     // 言語切替（ログイン前でも効く。共用端末で読めない画面を出さないため）
     if (el.dataset.setlang) { S.lang = el.dataset.setlang; render(); return; }
-
-    if (el.id === "resetBtn") { S = freshState(); render(); toast(d().reset); return; }
-    if (el.id === "loginViewBtn") { S.signedIn = false; S.loginError = null; render(); return; }
+    if (el.id === "resetBtn") { S = fresh(S.lang); render(); window.scrollTo(0, 0); toast(d().resetDone); return; }
+    if (el.id === "loginViewBtn" || el.id === "logoutBtn") { S.signedIn = false; S.loginError = false; render(); return; }
     if (el.id === "fillBtn") { document.getElementById("pc").value = DEMO_PASSCODE; return; }
-
     if (el.id === "enterBtn") {
       var v = (document.getElementById("pc").value || "").trim().toUpperCase().replace(/\s+/g, "");
-      if (v === DEMO_PASSCODE) { S.signedIn = true; S.loginError = null; }
-      else { S.loginError = true; }
-      render();
-      return;
+      S.signedIn = v === DEMO_PASSCODE; S.loginError = !S.signedIn; render(); return;
     }
-    if (el.id === "logoutBtn") { S.signedIn = false; S.loginError = null; render(); return; }
+    if (el.dataset.view) { S.view = el.dataset.view; if (S.view === "reviews") { S.tab = "open"; S.filter = "all"; } render(); window.scrollTo(0, 0); return; }
+    if (el.dataset.tab) { S.tab = el.dataset.tab; render(); return; }
+    if (el.dataset.filter) { S.filter = el.dataset.filter; render(); return; }
+    if (el.dataset.pick) { S.pick = el.dataset.pick; render(); return; }
 
     if (el.id === "syncBtn") {
       if (S.busy) return;
       S.busy = "sync"; render();
-      setTimeout(function () { S.busy = null; render(); toast(d().autoHourly); }, 800);
+      setTimeout(function () { S.busy = null; S.lastSync = new Date(); render(); toast(d().syncDone); }, 900);
       return;
     }
-
-    if (el.dataset.view) { S.view = el.dataset.view; render(); return; }
-    if (el.dataset.filter) { S.filter = el.dataset.filter; render(); return; }
-
-    if (el.dataset.pick) {
-      var rp = byId(el.dataset.id);
-      var opt = rp.options.filter(function (o) { return o.style === el.dataset.pick; })[0];
-      if (!opt) return;
-      rp.body = opt.text; rp.selected = opt.style;
-      render();
+    if (el.dataset.style) {
+      var rs = byId(el.dataset.id), next = rs.options[el.dataset.style];
+      if (!next || next === rs.body) return;
+      // 手で直した文章を黙って捨てない（実アプリと同じ）
+      if (rs.selected === null && !window.confirm(t.switchConfirm)) return;
+      rs.body = next; rs.selected = el.dataset.style; rs.dirty = false; render();
       return;
     }
 
     var act = el.dataset.do;
-    if (!act) return;
+    if (!act || S.busy) return;
     var r = byId(el.dataset.id);
-    var t = d();
-
     if (act === "publish") {
       if (!r.body.trim()) { toast(t.emptyReply); return; }
       S.busy = "pub:" + r.id; render();
       setTimeout(function () {
-        r.status = "published"; S.busy = null; render(); toast(t.publishedNotice);
-      }, 550);
+        r.status = "published"; r.selected = null; S.replied[7]++;
+        S.busy = null; render(); toast(d().publishedNote);
+      }, 600);
       return;
     }
+    if (act === "save") { r.dirty = false; render(); toast(t.savedNote); return; }
     if (act === "regen") {
       S.busy = "gen:" + r.id; render();
       setTimeout(function () {
-        r.selected = "standard";
-        r.body = r.options.filter(function (o) { return o.style === "standard"; })[0].text;
-        S.quota = Math.max(0, S.quota - 1);
-        S.busy = null; render(); toast(t.regeneratedNotice);
-      }, 750);
+        r.selected = "standard"; r.body = r.options.standard; r.dirty = false;
+        S.busy = null; render(); toast(d().regenNote);
+      }, 800);
       return;
     }
-    if (act === "skip") { r.status = "skipped"; render(); toast(t.skippedNotice); return; }
+    if (act === "skip") { r.status = "skipped"; r.selected = null; render(); toast(t.skippedNote); }
   });
 
-  // 本文の編集：どの案とも一致しなくなったら「編集済み」に落とす
+  // 本文を直したら「編集済み」にし、保存するまで公開できないようにする（実アプリと同じ）
   document.addEventListener("input", function (e) {
     var ta = e.target.closest ? e.target.closest("textarea[data-id]") : null;
     if (!ta) return;
     var r = byId(ta.dataset.id);
-    if (!r) return;
-    r.body = ta.value;
-    var match = r.options.filter(function (o) { return o.text === ta.value; })[0];
-    r.selected = match ? match.style : null;
-
-    var c = appEl.querySelector('[data-count="' + r.id + '"]');
-    if (c) c.textContent = ta.value.length + " / " + MAX;
-
-    // 3案のどれとも一致しなくなったことを、その場で見せる。
-    // 再描画するとカーソル位置が飛ぶので、変わった箇所だけ差し替える。
-    var card = ta.closest("article.rev");
-    if (card) {
-      var hint = card.querySelector(".picker .hint");
-      if (hint) hint.textContent = r.selected ? d()[styleHintKey(r.selected)] : d().edited;
-      Array.prototype.forEach.call(card.querySelectorAll("[data-pick]"), function (btn) {
-        btn.setAttribute("aria-pressed", String(r.selected === btn.dataset.pick));
-      });
-    }
-    ta.style.height = "auto";
-    ta.style.height = (ta.scrollHeight + 2) + "px";
+    if (!r || !r.options) return;
+    r.body = ta.value; r.selected = null; r.dirty = true;
+    ["warm", "standard", "concise"].forEach(function (k) { if (r.options[k] === ta.value) r.selected = k; });
+    var card = ta.closest("[data-card]");
+    var c = card.querySelector("[data-count]"); if (c) c.textContent = ta.value.length + " / " + MAX;
+    var hint = card.querySelector(".seg-row .hint"); if (hint) hint.textContent = r.selected ? d().hints[r.selected] : d().edited;
+    Array.prototype.forEach.call(card.querySelectorAll("[data-style]"), function (b) {
+      b.setAttribute("aria-pressed", String(r.selected === b.dataset.style));
+    });
+    var pub = card.querySelector('[data-do="publish"]'), save = card.querySelector('[data-do="save"]');
+    if (pub) { pub.disabled = true; pub.title = d().saveFirst; }
+    if (save) save.disabled = false;
+    ta.style.height = "auto"; ta.style.height = (ta.scrollHeight + 2) + "px";
   });
-
-  // パスコード欄で Enter
   document.addEventListener("keydown", function (e) {
     if (e.key !== "Enter") return;
     var pc = document.getElementById("pc");
-    if (pc && document.activeElement === pc) {
-      e.preventDefault();
-      var b = document.getElementById("enterBtn");
-      if (b) b.click();
-    }
+    if (pc && document.activeElement === pc) { e.preventDefault(); document.getElementById("enterBtn").click(); }
   });
-
   window.addEventListener("resize", autosize);
 
-  S = freshState();
+  S = fresh();
   render();
 })();
 </script>
