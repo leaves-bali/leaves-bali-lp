@@ -15,16 +15,16 @@
      小さい文字は背景との比 4.5:1 以上（tailwind.config.ts の実測値）。 */
   :root {
     color-scheme: light;
-    --brand:#c8102e; --brand-600:#b00c26; --brand-700:#93091f;
-    --brand-50:#fdf1f1; --brand-100:#fadbdc;
+    --brand:#4f90de; --brand-600:#2f6fcf; --brand-700:#2d5cb8;
+    --brand-50:#f3f8ff; --brand-100:#e6effd;
     --ink-900:#111111; --ink-700:#333333; --ink-600:#444444; --ink-500:#5a5a5a; --ink-400:#6f6f6f;
-    --line:#e7e2e2; --soft:#f3f1f0; --bg:#f7f5f4;
-    --blue:#4a6fb5;
+    --line:#e2e7f2; --soft:#f0f3fa; --bg:#f6f8fc;
+    --blue:#b88a1a;   /* 週グラフの「未返信」。名前は互換のため残す */
     --up:#1d6b37; --up-bg:#e5f3e9;
     --gold:#b8860b;
     --crit:#b3261e; --crit-bg:#fdeeee; --crit-line:#efb1ad;
     --radius:18px;
-    --shadow:0 1px 2px rgba(60,20,25,.04), 0 6px 18px -8px rgba(60,20,25,.12);
+    --shadow:0 1px 2px rgba(30,40,90,.04), 0 6px 18px -8px rgba(30,40,90,.12);
     --sans: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Noto Sans CJK JP", "Yu Gothic UI", Meiryo, system-ui, sans-serif;
   }
   * { box-sizing:border-box; margin:0; padding:0; }
@@ -53,7 +53,7 @@
   .side {
     width:294px; flex-shrink:0; color:#fff; display:flex; flex-direction:column;
     padding:30px 18px 22px;
-    background:linear-gradient(180deg,#d4405a 0%,#c01933 45%,#ad0f2a 100%);
+    background:linear-gradient(160deg,#5596e0 0%,#4f8ade 40%,#4f80d8 65%,#5470cc 100%);
   }
   .logo { display:flex; align-items:baseline; gap:12px; padding:0 10px; }
   .logo .k { font-size:12px; font-weight:600; letter-spacing:.3em; opacity:.92; }
@@ -99,7 +99,7 @@
 
   .main {
     flex:1; min-width:0; padding:30px 34px 60px;
-    background:linear-gradient(180deg,#f6dfe3 0px,#f6e9eb 220px,var(--bg) 520px);
+    background:linear-gradient(180deg,#dcebfc 0px,#eaf3fe 220px,var(--bg) 520px);
   }
   .inner { max-width:1100px; }
 
@@ -117,11 +117,11 @@
   }
   .btn:disabled { opacity:.55; cursor:not-allowed; }
   .btn svg { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
-  .btn-white { background:#fff; border-color:#ece6e6; color:var(--ink-700); box-shadow:0 2px 8px -4px rgba(0,0,0,.12); }
+  .btn-white { background:#fff; border-color:#e2e8f4; color:var(--ink-700); box-shadow:0 2px 8px -4px rgba(0,0,0,.12); }
   .btn-white:not(:disabled):hover { background:var(--brand-50); }
   .btn-primary { background:var(--brand-600); color:#fff; }
   .btn-primary:not(:disabled):hover { background:var(--brand-700); }
-  .btn-sub { background:#fff; border-color:#ddd6d6; color:var(--ink-700); }
+  .btn-sub { background:#fff; border-color:#d4dcec; color:var(--ink-700); }
   .btn-sub:not(:disabled):hover { background:var(--brand-50); }
   .btn-ghost { background:none; color:var(--ink-600); }
   .btn-ghost:not(:disabled):hover { background:var(--soft); }
@@ -129,7 +129,7 @@
   @keyframes spin { to { transform:rotate(360deg); } }
 
   /* ---- 数字のカード ---- */
-  .card { background:#fff; border-radius:var(--radius); box-shadow:var(--shadow); border:1px solid #f0eaea; }
+  .card { background:#fff; border-radius:var(--radius); box-shadow:var(--shadow); border:1px solid #e5eaf5; }
   .kpis { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
   .kpi { padding:22px 24px 20px; position:relative; min-height:150px; display:flex; flex-direction:column; }
   .kpi.hot { border:2px solid var(--brand-600); }
@@ -158,8 +158,8 @@
   .legend i { display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:6px; vertical-align:0; }
   .plot { position:relative; height:280px; margin:22px 0 0 34px; }
   .grid { position:absolute; inset:0 0 30px 0; }
-  .grid .g { position:absolute; left:0; right:0; border-top:1px dashed #e6e0e0; }
-  .grid .g.base { border-top:1px solid #cfc8c8; }
+  .grid .g { position:absolute; left:0; right:0; border-top:1px dashed #e1e7f2; }
+  .grid .g.base { border-top:1px solid #c3cde0; }
   .grid .g span { position:absolute; left:-34px; top:-10px; width:24px; text-align:right; font-size:13px; color:var(--ink-500); }
   .bars { position:absolute; inset:0 0 30px 0; display:flex; justify-content:space-around; align-items:flex-end; }
   .bar { width:7%; max-width:40px; display:flex; flex-direction:column; align-items:center; position:relative; height:100%; justify-content:flex-end; }
@@ -196,7 +196,7 @@
   .rv { padding:24px 26px 24px; }
   .rv-head { display:flex; gap:16px; align-items:center; }
   .av {
-    width:52px; height:52px; border-radius:50%; flex-shrink:0; background:var(--soft); border:1px solid #e3dede;
+    width:52px; height:52px; border-radius:50%; flex-shrink:0; background:var(--soft); border:1px solid #dce3f0;
     display:flex; align-items:center; justify-content:center; font-weight:700; font-size:17px; color:var(--ink-700);
   }
   .rows .av { width:38px; height:38px; font-size:14px; }
@@ -204,7 +204,7 @@
   .rv-head .sub { display:flex; gap:12px; align-items:center; font-size:15px; color:var(--ink-500); flex-wrap:wrap; }
   .stars { letter-spacing:2px; font-size:16px; color:var(--gold); }
   .stars.low { color:var(--crit); }
-  .stars .off { color:#d9d4d4; }
+  .stars .off { color:#d2d9e6; }
   .rv-head .ago { margin-left:auto; align-self:flex-start; font-size:15px; color:var(--ink-500); white-space:nowrap; }
   .rv-text { margin-top:16px; font-size:18px; line-height:1.85; white-space:pre-wrap; }
   .trans { margin-top:16px; background:var(--soft); border-radius:14px; padding:14px 18px; }
@@ -230,7 +230,7 @@
   .seg-row .hint { font-size:13px; color:var(--ink-400); }
   textarea {
     display:block; width:100%; margin-top:14px; min-height:96px; resize:vertical; overflow:hidden;
-    border:1px solid #ddd6d6; border-radius:14px; padding:14px 18px; background:#fff;
+    border:1px solid #d4dcec; border-radius:14px; padding:14px 18px; background:#fff;
     font-size:16px; line-height:1.9; outline:none;
   }
   textarea:focus { border-color:var(--brand); box-shadow:0 0 0 3px var(--brand-100); }
@@ -246,7 +246,7 @@
   .page-h { margin-bottom:20px; }
   .tabs { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; }
   .tabs button, .filters button {
-    background:#fff; border:1px solid #e4dede; border-radius:999px; padding:6px 16px; font-size:14px; color:var(--ink-700);
+    background:#fff; border:1px solid #dbe2ef; border-radius:999px; padding:6px 16px; font-size:14px; color:var(--ink-700);
   }
   .tabs button[aria-pressed="true"], .filters button[aria-pressed="true"] { background:var(--brand-600); border-color:var(--brand-600); color:#fff; font-weight:700; }
   .filters { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:18px; }
@@ -265,11 +265,11 @@
   .fine { font-size:13px; color:var(--ink-500); margin-top:12px; }
   .form { display:grid; gap:20px; max-width:720px; }
   .form label.k { display:block; font-size:14px; font-weight:700; color:var(--ink-700); margin-bottom:8px; }
-  .form input[type=text] { width:100%; border:1px solid #ddd6d6; border-radius:12px; padding:11px 14px; background:#fff; outline:none; }
+  .form input[type=text] { width:100%; border:1px solid #d4dcec; border-radius:12px; padding:11px 14px; background:#fff; outline:none; }
   .form input[type=text]:focus { border-color:var(--brand); box-shadow:0 0 0 3px var(--brand-100); }
   .form textarea { margin-top:0; font-size:15px; min-height:80px; }
   .radios { display:flex; gap:8px; flex-wrap:wrap; }
-  .radios label { display:inline-flex; align-items:center; gap:8px; background:#fff; border:1px solid #e4dede; border-radius:12px; padding:9px 14px; cursor:pointer; font-size:15px; }
+  .radios label { display:inline-flex; align-items:center; gap:8px; background:#fff; border:1px solid #dbe2ef; border-radius:12px; padding:9px 14px; cursor:pointer; font-size:15px; }
   .radios label:has(input:checked) { border-color:var(--brand-600); box-shadow:inset 0 0 0 1px var(--brand-600); background:var(--brand-50); }
   .radios input { accent-color:var(--brand-600); }
 
@@ -299,7 +299,7 @@
     .nav::-webkit-scrollbar { display:none; }
     .nav button { width:auto; padding:9px 14px; gap:10px; font-size:15px; }
     .nav .cnt { margin-left:2px; }
-    .main { padding:22px 18px 60px; background:linear-gradient(180deg,#f6e3e6 0px,var(--bg) 360px); }
+    .main { padding:22px 18px 60px; background:linear-gradient(180deg,#dfedfc 0px,var(--bg) 360px); }
     .top { display:block; margin-bottom:20px; }
     .top h1 { font-size:26px; }
     .sync { margin:12px 0 0; }
@@ -346,7 +346,7 @@
   .alert.attn b { color:#7a4b06; }
   /* ログイン画面 */
   .login { min-height:calc(100vh - 34px); display:flex; align-items:center; justify-content:center; padding:40px 20px;
-           background:linear-gradient(180deg,#f6dfe3 0px,#f6e9eb 260px,var(--bg) 620px); }
+           background:linear-gradient(180deg,#dcebfc 0px,#eaf3fe 260px,var(--bg) 620px); }
   .login-in { width:100%; max-width:380px; }
   .login .brand { text-align:center; }
   .login .brand .k { font-size:12px; font-weight:600; letter-spacing:.3em; color:var(--ink-500); }
@@ -354,16 +354,16 @@
   .login .brand .s { margin-top:6px; font-size:15px; color:var(--ink-600); }
   .login .card { padding:22px; margin-top:22px; }
   .login label { display:block; font-size:14px; font-weight:700; color:var(--ink-700); margin-bottom:8px; }
-  .login input { width:100%; border:1px solid #ddd6d6; border-radius:12px; padding:13px 14px; font-size:18px; letter-spacing:.12em; text-align:center; outline:none; }
+  .login input { width:100%; border:1px solid #d4dcec; border-radius:12px; padding:13px 14px; font-size:18px; letter-spacing:.12em; text-align:center; outline:none; }
   .login input:focus { border-color:var(--brand); box-shadow:0 0 0 3px var(--brand-100); }
   .login .btn-primary { width:100%; margin-top:14px; }
-  .login .hintbox { margin-top:12px; background:var(--brand-50); border:1px dashed #e4c8c9; border-radius:10px; padding:10px 12px; font-size:13px; color:var(--ink-700); }
+  .login .hintbox { margin-top:12px; background:var(--brand-50); border:1px dashed #c3d4ef; border-radius:10px; padding:10px 12px; font-size:13px; color:var(--ink-700); }
   .login .hintbox code { font-family:ui-monospace,Menlo,monospace; font-weight:700; letter-spacing:.06em; }
   .login .hintbox button { display:block; margin-top:4px; background:none; border:none; color:var(--brand-600); text-decoration:underline; padding:0; font-size:13px; }
   .login .err { margin-top:10px; background:#fdeeee; border:1px solid var(--crit-line); color:var(--crit); border-radius:10px; padding:9px 12px; font-size:13px; }
   .login .muted { margin-top:18px; text-align:center; font-size:13px; color:var(--ink-500); }
   .login .lw { display:flex; justify-content:center; margin-bottom:22px; }
-  .login .langs { border-color:#e4dede; }
+  .login .langs { border-color:#dbe2ef; }
   @media (max-width:860px) {
     .side-ctl { flex-direction:row; align-items:center; padding:12px 22px 0; flex-wrap:wrap; }
   }
